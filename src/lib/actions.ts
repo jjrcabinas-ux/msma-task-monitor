@@ -1,15 +1,16 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import { prisma } from './db';
-import { CLUSTERS, type ClusterSlug } from './clusters';
+import { CLUSTERS, clusterUnlockCookieName, type ClusterSlug } from './clusters';
 import type { Status } from './types';
 
 function revalidateAll() {
   revalidatePath('/', 'layout');
 }
 
-export async function verifyClusterPasswordAction(
+export async function unlockClusterAction(
   cluster: ClusterSlug,
   password: string
 ): Promise<{ ok: true } | { error: string }> {
@@ -17,6 +18,13 @@ export async function verifyClusterPasswordAction(
   if (!expected || password !== expected) {
     return { error: 'Incorrect password.' };
   }
+  const cookieStore = await cookies();
+  cookieStore.set(clusterUnlockCookieName(cluster), '1', {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 8,
+  });
   return { ok: true };
 }
 

@@ -21,3 +21,7 @@ export function isClusterSlug(value: string): value is ClusterSlug {
 export function clusterName(slug: ClusterSlug): string {
   return CLUSTERS[slug].name;
 }
+
+export function clusterUnlockCookieName(cluster: ClusterSlug): string {
+  return `cluster_unlock_${cluster}`;
+}

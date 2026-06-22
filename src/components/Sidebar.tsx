@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { addEmployeeAction } from '@/lib/actions';
 import { employeeColor } from '@/lib/colors';
+import { fmtShort, isoToParts, todayISO } from '@/lib/dates';
 import styles from './Sidebar.module.css';
 
 type NavEmployee = {
@@ -28,6 +29,18 @@ export default function Sidebar({
   const [form, setForm] = useState({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
   const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
+  const [clientTodayLabel, setClientTodayLabel] = useState(todayLabel);
+
+  useEffect(() => {
+    function syncLabel() {
+      const iso = todayISO();
+      const { y } = isoToParts(iso);
+      setClientTodayLabel(`Today · ${fmtShort(iso)}, ${y}`);
+    }
+    syncLabel();
+    const interval = setInterval(syncLabel, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isSummaryActive = pathname === '/';
 
@@ -158,7 +171,7 @@ export default function Sidebar({
         )}
       </nav>
 
-      <div className={styles.footer}>{todayLabel}</div>
+      <div className={styles.footer}>{clientTodayLabel}</div>
     </aside>
   );
 }

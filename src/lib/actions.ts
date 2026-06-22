@@ -8,15 +8,30 @@ function revalidateAll() {
   revalidatePath('/', 'layout');
 }
 
-export async function addEmployeeAction(rawName: string): Promise<{ id: string } | { error: string }> {
-  const name = rawName.trim();
+export async function addEmployeeAction(input: {
+  name: string;
+  position: string;
+  email: string;
+  birthDate: string;
+  contactNumber: string;
+}): Promise<{ id: string } | { error: string }> {
+  const name = input.name.trim();
+  const position = input.position.trim();
+  const email = input.email.trim();
+  const birthDate = input.birthDate.trim();
+  const contactNumber = input.contactNumber.trim();
+
   if (!name) return { error: 'Name is required.' };
+  if (!position) return { error: 'Position is required.' };
+  if (!email) return { error: 'Email address is required.' };
+  if (!birthDate) return { error: 'Birth date is required.' };
+  if (!contactNumber) return { error: 'Contact number is required.' };
 
   const existing = await prisma.employee.findUnique({ where: { name } });
   if (existing) {
     return { id: existing.id };
   }
-  const created = await prisma.employee.create({ data: { name } });
+  const created = await prisma.employee.create({ data: { name, position, email, birthDate, contactNumber } });
   revalidateAll();
   return { id: created.id };
 }

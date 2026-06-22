@@ -1,13 +1,29 @@
 import { prisma } from './db';
 import type { EmployeeDTO, Status, TaskDTO } from './types';
 
-export async function getRoster(): Promise<EmployeeDTO[]> {
-  const employees = await prisma.employee.findMany({ orderBy: { createdAt: 'asc' } });
-  return employees.map((e) => ({
+function toEmployeeDTO(e: {
+  id: string;
+  name: string;
+  position: string;
+  email: string;
+  birthDate: string | null;
+  contactNumber: string;
+  createdAt: Date;
+}): EmployeeDTO {
+  return {
     id: e.id,
     name: e.name,
+    position: e.position,
+    email: e.email,
+    birthDate: e.birthDate,
+    contactNumber: e.contactNumber,
     createdAt: e.createdAt.toISOString(),
-  }));
+  };
+}
+
+export async function getRoster(): Promise<EmployeeDTO[]> {
+  const employees = await prisma.employee.findMany({ orderBy: { createdAt: 'asc' } });
+  return employees.map(toEmployeeDTO);
 }
 
 export async function getRosterWithTasks(): Promise<{ employee: EmployeeDTO; tasks: TaskDTO[] }[]> {
@@ -16,11 +32,7 @@ export async function getRosterWithTasks(): Promise<{ employee: EmployeeDTO; tas
     include: { tasks: { orderBy: { createdAt: 'asc' } } },
   });
   return employees.map((e) => ({
-    employee: {
-      id: e.id,
-      name: e.name,
-      createdAt: e.createdAt.toISOString(),
-    },
+    employee: toEmployeeDTO(e),
     tasks: e.tasks.map((t) => ({
       id: t.id,
       employeeId: t.employeeId,
@@ -40,11 +52,7 @@ export async function getEmployeeWithTasks(id: string) {
   });
   if (!e) return null;
   return {
-    employee: {
-      id: e.id,
-      name: e.name,
-      createdAt: e.createdAt.toISOString(),
-    } as EmployeeDTO,
+    employee: toEmployeeDTO(e),
     tasks: e.tasks.map((t) => ({
       id: t.id,
       employeeId: t.employeeId,

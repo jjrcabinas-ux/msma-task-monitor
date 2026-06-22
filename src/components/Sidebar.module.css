@@ -135,6 +135,14 @@
 .addBox {
   padding: 8px 12px;
   margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.addError {
+  font-size: 11px;
+  color: #fca5a5;
 }
 
 .addInput {
@@ -145,6 +153,10 @@
   border-radius: 7px;
   padding: 8px 10px;
   font-size: 13px;
+}
+
+.addInput[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }
 
 .addActions {

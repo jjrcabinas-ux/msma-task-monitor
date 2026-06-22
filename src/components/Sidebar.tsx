@@ -25,24 +25,33 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
-  const [name, setName] = useState('');
+  const [form, setForm] = useState({ name: '', position: '', email: '', birthDate: '', contactNumber: '' });
+  const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
 
   const isSummaryActive = pathname === '/';
 
+  function updateField(field: keyof typeof form, value: string) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  function cancelAdd() {
+    setAdding(false);
+    setForm({ name: '', position: '', email: '', birthDate: '', contactNumber: '' });
+    setError('');
+  }
+
   function submitAdd() {
-    const trimmed = name.trim();
-    if (!trimmed) {
-      setAdding(false);
-      return;
-    }
     startTransition(async () => {
-      const result = await addEmployeeAction(trimmed);
-      setName('');
-      setAdding(false);
-      if ('id' in result) {
-        router.push(`/employee/${result.id}`);
+      const result = await addEmployeeAction(form);
+      if ('error' in result) {
+        setError(result.error);
+        return;
       }
+      setForm({ name: '', position: '', email: '', birthDate: '', contactNumber: '' });
+      setError('');
+      setAdding(false);
+      router.push(`/employee/${result.id}`);
     });
   }
 
@@ -87,21 +96,48 @@ export default function Sidebar({
           <div className={styles.addBox}>
             <input
               autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') submitAdd();
-                else if (e.key === 'Escape') setAdding(false);
-              }}
-              placeholder="New member name"
+              value={form.name}
+              onChange={(e) => updateField('name', e.target.value)}
+              placeholder="Full name"
               className={styles.addInput}
               disabled={pending}
             />
+            <input
+              value={form.position}
+              onChange={(e) => updateField('position', e.target.value)}
+              placeholder="Position"
+              className={styles.addInput}
+              disabled={pending}
+            />
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => updateField('email', e.target.value)}
+              placeholder="Email address"
+              className={styles.addInput}
+              disabled={pending}
+            />
+            <input
+              type="date"
+              value={form.birthDate}
+              onChange={(e) => updateField('birthDate', e.target.value)}
+              className={styles.addInput}
+              disabled={pending}
+            />
+            <input
+              type="tel"
+              value={form.contactNumber}
+              onChange={(e) => updateField('contactNumber', e.target.value)}
+              placeholder="Contact number"
+              className={styles.addInput}
+              disabled={pending}
+            />
+            {error && <div className={styles.addError}>{error}</div>}
             <div className={styles.addActions}>
               <button onClick={submitAdd} className={styles.addBtn} disabled={pending}>
                 Add
               </button>
-              <button onClick={() => setAdding(false)} className={styles.cancelBtn} disabled={pending}>
+              <button onClick={cancelAdd} className={styles.cancelBtn} disabled={pending}>
                 Cancel
               </button>
             </div>

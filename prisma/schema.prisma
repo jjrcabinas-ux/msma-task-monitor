@@ -11,10 +11,14 @@ datasource db {
 }
 
 model Employee {
-  id         String   @id @default(cuid())
-  name       String   @unique
-  createdAt  DateTime @default(now())
-  tasks      Task[]
+  id            String   @id @default(cuid())
+  name          String   @unique
+  position      String   @default("")
+  email         String   @default("")
+  birthDate     String?
+  contactNumber String   @default("")
+  createdAt     DateTime @default(now())
+  tasks         Task[]
 }
 
 model Task {

@@ -128,7 +128,7 @@ export function buildEmployeeCards(roster: RosterEntry[]) {
 }
 
 export function buildBlockers(roster: RosterEntry[], todayIso: string) {
-  const raw = flattenTasks(roster).filter((t) => t.helpNeeded && t.helpNeeded.trim());
+  const raw = flattenTasks(roster).filter((t) => t.helpNeeded && t.helpNeeded.trim() && t.status !== 'Done');
   raw.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   return raw.map((t) => {
     const age = t.date ? daysBetween(t.date, todayIso) : 0;

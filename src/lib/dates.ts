@@ -44,6 +44,11 @@ export function fmtLongFromIso(iso: string): string {
   return `${WEEKFULL[dt.getDay()]}, ${MONFULL[m - 1]} ${d}, ${y}`;
 }
 
+export function fmtLongDate(iso: string): string {
+  const { y, m, d } = isoToParts(iso);
+  return `${MONFULL[m - 1]} ${d}, ${y}`;
+}
+
 export function daysInMonth(year: number, monthIndex0: number): number {
   return new Date(year, monthIndex0 + 1, 0).getDate();
 }

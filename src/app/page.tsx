@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getRosterWithTasks } from '@/lib/data';
 import { periodRange } from '@/lib/period';
-import { todayISO, fmtLongFromIso } from '@/lib/dates';
+import { todayISO, fmtLongFromIso, fmtShort, fmtLongDate } from '@/lib/dates';
 import {
   buildKpis,
   buildTrend,
@@ -16,6 +16,9 @@ import {
 } from '@/lib/analytics';
 import type { Period } from '@/lib/types';
 import PeriodFilter from '@/components/PeriodFilter';
+import KpiModalCard from '@/components/summary/KpiModalCard';
+import BlockerRow from '@/components/summary/BlockerRow';
+import modalStyles from '@/components/summary/KpiModalCard.module.css';
 import styles from './summary.module.css';
 
 const STATUS_META = {
@@ -86,26 +89,138 @@ export default async function SummaryPage({
             </div>
           </div>
         </div>
-        <div className={`${styles.card} ${styles.kpiCard}`}>
-          <div className={styles.kpiLabel}>Total Tasks</div>
-          <div className={styles.kpiNumber}>{kpi.total}</div>
-        </div>
-        <div className={`${styles.card} ${styles.kpiCard}`}>
-          <div className={styles.kpiLabel}>Completed</div>
-          <div className={styles.kpiNumber} style={{ color: '#16a34a' }}>
-            {kpi.done}
-          </div>
-        </div>
-        <div className={`${styles.card} ${styles.kpiCard}`}>
-          <div className={styles.kpiLabel}>Open Blockers</div>
-          <div className={styles.kpiNumber} style={{ color: '#dc2626' }}>
-            {kpi.blockerCount}
-          </div>
-        </div>
-        <div className={`${styles.card} ${styles.kpiCard}`}>
-          <div className={styles.kpiLabel}>Members</div>
-          <div className={styles.kpiNumber}>{kpi.members}</div>
-        </div>
+        <KpiModalCard
+          title={`All Tasks (${kpi.total})`}
+          card={
+            <div className={`${styles.card} ${styles.kpiCard}`}>
+              <div className={styles.kpiLabel}>Total Tasks</div>
+              <div className={styles.kpiNumber}>{kpi.total}</div>
+            </div>
+          }
+        >
+          {kpi.periodTasks.length === 0 && <div className={modalStyles.modalEmpty}>No tasks in this period.</div>}
+          {kpi.periodTasks.map((t) => {
+            const meta = STATUS_META[t.status];
+            return (
+              <Link key={t.id} href={`/employee/${t.employeeId}?highlight=${t.id}`} className={modalStyles.modalRow}>
+                <span className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))}>
+                  {t.empName[0]}
+                </span>
+                <div className={modalStyles.modalRowBody}>
+                  <div className={modalStyles.modalRowTitle}>{t.taskGeneral || '(untitled)'}</div>
+                  <div className={modalStyles.modalRowSub}>
+                    {t.empName}
+                    {t.date ? ` · ${fmtShort(t.date)}` : ''}
+                  </div>
+                </div>
+                <span className={styles.statusBadge} style={{ background: meta.bg, color: meta.color }}>
+                  {meta.label}
+                </span>
+              </Link>
+            );
+          })}
+        </KpiModalCard>
+
+        <KpiModalCard
+          title={`Completed Tasks (${kpi.done})`}
+          card={
+            <div className={`${styles.card} ${styles.kpiCard}`}>
+              <div className={styles.kpiLabel}>Completed</div>
+              <div className={styles.kpiNumber} style={{ color: '#16a34a' }}>
+                {kpi.done}
+              </div>
+            </div>
+          }
+        >
+          {kpi.periodTasks.filter((t) => t.status === 'Done').length === 0 && (
+            <div className={modalStyles.modalEmpty}>No completed tasks in this period.</div>
+          )}
+          {kpi.periodTasks
+            .filter((t) => t.status === 'Done')
+            .map((t) => (
+              <Link key={t.id} href={`/employee/${t.employeeId}?highlight=${t.id}`} className={modalStyles.modalRow}>
+                <span className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))}>
+                  {t.empName[0]}
+                </span>
+                <div className={modalStyles.modalRowBody}>
+                  <div className={modalStyles.modalRowTitle}>{t.taskGeneral || '(untitled)'}</div>
+                  <div className={modalStyles.modalRowSub}>
+                    {t.empName}
+                    {t.date ? ` · ${fmtShort(t.date)}` : ''}
+                  </div>
+                </div>
+                <span className={styles.statusBadge} style={{ background: STATUS_META.Done.bg, color: STATUS_META.Done.color }}>
+                  {STATUS_META.Done.label}
+                </span>
+              </Link>
+            ))}
+        </KpiModalCard>
+
+        <KpiModalCard
+          title={`Open Blockers (${blockers.length})`}
+          card={
+            <div className={`${styles.card} ${styles.kpiCard}`}>
+              <div className={styles.kpiLabel}>Open Blockers</div>
+              <div className={styles.kpiNumber} style={{ color: '#dc2626' }}>
+                {kpi.blockerCount}
+              </div>
+            </div>
+          }
+        >
+          {blockers.length === 0 && <div className={modalStyles.modalEmpty}>No blockers reported.</div>}
+          {blockers.map(({ task, dateLabel }) => (
+            <Link key={task.id} href={`/employee/${task.employeeId}?highlight=${task.id}`} className={modalStyles.modalRow}>
+              <span className={styles.avatar} style={avatarStyle(28, employeeColor(task.empIndex))}>
+                {task.empName[0]}
+              </span>
+              <div className={modalStyles.modalRowBody}>
+                <div className={modalStyles.modalRowTitle}>
+                  {task.empName} · {task.taskGeneral || '(untitled)'}
+                </div>
+                <div className={modalStyles.modalRowSub}>{task.helpNeeded}</div>
+              </div>
+              <span className={modalStyles.modalRowSub}>{dateLabel}</span>
+            </Link>
+          ))}
+        </KpiModalCard>
+
+        <KpiModalCard
+          title={`Team Members (${kpi.members})`}
+          card={
+            <div className={`${styles.card} ${styles.kpiCard}`}>
+              <div className={styles.kpiLabel}>Members</div>
+              <div className={styles.kpiNumber}>{kpi.members}</div>
+            </div>
+          }
+        >
+          {roster.map(({ employee }, idx) => (
+            <div key={employee.id} className={modalStyles.memberRow}>
+              <div className={modalStyles.memberRowTop}>
+                <span className={styles.avatar} style={avatarStyle(34, employeeColor(idx))}>
+                  {employee.name[0]}
+                </span>
+                <div>
+                  <div className={modalStyles.memberName}>{employee.name}</div>
+                  <div className={modalStyles.memberPosition}>{employee.position || '—'}</div>
+                </div>
+              </div>
+              <div className={modalStyles.memberDetails}>
+                <div>
+                  <div className={modalStyles.memberDetailLabel}>Email</div>
+                  <div>{employee.email || '—'}</div>
+                </div>
+                <div>
+                  <div className={modalStyles.memberDetailLabel}>Birth Date</div>
+                  <div>{employee.birthDate ? fmtLongDate(employee.birthDate) : '—'}</div>
+                </div>
+                <div>
+                  <div className={modalStyles.memberDetailLabel}>Contact Number</div>
+                  <div>{employee.contactNumber || '—'}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </KpiModalCard>
       </div>
 
       <div className={styles.twoCol}>
@@ -256,23 +371,18 @@ export default async function SummaryPage({
           <div className={styles.sectionTitleTight} style={{ marginBottom: 0 }}>
             Help Needed — Open Blockers
           </div>
-          <div className={styles.blockersHint}>click to jump to the task</div>
+          <div className={styles.blockersHint}>Help jumps to the task · Resolved marks it Done</div>
         </div>
         {blockers.length === 0 && <div className={styles.blockersEmpty}>No blockers reported. 🎉</div>}
         {blockers.map(({ task, dateLabel, daysLabel, aging }) => (
-          <Link key={task.id} href={`/employee/${task.employeeId}?highlight=${task.id}`} className={styles.blockerRow}>
-            <span className={styles.blockerDate}>{dateLabel}</span>
-            <span className={styles.avatar} style={avatarStyle(26, employeeColor(task.empIndex))}>
-              {task.empName[0]}
-            </span>
-            <div className={styles.blockerBody}>
-              <div className={styles.blockerTitle}>
-                {task.empName} <span className={styles.blockerTitleSub}>· {task.taskGeneral}</span>
-              </div>
-              <div className={styles.blockerText}>{task.helpNeeded}</div>
-            </div>
-            <span className={`${styles.agingBadge} ${aging ? styles.agingBadgeHot : ''}`}>{daysLabel}</span>
-          </Link>
+          <BlockerRow
+            key={task.id}
+            task={task}
+            dateLabel={dateLabel}
+            daysLabel={daysLabel}
+            aging={aging}
+            avatarStyle={avatarStyle(26, employeeColor(task.empIndex))}
+          />
         ))}
       </div>
     </div>

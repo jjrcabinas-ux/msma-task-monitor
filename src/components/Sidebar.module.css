@@ -145,6 +145,15 @@
   color: #fca5a5;
 }
 
+.addFieldLabel {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: -2px;
+}
+
 .addInput {
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.16);

@@ -117,6 +117,7 @@ export default function Sidebar({
               className={styles.addInput}
               disabled={pending}
             />
+            <label className={styles.addFieldLabel}>Birth date</label>
             <input
               type="date"
               value={form.birthDate}

@@ -91,18 +91,22 @@ export default async function SummaryPage({
           </div>
         </div>
         <KpiModalCard
-          title={`All Tasks (${kpi.total})`}
+          title={`Pending Tasks (${kpi.pending})`}
           card={
             <div className={`${styles.card} ${styles.kpiCard}`}>
-              <div className={styles.kpiLabel}>Total Tasks</div>
-              <div className={styles.kpiNumber}>{kpi.total}</div>
+              <div className={styles.kpiLabel}>Pending</div>
+              <div className={styles.kpiNumber} style={{ color: '#b45309' }}>
+                {kpi.pending}
+              </div>
             </div>
           }
         >
-          {kpi.periodTasks.length === 0 && <div className={modalStyles.modalEmpty}>No tasks in this period.</div>}
-          {kpi.periodTasks.map((t) => {
-            const meta = STATUS_META[t.status];
-            return (
+          {kpi.periodTasks.filter((t) => t.status === 'Pending').length === 0 && (
+            <div className={modalStyles.modalEmpty}>No pending tasks in this period.</div>
+          )}
+          {kpi.periodTasks
+            .filter((t) => t.status === 'Pending')
+            .map((t) => (
               <Link key={t.id} href={`/employee/${t.employeeId}?highlight=${t.id}`} className={modalStyles.modalRow}>
                 <span className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))}>
                   {t.empName[0]}
@@ -114,12 +118,11 @@ export default async function SummaryPage({
                     {t.date ? ` · ${fmtShort(t.date)}` : ''}
                   </div>
                 </div>
-                <span className={styles.statusBadge} style={{ background: meta.bg, color: meta.color }}>
-                  {meta.label}
+                <span className={styles.statusBadge} style={{ background: STATUS_META.Pending.bg, color: STATUS_META.Pending.color }}>
+                  {STATUS_META.Pending.label}
                 </span>
               </Link>
-            );
-          })}
+            ))}
         </KpiModalCard>
 
         <KpiModalCard

@@ -6,9 +6,6 @@ export async function getRoster(): Promise<EmployeeDTO[]> {
   return employees.map((e) => ({
     id: e.id,
     name: e.name,
-    photoPath: e.photoPath,
-    photoPosX: e.photoPosX,
-    photoPosY: e.photoPosY,
     createdAt: e.createdAt.toISOString(),
   }));
 }
@@ -22,9 +19,6 @@ export async function getRosterWithTasks(): Promise<{ employee: EmployeeDTO; tas
     employee: {
       id: e.id,
       name: e.name,
-      photoPath: e.photoPath,
-      photoPosX: e.photoPosX,
-      photoPosY: e.photoPosY,
       createdAt: e.createdAt.toISOString(),
     },
     tasks: e.tasks.map((t) => ({
@@ -49,9 +43,6 @@ export async function getEmployeeWithTasks(id: string) {
     employee: {
       id: e.id,
       name: e.name,
-      photoPath: e.photoPath,
-      photoPosX: e.photoPosX,
-      photoPosY: e.photoPosY,
       createdAt: e.createdAt.toISOString(),
     } as EmployeeDTO,
     tasks: e.tasks.map((t) => ({

@@ -13,9 +13,6 @@ datasource db {
 model Employee {
   id         String   @id @default(cuid())
   name       String   @unique
-  photoPath  String?
-  photoPosX  Int      @default(50)
-  photoPosY  Int      @default(50)
   createdAt  DateTime @default(now())
   tasks      Task[]
 }

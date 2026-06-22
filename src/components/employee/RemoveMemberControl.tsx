@@ -28,7 +28,7 @@ export default function RemoveMemberControl({ employeeId, name }: { employeeId: 
       <button className={styles.removeBtn} onClick={() => setConfirming(true)} disabled={pending}>
         Remove member
       </button>
-      {error && <div className={styles.photoError}>{error}</div>}
+      {error && <div className={styles.errorText}>{error}</div>}
       {confirming && (
         <div className={`${styles.popover} ${styles.confirmPopover}`}>
           <div className={styles.confirmTitle}>Remove {name}?</div>

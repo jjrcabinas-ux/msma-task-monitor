@@ -1,15 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { del, put } from '@vercel/blob';
 import { prisma } from './db';
 import type { Status } from './types';
-
-const ACCEPTED_TYPES: Record<string, string> = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/webp': 'webp',
-};
 
 function revalidateAll() {
   revalidatePath('/', 'layout');
@@ -31,10 +24,7 @@ export async function addEmployeeAction(rawName: string): Promise<{ id: string }
 export async function removeEmployeeAction(id: string): Promise<{ ok: true } | { error: string }> {
   const count = await prisma.employee.count();
   if (count <= 1) return { error: 'At least one team member must remain.' };
-  const employee = await prisma.employee.delete({ where: { id } });
-  if (employee.photoPath) {
-    await del(employee.photoPath).catch(() => {});
-  }
+  await prisma.employee.delete({ where: { id } });
   revalidateAll();
   return { ok: true };
 }
@@ -58,36 +48,6 @@ export async function updateTaskAction(
 
 export async function deleteTaskAction(taskId: string): Promise<{ ok: true }> {
   await prisma.task.delete({ where: { id: taskId } });
-  revalidateAll();
-  return { ok: true };
-}
-
-export async function uploadPhotoAction(employeeId: string, formData: FormData): Promise<{ ok: true } | { error: string }> {
-  const file = formData.get('file');
-  if (!(file instanceof File)) return { error: 'No file provided.' };
-  const ext = ACCEPTED_TYPES[file.type];
-  if (!ext) return { error: 'Unsupported image type. Use PNG, JPEG, or WebP.' };
-  if (file.size > 5 * 1024 * 1024) return { error: 'Image must be under 5MB.' };
-
-  const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
-  if (!employee) return { error: 'Employee not found.' };
-
-  if (employee.photoPath) {
-    await del(employee.photoPath).catch(() => {});
-  }
-
-  const filename = `${employeeId}-${Date.now()}.${ext}`;
-  const blob = await put(filename, file, { access: 'public', addRandomSuffix: false });
-
-  await prisma.employee.update({ where: { id: employeeId }, data: { photoPath: blob.url, photoPosX: 50, photoPosY: 50 } });
-  revalidateAll();
-  return { ok: true };
-}
-
-export async function updatePhotoPositionAction(employeeId: string, posX: number, posY: number): Promise<{ ok: true }> {
-  const x = Math.max(0, Math.min(100, Math.round(posX)));
-  const y = Math.max(0, Math.min(100, Math.round(posY)));
-  await prisma.employee.update({ where: { id: employeeId }, data: { photoPosX: x, photoPosY: y } });
   revalidateAll();
   return { ok: true };
 }

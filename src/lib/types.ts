@@ -13,9 +13,6 @@ export type TaskDTO = {
 export type EmployeeDTO = {
   id: string;
   name: string;
-  photoPath: string | null;
-  photoPosX: number;
-  photoPosY: number;
   createdAt: string;
 };
 

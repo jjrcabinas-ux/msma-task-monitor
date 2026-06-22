@@ -5,7 +5,6 @@ import { todayISO } from '@/lib/dates';
 import { statusCounts } from '@/lib/analytics';
 import { employeeColor } from '@/lib/colors';
 import { SHOW_ACCOMPLISHMENTS } from '@/lib/config';
-import PhotoEditor from '@/components/employee/PhotoEditor';
 import RemoveMemberControl from '@/components/employee/RemoveMemberControl';
 import AddDeliverableButton from '@/components/employee/AddDeliverableButton';
 import DeliverablesTable from '@/components/employee/DeliverablesTable';
@@ -42,14 +41,9 @@ export default async function EmployeePage({
 
       <div className={styles.headerRow}>
         <div className={styles.identity}>
-          <PhotoEditor
-            employeeId={employee.id}
-            initial={employee.name[0]}
-            photoPath={employee.photoPath}
-            photoPosX={employee.photoPosX}
-            photoPosY={employee.photoPosY}
-            color={employeeColor(colorIndex)}
-          />
+          <div className={styles.avatarBig} style={{ background: employeeColor(colorIndex) }}>
+            {employee.name[0]}
+          </div>
           <div>
             <h1 className={styles.h1}>{employee.name}</h1>
             <div className={styles.subRow}>

@@ -3,7 +3,7 @@ import './globals.css';
 import { APP_NAME } from '@/lib/config';
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} — Task Monitoring`,
+  title: APP_NAME,
   description: 'Employee task monitoring dashboard',
 };
 

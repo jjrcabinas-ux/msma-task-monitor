@@ -1,1 +1,1 @@
-export const APP_NAME = 'MSMA Task Monitor';
+export const APP_NAME = 'MSMA Employee Task Monitoring';

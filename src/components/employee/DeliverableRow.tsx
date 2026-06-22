@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { deleteTaskAction, updateTaskAction } from '@/lib/actions';
-import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isoToParts } from '@/lib/dates';
+import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isoToParts, todayISO } from '@/lib/dates';
 import { STATUS_META } from '@/lib/colors';
 import type { Status, TaskDTO } from '@/lib/types';
 import TaskDetailsCell from './TaskDetailsCell';
@@ -26,6 +26,16 @@ export default function DeliverableRow({
   const [pickerYear, setPickerYear] = useState(initialParts.y);
   const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
   const [status, setStatus] = useState<Status>(task.status);
+  const [clientToday, setClientToday] = useState(todayIso);
+
+  useEffect(() => {
+    function syncToday() {
+      setClientToday(todayISO());
+    }
+    syncToday();
+    const interval = setInterval(syncToday, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (highlighted && rowRef.current) {
@@ -45,7 +55,7 @@ export default function DeliverableRow({
   }, [pickerOpen]);
 
   function openPicker() {
-    const parts = task.date ? isoToParts(task.date) : isoToParts(todayIso);
+    const parts = task.date ? isoToParts(task.date) : isoToParts(clientToday);
     setPickerYear(parts.y);
     setPickerMonth(parts.m - 1);
     setPickerOpen(true);
@@ -122,7 +132,7 @@ export default function DeliverableRow({
               ))}
               {days.map((day) => {
                 const isSel = day.iso === task.date;
-                const isToday = day.iso === todayIso;
+                const isToday = day.iso === clientToday;
                 return (
                   <div
                     key={day.iso}

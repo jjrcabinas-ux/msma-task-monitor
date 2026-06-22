@@ -2,6 +2,7 @@
 
 import { useTransition } from 'react';
 import { addTaskAction } from '@/lib/actions';
+import { todayISO } from '@/lib/dates';
 
 export default function AddDeliverableButton({
   employeeId,
@@ -16,7 +17,7 @@ export default function AddDeliverableButton({
 
   function add() {
     startTransition(async () => {
-      await addTaskAction(employeeId);
+      await addTaskAction(employeeId, todayISO());
     });
   }
 

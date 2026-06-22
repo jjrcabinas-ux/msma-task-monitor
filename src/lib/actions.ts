@@ -82,9 +82,9 @@ export async function removeEmployeeAction(id: string): Promise<{ ok: true } | {
   return { ok: true };
 }
 
-export async function addTaskAction(employeeId: string): Promise<{ id: string }> {
+export async function addTaskAction(employeeId: string, date: string | null = null): Promise<{ id: string }> {
   const task = await prisma.task.create({
-    data: { employeeId, date: null, taskGeneral: '', taskDetails: '', status: 'Pending', helpNeeded: '' },
+    data: { employeeId, date, taskGeneral: '', taskDetails: '', status: 'Pending', helpNeeded: '' },
   });
   revalidateAll();
   return { id: task.id };

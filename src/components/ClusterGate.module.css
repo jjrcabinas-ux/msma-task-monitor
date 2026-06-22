@@ -20,16 +20,8 @@
 }
 
 .logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 11px;
-  background: #2563eb;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 18px;
+  width: 160px;
+  height: auto;
   margin-bottom: 4px;
 }
 

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
@@ -75,7 +76,7 @@ export default function Sidebar({
     <aside className={styles.aside}>
       <div className={styles.brand}>
         <div className={styles.brandRow}>
-          <div className={styles.logo}>M</div>
+          <Image src="/logo.jpg" alt="MSMA" width={903} height={495} className={styles.logo} />
           <div className={styles.brandText}>
             <div className={styles.teamName}>{clusterLabel}</div>
             <div className={styles.subtitle}>Task Monitoring</div>

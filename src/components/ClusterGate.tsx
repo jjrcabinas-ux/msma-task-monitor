@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { unlockClusterAction } from '@/lib/actions';
@@ -34,7 +35,7 @@ export default function ClusterGate({
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.logo}>M</div>
+        <Image src="/logo.jpg" alt="MSMA" width={903} height={495} className={styles.logo} priority />
         <div className={styles.title}>{clusterLabel}</div>
         <div className={styles.subtitle}>Enter the cluster password to continue</div>
         <div className={styles.inputRow}>

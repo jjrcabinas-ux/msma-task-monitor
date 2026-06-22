@@ -1,0 +1,76 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  padding: 24px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
+  background: #2563eb;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 22px;
+}
+
+.h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+}
+
+.card {
+  width: 220px;
+  padding: 22px 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: #1e293b;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+  transform: translateY(-1px);
+}
+
+.cardName {
+  flex: 1;
+}
+
+.cardArrow {
+  color: #94a3b8;
+  font-size: 16px;
+}

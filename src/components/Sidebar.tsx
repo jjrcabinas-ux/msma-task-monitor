@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import { addEmployeeAction } from '@/lib/actions';
+import { addEmployeeAction, verifyClusterPasswordAction } from '@/lib/actions';
+import type { ClusterSlug } from '@/lib/clusters';
 import { employeeColor } from '@/lib/colors';
 import { fmtShort, isoToParts, todayISO } from '@/lib/dates';
 import styles from './Sidebar.module.css';
@@ -14,12 +15,18 @@ type NavEmployee = {
   completionPct: number;
 };
 
+function unlockKey(cluster: ClusterSlug): string {
+  return `cluster-unlock-${cluster}`;
+}
+
 export default function Sidebar({
-  teamName,
+  cluster,
+  clusterLabel,
   todayLabel,
   employees,
 }: {
-  teamName: string;
+  cluster: ClusterSlug;
+  clusterLabel: string;
   todayLabel: string;
   employees: NavEmployee[];
 }) {
@@ -30,6 +37,12 @@ export default function Sidebar({
   const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
   const [clientTodayLabel, setClientTodayLabel] = useState(todayLabel);
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [verifying, startVerifying] = useTransition();
 
   useEffect(() => {
     function syncLabel() {
@@ -42,7 +55,7 @@ export default function Sidebar({
     return () => clearInterval(interval);
   }, []);
 
-  const isSummaryActive = pathname === '/';
+  const isSummaryActive = pathname === `/${cluster}`;
 
   function updateField(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -56,7 +69,7 @@ export default function Sidebar({
 
   function submitAdd() {
     startTransition(async () => {
-      const result = await addEmployeeAction(form);
+      const result = await addEmployeeAction(cluster, form);
       if ('error' in result) {
         setError(result.error);
         return;
@@ -64,114 +77,184 @@ export default function Sidebar({
       setForm({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
       setError('');
       setAdding(false);
-      router.push(`/employee/${result.id}`);
+      router.push(`/${cluster}/employee/${result.id}`);
     });
   }
 
+  function toggleCollapse() {
+    if (!collapsed) {
+      setCollapsed(true);
+      setUnlocking(false);
+      return;
+    }
+    if (sessionStorage.getItem(unlockKey(cluster)) === '1') {
+      setCollapsed(false);
+      return;
+    }
+    setUnlocking(true);
+  }
+
+  function cancelUnlock() {
+    setUnlocking(false);
+    setPasswordInput('');
+    setPasswordError('');
+  }
+
+  function submitUnlock() {
+    startVerifying(async () => {
+      const result = await verifyClusterPasswordAction(cluster, passwordInput);
+      if ('error' in result) {
+        setPasswordError(result.error);
+        return;
+      }
+      sessionStorage.setItem(unlockKey(cluster), '1');
+      setPasswordInput('');
+      setPasswordError('');
+      setUnlocking(false);
+      setCollapsed(false);
+    });
+  }
+
+  const isNarrow = collapsed && !unlocking;
+
   return (
-    <aside className={styles.aside}>
+    <aside className={`${styles.aside} ${isNarrow ? styles.asideCollapsed : ''}`}>
       <div className={styles.brand}>
-        <div className={styles.brandRow}>
+        <div className={styles.brandRow} onClick={toggleCollapse}>
           <div className={styles.logo}>M</div>
-          <div className={styles.brandText}>
-            <div className={styles.teamName}>{teamName}</div>
-            <div className={styles.subtitle}>Task Monitoring</div>
-          </div>
+          {!isNarrow && (
+            <div className={styles.brandText}>
+              <div className={styles.teamName}>{clusterLabel}</div>
+              <div className={styles.subtitle}>Task Monitoring</div>
+            </div>
+          )}
         </div>
       </div>
 
-      <nav className={styles.nav}>
-        <Link href="/" className={`${styles.navItem} ${isSummaryActive ? styles.navItemActive : ''}`}>
-          <div className={styles.navIcon}>▦</div>
-          <span className={styles.navLabel}>Team Summary</span>
-        </Link>
+      {unlocking && (
+        <div className={styles.addBox}>
+          <div className={styles.unlockLabel}>Enter password to expand</div>
+          <input
+            autoFocus
+            type="password"
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submitUnlock()}
+            placeholder="Cluster password"
+            className={styles.addInput}
+            disabled={verifying}
+          />
+          {passwordError && <div className={styles.addError}>{passwordError}</div>}
+          <div className={styles.addActions}>
+            <button onClick={submitUnlock} className={styles.addBtn} disabled={verifying}>
+              Unlock
+            </button>
+            <button onClick={cancelUnlock} className={styles.cancelBtn} disabled={verifying}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
-        <div className={styles.sectionLabel}>TEAM MEMBERS</div>
+      {!collapsed && (
+        <nav className={styles.nav}>
+          <Link href="/" className={styles.navItem}>
+            <div className={styles.navIcon}>⌂</div>
+            <span className={styles.navLabel}>All Clusters</span>
+          </Link>
 
-        {employees.map((emp, idx) => {
-          const active = pathname === `/employee/${emp.id}`;
-          return (
-            <Link
-              key={emp.id}
-              href={`/employee/${emp.id}`}
-              className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-            >
-              <div className={styles.navAvatar} style={{ background: employeeColor(idx) }}>
-                {emp.name[0]}
+          <Link href={`/${cluster}`} className={`${styles.navItem} ${isSummaryActive ? styles.navItemActive : ''}`}>
+            <div className={styles.navIcon}>▦</div>
+            <span className={styles.navLabel}>Team Summary</span>
+          </Link>
+
+          <div className={styles.sectionLabel}>TEAM MEMBERS</div>
+
+          {employees.map((emp, idx) => {
+            const active = pathname === `/${cluster}/employee/${emp.id}`;
+            return (
+              <Link
+                key={emp.id}
+                href={`/${cluster}/employee/${emp.id}`}
+                className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
+              >
+                <div className={styles.navAvatar} style={{ background: employeeColor(idx) }}>
+                  {emp.name[0]}
+                </div>
+                <span className={styles.navName}>{emp.name}</span>
+                <span className={styles.navPct}>{emp.completionPct}%</span>
+              </Link>
+            );
+          })}
+
+          {adding ? (
+            <div className={styles.addBox}>
+              <input
+                autoFocus
+                value={form.name}
+                onChange={(e) => updateField('name', e.target.value)}
+                placeholder="Full name"
+                className={styles.addInput}
+                disabled={pending}
+              />
+              <input
+                value={form.nickname}
+                onChange={(e) => updateField('nickname', e.target.value)}
+                placeholder="Nickname (display name)"
+                className={styles.addInput}
+                disabled={pending}
+              />
+              <input
+                value={form.position}
+                onChange={(e) => updateField('position', e.target.value)}
+                placeholder="Position"
+                className={styles.addInput}
+                disabled={pending}
+              />
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => updateField('email', e.target.value)}
+                placeholder="Email address"
+                className={styles.addInput}
+                disabled={pending}
+              />
+              <label className={styles.addFieldLabel}>Birth date</label>
+              <input
+                type="date"
+                value={form.birthDate}
+                onChange={(e) => updateField('birthDate', e.target.value)}
+                className={styles.addInput}
+                disabled={pending}
+              />
+              <input
+                type="tel"
+                value={form.contactNumber}
+                onChange={(e) => updateField('contactNumber', e.target.value)}
+                placeholder="Contact number"
+                className={styles.addInput}
+                disabled={pending}
+              />
+              {error && <div className={styles.addError}>{error}</div>}
+              <div className={styles.addActions}>
+                <button onClick={submitAdd} className={styles.addBtn} disabled={pending}>
+                  Add
+                </button>
+                <button onClick={cancelAdd} className={styles.cancelBtn} disabled={pending}>
+                  Cancel
+                </button>
               </div>
-              <span className={styles.navName}>{emp.name}</span>
-              <span className={styles.navPct}>{emp.completionPct}%</span>
-            </Link>
-          );
-        })}
-
-        {adding ? (
-          <div className={styles.addBox}>
-            <input
-              autoFocus
-              value={form.name}
-              onChange={(e) => updateField('name', e.target.value)}
-              placeholder="Full name"
-              className={styles.addInput}
-              disabled={pending}
-            />
-            <input
-              value={form.nickname}
-              onChange={(e) => updateField('nickname', e.target.value)}
-              placeholder="Nickname (display name)"
-              className={styles.addInput}
-              disabled={pending}
-            />
-            <input
-              value={form.position}
-              onChange={(e) => updateField('position', e.target.value)}
-              placeholder="Position"
-              className={styles.addInput}
-              disabled={pending}
-            />
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => updateField('email', e.target.value)}
-              placeholder="Email address"
-              className={styles.addInput}
-              disabled={pending}
-            />
-            <label className={styles.addFieldLabel}>Birth date</label>
-            <input
-              type="date"
-              value={form.birthDate}
-              onChange={(e) => updateField('birthDate', e.target.value)}
-              className={styles.addInput}
-              disabled={pending}
-            />
-            <input
-              type="tel"
-              value={form.contactNumber}
-              onChange={(e) => updateField('contactNumber', e.target.value)}
-              placeholder="Contact number"
-              className={styles.addInput}
-              disabled={pending}
-            />
-            {error && <div className={styles.addError}>{error}</div>}
-            <div className={styles.addActions}>
-              <button onClick={submitAdd} className={styles.addBtn} disabled={pending}>
-                Add
-              </button>
-              <button onClick={cancelAdd} className={styles.cancelBtn} disabled={pending}>
-                Cancel
-              </button>
             </div>
-          </div>
-        ) : (
-          <div className={styles.addTrigger} onClick={() => setAdding(true)}>
-            <div className={styles.addIcon}>+</div>
-            <span className={styles.navLabel}>Add member</span>
-          </div>
-        )}
-      </nav>
+          ) : (
+            <div className={styles.addTrigger} onClick={() => setAdding(true)}>
+              <div className={styles.addIcon}>+</div>
+              <span className={styles.navLabel}>Add member</span>
+            </div>
+          )}
+        </nav>
+      )}
 
-      <div className={styles.footer}>{clientTodayLabel}</div>
+      {!collapsed && <div className={styles.footer}>{clientTodayLabel}</div>}
     </aside>
   );
 }

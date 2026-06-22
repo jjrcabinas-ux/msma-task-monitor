@@ -8,6 +8,12 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  transition: width 0.15s ease;
+  overflow: hidden;
+}
+
+.asideCollapsed {
+  width: 68px;
 }
 
 .brand {
@@ -19,6 +25,7 @@
   display: flex;
   align-items: center;
   gap: 11px;
+  cursor: pointer;
 }
 
 .logo {
@@ -143,6 +150,13 @@
 .addError {
   font-size: 11px;
   color: #fca5a5;
+}
+
+.unlockLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
 }
 
 .addFieldLabel {

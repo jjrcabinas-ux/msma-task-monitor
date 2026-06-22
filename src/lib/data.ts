@@ -1,4 +1,5 @@
 import { prisma } from './db';
+import type { ClusterSlug } from './clusters';
 import type { EmployeeDTO, Status, TaskDTO } from './types';
 
 function toEmployeeDTO(e: {
@@ -23,13 +24,14 @@ function toEmployeeDTO(e: {
   };
 }
 
-export async function getRoster(): Promise<EmployeeDTO[]> {
-  const employees = await prisma.employee.findMany({ orderBy: { createdAt: 'asc' } });
+export async function getRoster(cluster: ClusterSlug): Promise<EmployeeDTO[]> {
+  const employees = await prisma.employee.findMany({ where: { cluster }, orderBy: { createdAt: 'asc' } });
   return employees.map(toEmployeeDTO);
 }
 
-export async function getRosterWithTasks(): Promise<{ employee: EmployeeDTO; tasks: TaskDTO[] }[]> {
+export async function getRosterWithTasks(cluster: ClusterSlug): Promise<{ employee: EmployeeDTO; tasks: TaskDTO[] }[]> {
   const employees = await prisma.employee.findMany({
+    where: { cluster },
     orderBy: { createdAt: 'asc' },
     include: { tasks: { orderBy: { createdAt: 'asc' } } },
   });
@@ -47,9 +49,9 @@ export async function getRosterWithTasks(): Promise<{ employee: EmployeeDTO; tas
   }));
 }
 
-export async function getEmployeeWithTasks(id: string) {
-  const e = await prisma.employee.findUnique({
-    where: { id },
+export async function getEmployeeWithTasks(id: string, cluster: ClusterSlug) {
+  const e = await prisma.employee.findFirst({
+    where: { id, cluster },
     include: { tasks: { orderBy: { createdAt: 'asc' } } },
   });
   if (!e) return null;

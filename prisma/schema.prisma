@@ -12,7 +12,8 @@ datasource db {
 
 model Employee {
   id            String   @id @default(cuid())
-  name          String   @unique
+  cluster       String   @default("ads")
+  name          String
   nickname      String   @default("")
   position      String   @default("")
   email         String   @default("")
@@ -20,6 +21,9 @@ model Employee {
   contactNumber String   @default("")
   createdAt     DateTime @default(now())
   tasks         Task[]
+
+  @@unique([cluster, name], name: "cluster_name")
+  @@index([cluster])
 }
 
 model Task {

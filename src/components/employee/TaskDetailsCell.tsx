@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { updateTaskAction } from '@/lib/actions';
-import styles from '@/app/employee/[id]/employee.module.css';
+import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
 
 export default function TaskDetailsCell({ taskId, initialValue }: { taskId: string; initialValue: string }) {
   const [value, setValue] = useState(initialValue);

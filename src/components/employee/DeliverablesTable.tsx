@@ -1,7 +1,7 @@
 import type { TaskDTO } from '@/lib/types';
 import AddDeliverableButton from './AddDeliverableButton';
 import DeliverableRow from './DeliverableRow';
-import styles from '@/app/employee/[id]/employee.module.css';
+import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
 
 export default function DeliverablesTable({
   employeeId,

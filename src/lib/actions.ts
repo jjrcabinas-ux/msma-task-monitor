@@ -2,20 +2,35 @@
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from './db';
+import { CLUSTERS, type ClusterSlug } from './clusters';
 import type { Status } from './types';
 
 function revalidateAll() {
   revalidatePath('/', 'layout');
 }
 
-export async function addEmployeeAction(input: {
-  name: string;
-  nickname: string;
-  position: string;
-  email: string;
-  birthDate: string;
-  contactNumber: string;
-}): Promise<{ id: string } | { error: string }> {
+export async function verifyClusterPasswordAction(
+  cluster: ClusterSlug,
+  password: string
+): Promise<{ ok: true } | { error: string }> {
+  const expected = process.env[CLUSTERS[cluster].passwordEnv];
+  if (!expected || password !== expected) {
+    return { error: 'Incorrect password.' };
+  }
+  return { ok: true };
+}
+
+export async function addEmployeeAction(
+  cluster: ClusterSlug,
+  input: {
+    name: string;
+    nickname: string;
+    position: string;
+    email: string;
+    birthDate: string;
+    contactNumber: string;
+  }
+): Promise<{ id: string } | { error: string }> {
   const name = input.name.trim();
   const nickname = input.nickname.trim();
   const position = input.position.trim();
@@ -30,17 +45,20 @@ export async function addEmployeeAction(input: {
   if (!birthDate) return { error: 'Birth date is required.' };
   if (!contactNumber) return { error: 'Contact number is required.' };
 
-  const existing = await prisma.employee.findUnique({ where: { name } });
+  const existing = await prisma.employee.findUnique({ where: { cluster_name: { cluster, name } } });
   if (existing) {
     return { id: existing.id };
   }
-  const created = await prisma.employee.create({ data: { name, nickname, position, email, birthDate, contactNumber } });
+  const created = await prisma.employee.create({
+    data: { cluster, name, nickname, position, email, birthDate, contactNumber },
+  });
   revalidateAll();
   return { id: created.id };
 }
 
 export async function updateEmployeeAction(
   id: string,
+  cluster: ClusterSlug,
   input: {
     name: string;
     nickname: string;
@@ -64,7 +82,7 @@ export async function updateEmployeeAction(
   if (!birthDate) return { error: 'Birth date is required.' };
   if (!contactNumber) return { error: 'Contact number is required.' };
 
-  const conflict = await prisma.employee.findUnique({ where: { name } });
+  const conflict = await prisma.employee.findUnique({ where: { cluster_name: { cluster, name } } });
   if (conflict && conflict.id !== id) {
     return { error: 'Another team member already has that name.' };
   }
@@ -74,8 +92,8 @@ export async function updateEmployeeAction(
   return { ok: true };
 }
 
-export async function removeEmployeeAction(id: string): Promise<{ ok: true } | { error: string }> {
-  const count = await prisma.employee.count();
+export async function removeEmployeeAction(id: string, cluster: ClusterSlug): Promise<{ ok: true } | { error: string }> {
+  const count = await prisma.employee.count({ where: { cluster } });
   if (count <= 1) return { error: 'At least one team member must remain.' };
   await prisma.employee.delete({ where: { id } });
   revalidateAll();

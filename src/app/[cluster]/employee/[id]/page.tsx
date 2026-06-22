@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getEmployeeWithTasks, getRoster } from '@/lib/data';
+import { isClusterSlug } from '@/lib/clusters';
 import { todayISO } from '@/lib/dates';
 import { statusCounts, displayName } from '@/lib/analytics';
 import { employeeColor } from '@/lib/colors';
@@ -13,17 +14,19 @@ export default async function EmployeePage({
   params,
   searchParams,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ cluster: string; id: string }>;
   searchParams: Promise<{ highlight?: string }>;
 }) {
-  const { id } = await params;
+  const { cluster: clusterParam, id } = await params;
+  if (!isClusterSlug(clusterParam)) notFound();
+  const cluster = clusterParam;
   const { highlight } = await searchParams;
 
-  const data = await getEmployeeWithTasks(id);
+  const data = await getEmployeeWithTasks(id, cluster);
   if (!data) notFound();
   const { employee, tasks } = data;
 
-  const roster = await getRoster();
+  const roster = await getRoster(cluster);
   const colorIndex = roster.findIndex((e) => e.id === id);
   const canRemove = roster.length > 1;
 
@@ -35,7 +38,7 @@ export default async function EmployeePage({
 
   return (
     <div className={styles.page}>
-      <Link href="/" className={styles.backLink}>
+      <Link href={`/${cluster}`} className={styles.backLink}>
         ‹ Back to Team Summary
       </Link>
 
@@ -52,7 +55,7 @@ export default async function EmployeePage({
           </div>
         </div>
         <div className={styles.actions}>
-          {canRemove && <RemoveMemberControl employeeId={employee.id} name={name} />}
+          {canRemove && <RemoveMemberControl employeeId={employee.id} cluster={cluster} name={name} />}
           <AddDeliverableButton employeeId={employee.id} className={styles.addBtn}>
             + Add Deliverable
           </AddDeliverableButton>

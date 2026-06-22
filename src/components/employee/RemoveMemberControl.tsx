@@ -3,9 +3,18 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { removeEmployeeAction } from '@/lib/actions';
-import styles from '@/app/employee/[id]/employee.module.css';
+import type { ClusterSlug } from '@/lib/clusters';
+import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
 
-export default function RemoveMemberControl({ employeeId, name }: { employeeId: string; name: string }) {
+export default function RemoveMemberControl({
+  employeeId,
+  cluster,
+  name,
+}: {
+  employeeId: string;
+  cluster: ClusterSlug;
+  name: string;
+}) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
@@ -13,12 +22,12 @@ export default function RemoveMemberControl({ employeeId, name }: { employeeId: 
 
   function confirmRemove() {
     startTransition(async () => {
-      const result = await removeEmployeeAction(employeeId);
+      const result = await removeEmployeeAction(employeeId, cluster);
       if ('error' in result) {
         setError(result.error);
         setConfirming(false);
       } else {
-        router.push('/');
+        router.push(`/${cluster}`);
       }
     });
   }

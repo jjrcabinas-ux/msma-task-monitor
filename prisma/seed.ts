@@ -54,14 +54,15 @@ const ROSTER: Record<string, SeedTask[]> = {
 };
 
 async function main() {
-  const existing = await prisma.employee.count();
+  const existing = await prisma.employee.count({ where: { cluster: 'ads' } });
   if (existing > 0) {
-    console.log(`Database already has ${existing} employee(s) — skipping seed.`);
+    console.log(`Cluster "ads" already has ${existing} employee(s) — skipping seed.`);
     return;
   }
   for (const name of Object.keys(ROSTER)) {
     await prisma.employee.create({
       data: {
+        cluster: 'ads',
         name,
         tasks: {
           create: ROSTER[name].map((t) => ({

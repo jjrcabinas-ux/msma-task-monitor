@@ -6,7 +6,7 @@ import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isoToParts, 
 import { STATUS_META } from '@/lib/colors';
 import type { Status, TaskDTO } from '@/lib/types';
 import TaskDetailsCell from './TaskDetailsCell';
-import styles from '@/app/employee/[id]/employee.module.css';
+import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
 
 const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
 

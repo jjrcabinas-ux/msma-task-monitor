@@ -3,16 +3,19 @@
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import type { FlatTask } from '@/lib/analytics';
-import styles from '@/app/summary.module.css';
+import type { ClusterSlug } from '@/lib/clusters';
+import styles from '@/app/[cluster]/summary.module.css';
 
 export default function BlockerRow({
   task,
+  cluster,
   dateLabel,
   daysLabel,
   aging,
   avatarStyle,
 }: {
   task: FlatTask;
+  cluster: ClusterSlug;
   dateLabel: string;
   daysLabel: string;
   aging: boolean;
@@ -31,7 +34,7 @@ export default function BlockerRow({
         <div className={styles.blockerText}>{task.helpNeeded}</div>
       </div>
       <div className={styles.blockerRight}>
-        <Link href={`/employee/${task.employeeId}?highlight=${task.id}`} className={styles.helpBtn}>
+        <Link href={`/${cluster}/employee/${task.employeeId}?highlight=${task.id}`} className={styles.helpBtn}>
           Help
         </Link>
         <span className={`${styles.agingBadge} ${aging ? styles.agingBadgeHot : ''}`}>{daysLabel}</span>

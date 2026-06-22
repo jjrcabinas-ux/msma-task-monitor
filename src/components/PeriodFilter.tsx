@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import styles from './PeriodFilter.module.css';
 import type { Period } from '@/lib/types';
 
@@ -21,12 +21,13 @@ export default function PeriodFilter({
   customEnd: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   function setPeriod(p: Period) {
     const params = new URLSearchParams(searchParams.toString());
     params.set('period', p);
-    router.push(`/?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   function setCustomRange(start: string, end: string) {
@@ -34,7 +35,7 @@ export default function PeriodFilter({
     params.set('period', 'custom');
     params.set('start', start);
     params.set('end', end);
-    router.push(`/?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   }
 
   return (

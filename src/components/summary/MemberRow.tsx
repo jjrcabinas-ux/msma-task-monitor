@@ -4,11 +4,20 @@ import { useState, useTransition, type CSSProperties } from 'react';
 import { updateEmployeeAction } from '@/lib/actions';
 import { displayName } from '@/lib/analytics';
 import { fmtLongDate } from '@/lib/dates';
+import type { ClusterSlug } from '@/lib/clusters';
 import type { EmployeeDTO } from '@/lib/types';
 import styles from './KpiModalCard.module.css';
-import summaryStyles from '@/app/summary.module.css';
+import summaryStyles from '@/app/[cluster]/summary.module.css';
 
-export default function MemberRow({ employee, avatarStyle }: { employee: EmployeeDTO; avatarStyle: CSSProperties }) {
+export default function MemberRow({
+  employee,
+  cluster,
+  avatarStyle,
+}: {
+  employee: EmployeeDTO;
+  cluster: ClusterSlug;
+  avatarStyle: CSSProperties;
+}) {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: employee.name,
@@ -42,7 +51,7 @@ export default function MemberRow({ employee, avatarStyle }: { employee: Employe
 
   function save() {
     startTransition(async () => {
-      const result = await updateEmployeeAction(employee.id, form);
+      const result = await updateEmployeeAction(employee.id, cluster, form);
       if ('error' in result) {
         setError(result.error);
         return;

@@ -7,6 +7,8 @@ export async function getRoster(): Promise<EmployeeDTO[]> {
     id: e.id,
     name: e.name,
     photoPath: e.photoPath,
+    photoPosX: e.photoPosX,
+    photoPosY: e.photoPosY,
     createdAt: e.createdAt.toISOString(),
   }));
 }
@@ -17,7 +19,14 @@ export async function getRosterWithTasks(): Promise<{ employee: EmployeeDTO; tas
     include: { tasks: { orderBy: { createdAt: 'asc' } } },
   });
   return employees.map((e) => ({
-    employee: { id: e.id, name: e.name, photoPath: e.photoPath, createdAt: e.createdAt.toISOString() },
+    employee: {
+      id: e.id,
+      name: e.name,
+      photoPath: e.photoPath,
+      photoPosX: e.photoPosX,
+      photoPosY: e.photoPosY,
+      createdAt: e.createdAt.toISOString(),
+    },
     tasks: e.tasks.map((t) => ({
       id: t.id,
       employeeId: t.employeeId,
@@ -37,7 +46,14 @@ export async function getEmployeeWithTasks(id: string) {
   });
   if (!e) return null;
   return {
-    employee: { id: e.id, name: e.name, photoPath: e.photoPath, createdAt: e.createdAt.toISOString() } as EmployeeDTO,
+    employee: {
+      id: e.id,
+      name: e.name,
+      photoPath: e.photoPath,
+      photoPosX: e.photoPosX,
+      photoPosY: e.photoPosY,
+      createdAt: e.createdAt.toISOString(),
+    } as EmployeeDTO,
     tasks: e.tasks.map((t) => ({
       id: t.id,
       employeeId: t.employeeId,

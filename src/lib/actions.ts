@@ -79,7 +79,15 @@ export async function uploadPhotoAction(employeeId: string, formData: FormData):
   const filename = `${employeeId}-${Date.now()}.${ext}`;
   const blob = await put(filename, file, { access: 'public', addRandomSuffix: false });
 
-  await prisma.employee.update({ where: { id: employeeId }, data: { photoPath: blob.url } });
+  await prisma.employee.update({ where: { id: employeeId }, data: { photoPath: blob.url, photoPosX: 50, photoPosY: 50 } });
+  revalidateAll();
+  return { ok: true };
+}
+
+export async function updatePhotoPositionAction(employeeId: string, posX: number, posY: number): Promise<{ ok: true }> {
+  const x = Math.max(0, Math.min(100, Math.round(posX)));
+  const y = Math.max(0, Math.min(100, Math.round(posY)));
+  await prisma.employee.update({ where: { id: employeeId }, data: { photoPosX: x, photoPosY: y } });
   revalidateAll();
   return { ok: true };
 }

@@ -46,6 +46,8 @@ export default async function EmployeePage({
             employeeId={employee.id}
             initial={employee.name[0]}
             photoPath={employee.photoPath}
+            photoPosX={employee.photoPosX}
+            photoPosY={employee.photoPosY}
             color={employeeColor(colorIndex)}
           />
           <div>

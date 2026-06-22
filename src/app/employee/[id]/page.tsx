@@ -4,7 +4,6 @@ import { getEmployeeWithTasks, getRoster } from '@/lib/data';
 import { todayISO } from '@/lib/dates';
 import { statusCounts, displayName } from '@/lib/analytics';
 import { employeeColor } from '@/lib/colors';
-import { SHOW_ACCOMPLISHMENTS } from '@/lib/config';
 import RemoveMemberControl from '@/components/employee/RemoveMemberControl';
 import AddDeliverableButton from '@/components/employee/AddDeliverableButton';
 import DeliverablesTable from '@/components/employee/DeliverablesTable';
@@ -93,7 +92,6 @@ export default async function EmployeePage({
       <DeliverablesTable
         employeeId={employee.id}
         tasks={tasks}
-        showAccomp={SHOW_ACCOMPLISHMENTS}
         todayIso={todayISO()}
         highlightTaskId={highlight || null}
       />

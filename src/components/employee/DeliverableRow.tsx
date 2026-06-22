@@ -5,20 +5,17 @@ import { deleteTaskAction, updateTaskAction } from '@/lib/actions';
 import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isoToParts } from '@/lib/dates';
 import { STATUS_META } from '@/lib/colors';
 import type { Status, TaskDTO } from '@/lib/types';
+import TaskDetailsCell from './TaskDetailsCell';
 import styles from '@/app/employee/[id]/employee.module.css';
 
 const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
 
 export default function DeliverableRow({
   task,
-  accomplishments,
-  showAccomp,
   todayIso,
   highlighted,
 }: {
   task: TaskDTO;
-  accomplishments: string[];
-  showAccomp: boolean;
   todayIso: string;
   highlighted: boolean;
 }) {
@@ -148,13 +145,7 @@ export default function DeliverableRow({
           placeholder="Task (general)"
           className={styles.taskGeneralInput}
         />
-        <input
-          key={`d-${task.id}`}
-          defaultValue={task.taskDetails}
-          onBlur={(e) => updateTaskAction(task.id, { taskDetails: e.target.value })}
-          placeholder="Details (specific)"
-          className={styles.taskDetailsInput}
-        />
+        <TaskDetailsCell key={`d-${task.id}`} taskId={task.id} initialValue={task.taskDetails} />
       </td>
       <td className={styles.td}>
         <select
@@ -168,20 +159,6 @@ export default function DeliverableRow({
           <option value="Done">Done</option>
         </select>
       </td>
-      {showAccomp && (
-        <td className={styles.td}>
-          {accomplishments.length === 0 ? (
-            <span className={styles.accompEmpty}>—</span>
-          ) : (
-            accomplishments.map((text) => (
-              <div key={text} className={styles.accompItem}>
-                <span>✓</span>
-                <span>{text}</span>
-              </div>
-            ))
-          )}
-        </td>
-      )}
       <td className={styles.tdText}>
         <textarea
           key={`h-${task.id}`}

@@ -1,4 +1,4 @@
-import { addDays, daysBetween, fmtShort } from './dates';
+import { daysBetween, fmtShort } from './dates';
 import { employeeColor } from './colors';
 import type { PeriodRange } from './period';
 import type { EmployeeDTO, Status, TaskDTO } from './types';
@@ -152,14 +152,4 @@ export function teamStackedBar(done: number, ongoing: number, pending: number, t
   return { donePct: pct(done), ongoingPct: pct(ongoing), pendingPct: pct(pending) };
 }
 
-export function accomplishmentsForDate(tasks: TaskDTO[], date: string | null): string[] {
-  if (!date) return [];
-  const prev = addDays(date, -1);
-  const names = tasks
-    .filter((t) => t.date === prev && t.status === 'Done')
-    .map((t) => t.taskGeneral)
-    .filter(Boolean);
-  return Array.from(new Set(names));
-}
-
-export { employeeColor, addDays };
+export { employeeColor };

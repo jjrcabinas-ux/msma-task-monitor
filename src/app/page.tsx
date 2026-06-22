@@ -348,7 +348,7 @@ export default async function SummaryPage({
           <div className={styles.sectionTitleTight} style={{ marginBottom: 0 }}>
             Help Needed — Open Blockers
           </div>
-          <div className={styles.blockersHint}>Help jumps to the task · Resolved marks it Done</div>
+          <div className={styles.blockersHint}>Help jumps to the task</div>
         </div>
         {blockers.length === 0 && <div className={styles.blockersEmpty}>No blockers reported. 🎉</div>}
         {blockers.map(({ task, dateLabel, daysLabel, aging }) => (

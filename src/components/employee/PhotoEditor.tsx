@@ -149,6 +149,11 @@ export default function PhotoEditor({
               src={photoPath}
               alt=""
               style={{ display: 'none' }}
+              ref={(img) => {
+                if (img?.complete && img.naturalWidth) {
+                  naturalSizeRef.current = { w: img.naturalWidth, h: img.naturalHeight };
+                }
+              }}
               onLoad={(e) => {
                 naturalSizeRef.current = { w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight };
               }}

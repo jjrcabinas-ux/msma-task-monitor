@@ -1,0 +1,280 @@
+import Link from 'next/link';
+import { getRosterWithTasks } from '@/lib/data';
+import { periodRange } from '@/lib/period';
+import { todayISO, fmtLongFromIso } from '@/lib/dates';
+import {
+  buildKpis,
+  buildTrend,
+  buildWorkload,
+  buildLeaderboard,
+  buildTodaySnapshot,
+  buildEmployeeCards,
+  buildBlockers,
+  ringGeometry,
+  teamStackedBar,
+  employeeColor,
+} from '@/lib/analytics';
+import type { Period } from '@/lib/types';
+import PeriodFilter from '@/components/PeriodFilter';
+import styles from './summary.module.css';
+
+const STATUS_META = {
+  Pending: { label: 'Pending', color: '#b45309', bg: '#fef3c7' },
+  Ongoing: { label: 'Ongoing', color: '#1d4ed8', bg: '#dbeafe' },
+  Done: { label: 'Done', color: '#15803d', bg: '#dcfce7' },
+} as const;
+
+function avatarStyle(size: number, color: string): React.CSSProperties {
+  return { width: size, height: size, fontSize: size * 0.42, background: color };
+}
+
+export default async function SummaryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string; start?: string; end?: string }>;
+}) {
+  const sp = await searchParams;
+  const period: Period = (['week', 'month', 'year', 'custom'].includes(sp.period || '') ? sp.period : 'week') as Period;
+  const today = todayISO();
+  const range = periodRange(period, sp.start, sp.end);
+
+  const roster = await getRosterWithTasks();
+  const kpi = buildKpis(roster, range, today);
+  const ring = ringGeometry(kpi.completionPct);
+  const trend = buildTrend(kpi.periodTasks);
+  const workload = buildWorkload(roster, range);
+  const leaderboard = buildLeaderboard(roster, range);
+  const todayRows = buildTodaySnapshot(roster, today);
+  const empCards = buildEmployeeCards(roster);
+  const blockers = buildBlockers(roster, today);
+  const teamBar = teamStackedBar(kpi.done, kpi.ongoing, kpi.pending, kpi.total);
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.headerRow}>
+        <div>
+          <h1 className={styles.h1}>Team Summary</h1>
+          <div className={styles.dateLabel}>{fmtLongFromIso(today)}</div>
+          <div className={styles.periodLabel}>Metrics shown {range.label}</div>
+        </div>
+        <PeriodFilter period={period} customStart={sp.start || ''} customEnd={sp.end || ''} />
+      </div>
+
+      <div className={styles.kpiGrid}>
+        <div className={`${styles.card} ${styles.kpiCardRing}`}>
+          <div className={styles.ringWrap}>
+            <svg viewBox="0 0 128 128" className={styles.ringSvg}>
+              <circle cx="64" cy="64" r="54" fill="none" stroke="#eef1f5" strokeWidth="13" />
+              <circle
+                cx="64"
+                cy="64"
+                r="54"
+                fill="none"
+                stroke="#2563eb"
+                strokeWidth="13"
+                strokeLinecap="round"
+                strokeDasharray={ring.dasharray}
+                strokeDashoffset={ring.dashoffset}
+              />
+            </svg>
+            <div className={styles.ringLabel}>{kpi.completionPct}%</div>
+          </div>
+          <div>
+            <div className={styles.kpiLabel}>Completion</div>
+            <div className={styles.subRow}>
+              {kpi.done} of {kpi.total} done
+            </div>
+          </div>
+        </div>
+        <div className={`${styles.card} ${styles.kpiCard}`}>
+          <div className={styles.kpiLabel}>Total Tasks</div>
+          <div className={styles.kpiNumber}>{kpi.total}</div>
+        </div>
+        <div className={`${styles.card} ${styles.kpiCard}`}>
+          <div className={styles.kpiLabel}>Completed</div>
+          <div className={styles.kpiNumber} style={{ color: '#16a34a' }}>
+            {kpi.done}
+          </div>
+        </div>
+        <div className={`${styles.card} ${styles.kpiCard}`}>
+          <div className={styles.kpiLabel}>Open Blockers</div>
+          <div className={styles.kpiNumber} style={{ color: '#dc2626' }}>
+            {kpi.blockerCount}
+          </div>
+        </div>
+        <div className={`${styles.card} ${styles.kpiCard}`}>
+          <div className={styles.kpiLabel}>Members</div>
+          <div className={styles.kpiNumber}>{kpi.members}</div>
+        </div>
+      </div>
+
+      <div className={styles.twoCol}>
+        <div className={`${styles.card} ${styles.cardPad}`}>
+          <div className={styles.sectionTitle}>Task Status — Whole Team</div>
+          <div className={styles.stackBar}>
+            <div style={{ width: `${teamBar.donePct}%`, background: '#16a34a' }} />
+            <div style={{ width: `${teamBar.ongoingPct}%`, background: '#3b82f6' }} />
+            <div style={{ width: `${teamBar.pendingPct}%`, background: '#f59e0b' }} />
+          </div>
+          <div className={styles.legendRow}>
+            <div className={styles.legendItem}>
+              <span className={styles.legendDot} style={{ background: '#16a34a' }} />
+              <span className={styles.legendLabel}>Done</span>
+              <span className={styles.legendValue}>{kpi.done}</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span className={styles.legendDot} style={{ background: '#3b82f6' }} />
+              <span className={styles.legendLabel}>Ongoing</span>
+              <span className={styles.legendValue}>{kpi.ongoing}</span>
+            </div>
+            <div className={styles.legendItem}>
+              <span className={styles.legendDot} style={{ background: '#f59e0b' }} />
+              <span className={styles.legendLabel}>Pending</span>
+              <span className={styles.legendValue}>{kpi.pending}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={`${styles.card} ${styles.cardPad}`}>
+          <div className={styles.sectionTitleTight}>Tasks Completed Over Time</div>
+          {trend.hasData && (
+            <svg viewBox="0 0 320 112" style={{ width: '100%', height: 118, display: 'block' }}>
+              <line x1="20" y1="92" x2="300" y2="92" stroke="#e6e9ef" strokeWidth="1" />
+              <path d={trend.areaPath} fill="rgba(37,99,235,.10)" />
+              <path d={trend.linePath} fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              {trend.points.map((p, i) => (
+                <g key={i}>
+                  <circle cx={p.cx} cy={p.cy} r="3.5" fill="#fff" stroke="#2563eb" strokeWidth="2" />
+                  <text x={p.cx} y="106" textAnchor="middle" fontSize="9" fill="#94a3b8">
+                    {p.label}
+                  </text>
+                  <text x={p.cx} y={p.valueY} textAnchor="middle" fontSize="10" fontWeight="700" fill="#0f172a">
+                    {p.value}
+                  </text>
+                </g>
+              ))}
+            </svg>
+          )}
+        </div>
+      </div>
+
+      <div className={styles.twoColUneven}>
+        <div className={`${styles.card} ${styles.cardPad}`}>
+          <div className={styles.sectionTitle}>Workload — Tasks per Person</div>
+          {workload.map((w) => (
+            <Link key={w.id} href={`/employee/${w.id}`} className={styles.workloadRow}>
+              <span className={styles.workloadName}>{w.name}</span>
+              <div className={styles.barTrack}>
+                <div className={styles.barFill} style={{ width: `${w.pct}%` }} />
+              </div>
+              <span className={styles.workloadCount}>{w.count}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div className={`${styles.card} ${styles.cardPad}`}>
+          <div className={styles.sectionTitleTight}>Leaderboard</div>
+          <div className={styles.lbSubtitle}>Tasks completed {range.label}</div>
+          {leaderboard.map((l) => (
+            <Link key={l.id} href={`/employee/${l.id}`} className={styles.lbRow}>
+              <span className={`${styles.lbRank} ${l.isTop ? styles.lbRankTop : ''}`}>{l.rank}</span>
+              <span className={styles.lbName}>{l.name}</span>
+              <div className={styles.lbBarTrack}>
+                <div className={`${styles.lbBarFill} ${l.isTop ? styles.lbBarFillTop : ''}`} style={{ width: `${l.pct}%` }} />
+              </div>
+              <span className={styles.lbCount}>{l.count}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className={`${styles.card} ${styles.cardPad}`} style={{ marginBottom: 18 }}>
+        <div className={styles.sectionTitleTight}>Today&rsquo;s Snapshot</div>
+        <div className={styles.snapshotSub}>{fmtLongFromIso(today)} — click a task to open it</div>
+        {todayRows.length === 0 && <div className={styles.emptyNote}>No tasks dated today.</div>}
+        {todayRows.map(({ task }) => {
+          const meta = STATUS_META[task.status];
+          return (
+            <Link key={task.id} href={`/employee/${task.employeeId}?highlight=${task.id}`} className={styles.snapshotRow}>
+              <span className={styles.avatar} style={avatarStyle(28, employeeColor(task.empIndex))}>
+                {task.empName[0]}
+              </span>
+              <div className={styles.snapshotTask}>
+                <span className={styles.taskName}>{task.taskGeneral || '(untitled)'}</span>
+                <span className={styles.taskDetails}> — {task.taskDetails}</span>
+              </div>
+              <span className={styles.statusBadge} style={{ background: meta.bg, color: meta.color }}>
+                {meta.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className={styles.membersHeading}>
+        Team Members <span className={styles.membersHeadingSub}>— click a card to open the sheet</span>
+      </div>
+      <div className={styles.cardsGrid}>
+        {empCards.map((c) => {
+          const color = employeeColor(c.colorIndex);
+          const segPct = (n: number) => (c.total ? (n / c.total) * 100 : 0);
+          return (
+            <Link key={c.id} href={`/employee/${c.id}`} className={`${styles.card} ${styles.empCard}`}>
+              <div className={styles.empCardTop}>
+                <div className={styles.avatar} style={avatarStyle(38, color)}>
+                  {c.initial}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div className={styles.empCardName}>{c.name}</div>
+                  <div className={styles.empCardTotal}>{c.total} tasks</div>
+                </div>
+                <div className={styles.empCardPct}>{c.completionPct}%</div>
+              </div>
+              <div className={styles.empCardBar}>
+                <div style={{ width: `${segPct(c.done)}%`, background: '#16a34a' }} />
+                <div style={{ width: `${segPct(c.ongoing)}%`, background: '#3b82f6' }} />
+                <div style={{ width: `${segPct(c.pending)}%`, background: '#f59e0b' }} />
+              </div>
+              <div className={styles.empCardStats}>
+                <span>
+                  <b style={{ color: '#16a34a' }}>{c.done}</b> done
+                </span>
+                <span>
+                  <b style={{ color: '#3b82f6' }}>{c.ongoing}</b> ongoing
+                </span>
+                <span>
+                  <b style={{ color: '#f59e0b' }}>{c.pending}</b> pending
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className={styles.card} style={{ overflow: 'hidden' }}>
+        <div className={styles.blockersHeader}>
+          <div className={styles.sectionTitleTight} style={{ marginBottom: 0 }}>
+            Help Needed — Open Blockers
+          </div>
+          <div className={styles.blockersHint}>click to jump to the task</div>
+        </div>
+        {blockers.length === 0 && <div className={styles.blockersEmpty}>No blockers reported. 🎉</div>}
+        {blockers.map(({ task, dateLabel, daysLabel, aging }) => (
+          <Link key={task.id} href={`/employee/${task.employeeId}?highlight=${task.id}`} className={styles.blockerRow}>
+            <span className={styles.blockerDate}>{dateLabel}</span>
+            <span className={styles.avatar} style={avatarStyle(26, employeeColor(task.empIndex))}>
+              {task.empName[0]}
+            </span>
+            <div className={styles.blockerBody}>
+              <div className={styles.blockerTitle}>
+                {task.empName} <span className={styles.blockerTitleSub}>· {task.taskGeneral}</span>
+              </div>
+              <div className={styles.blockerText}>{task.helpNeeded}</div>
+            </div>
+            <span className={`${styles.agingBadge} ${aging ? styles.agingBadgeHot : ''}`}>{daysLabel}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,463 @@
+.page {
+  padding: 30px 34px 56px;
+  max-width: 1180px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.dateLabel {
+  font-size: 13.5px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.periodLabel {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e6e9ef;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.kpiCardRing {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.kpiCard {
+  padding: 16px 18px;
+}
+
+.kpiLabel {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpiNumber {
+  font-size: 30px;
+  font-weight: 700;
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ringWrap {
+  position: relative;
+  width: 62px;
+  height: 62px;
+  flex: none;
+}
+
+.ringSvg {
+  width: 62px;
+  height: 62px;
+  transform: rotate(-90deg);
+}
+
+.ringLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subRow {
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.cardPad {
+  padding: 18px 20px;
+}
+
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.sectionTitleTight {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.stackBar {
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.legendRow {
+  display: flex;
+  gap: 22px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.legendLabel {
+  font-size: 12.5px;
+  color: #475569;
+}
+
+.legendValue {
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.twoColUneven {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.workloadRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+.workloadName {
+  width: 62px;
+  flex: none;
+  font-size: 12.5px;
+  color: #475569;
+}
+
+.barTrack {
+  flex: 1;
+  height: 9px;
+  background: #f1f5f9;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 5px;
+}
+
+.workloadCount {
+  width: 22px;
+  flex: none;
+  text-align: right;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.lbSubtitle {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.lbRow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.lbRank {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.lbRankTop {
+  background: #2563eb;
+  color: #fff;
+}
+
+.lbName {
+  flex: 1;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.lbBarTrack {
+  width: 80px;
+  height: 7px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.lbBarFill {
+  height: 100%;
+  background: #93c5fd;
+  border-radius: 4px;
+}
+
+.lbBarFillTop {
+  background: #2563eb;
+}
+
+.lbCount {
+  width: 18px;
+  text-align: right;
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.snapshotSub {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+
+.emptyNote {
+  font-size: 13px;
+  color: #94a3b8;
+  padding: 8px 0;
+}
+
+.snapshotRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #f1f5f9;
+  margin-bottom: 6px;
+}
+
+.avatar {
+  border-radius: 8px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex: none;
+}
+
+.snapshotTask {
+  flex: 1;
+  min-width: 0;
+}
+
+.taskName {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.taskDetails {
+  font-size: 12.5px;
+  color: #94a3b8;
+}
+
+.statusBadge {
+  flex: none;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+
+.membersHeading {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 6px 2px 12px;
+}
+
+.membersHeadingSub {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.empCard {
+  padding: 16px 18px;
+  cursor: pointer;
+}
+
+.empCardTop {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+.empCardName {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.empCardTotal {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.empCardPct {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2563eb;
+  font-variant-numeric: tabular-nums;
+}
+
+.empCardBar {
+  display: flex;
+  height: 9px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.empCardStats {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.blockersHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.blockersHint {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.blockersEmpty {
+  font-size: 13px;
+  color: #94a3b8;
+  padding: 18px 20px;
+}
+
+.blockerRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid #f5f7fa;
+  cursor: pointer;
+}
+
+.blockerDate {
+  width: 58px;
+  flex: none;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+  padding-top: 1px;
+}
+
+.blockerBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.blockerTitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.blockerTitleSub {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.blockerText {
+  font-size: 12.5px;
+  color: #475569;
+}
+
+.agingBadge {
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.agingBadgeHot {
+  background: #fee2e2;
+  color: #dc2626;
+}

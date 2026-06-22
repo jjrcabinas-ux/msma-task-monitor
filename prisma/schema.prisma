@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Employee {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  photoPath String?
+  createdAt DateTime @default(now())
+  tasks     Task[]
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date        String?
+  taskGeneral String   @default("")
+  taskDetails String   @default("")
+  status      String   @default("Pending")
+  helpNeeded  String   @default("")
+  createdAt   DateTime @default(now())
+
+  @@index([employeeId])
+}

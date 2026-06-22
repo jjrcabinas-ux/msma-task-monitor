@@ -6,6 +6,10 @@ import type { EmployeeDTO, Status, TaskDTO } from './types';
 export type RosterEntry = { employee: EmployeeDTO; tasks: TaskDTO[] };
 export type FlatTask = TaskDTO & { empName: string; empIndex: number };
 
+export function displayName(e: { name: string; nickname: string }): string {
+  return e.nickname.trim() || e.name;
+}
+
 function inRange(date: string | null, range: PeriodRange): boolean {
   return !!date && date >= range.start && date <= range.end;
 }
@@ -13,7 +17,7 @@ function inRange(date: string | null, range: PeriodRange): boolean {
 export function flattenTasks(roster: RosterEntry[]): FlatTask[] {
   const out: FlatTask[] = [];
   roster.forEach((r, idx) => {
-    r.tasks.forEach((t) => out.push({ ...t, empName: r.employee.name, empIndex: idx }));
+    r.tasks.forEach((t) => out.push({ ...t, empName: displayName(r.employee), empIndex: idx }));
   });
   return out;
 }
@@ -85,14 +89,14 @@ export function buildTrend(periodTasks: FlatTask[]) {
 
 export function buildWorkload(roster: RosterEntry[], range: PeriodRange) {
   const loadCount = (tasks: TaskDTO[]) => tasks.filter((t) => inRange(t.date, range)).length;
-  const counts = roster.map((r) => ({ name: r.employee.name, id: r.employee.id, count: loadCount(r.tasks) }));
+  const counts = roster.map((r) => ({ name: displayName(r.employee), id: r.employee.id, count: loadCount(r.tasks) }));
   const maxLoad = Math.max(1, ...counts.map((c) => c.count));
   return counts.map((c) => ({ ...c, pct: (c.count / maxLoad) * 100 }));
 }
 
 export function buildLeaderboard(roster: RosterEntry[], range: PeriodRange) {
   const raw = roster.map((r) => ({
-    name: r.employee.name,
+    name: displayName(r.employee),
     id: r.employee.id,
     count: r.tasks.filter((t) => t.status === 'Done' && inRange(t.date, range)).length,
   }));
@@ -113,10 +117,11 @@ export function buildEmployeeCards(roster: RosterEntry[]) {
   return roster.map((r, idx) => {
     const t = r.tasks.length;
     const counts = statusCounts(r.tasks);
+    const name = displayName(r.employee);
     return {
       id: r.employee.id,
-      name: r.employee.name,
-      initial: r.employee.name[0],
+      name,
+      initial: name[0],
       colorIndex: idx,
       total: t,
       done: counts.Done,

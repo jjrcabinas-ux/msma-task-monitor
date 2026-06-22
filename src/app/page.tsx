@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getRosterWithTasks } from '@/lib/data';
 import { periodRange } from '@/lib/period';
-import { todayISO, fmtLongFromIso, fmtShort, fmtLongDate } from '@/lib/dates';
+import { todayISO, fmtLongFromIso, fmtShort } from '@/lib/dates';
 import {
   buildKpis,
   buildTrend,
@@ -18,6 +18,7 @@ import type { Period } from '@/lib/types';
 import PeriodFilter from '@/components/PeriodFilter';
 import KpiModalCard from '@/components/summary/KpiModalCard';
 import BlockerRow from '@/components/summary/BlockerRow';
+import MemberRow from '@/components/summary/MemberRow';
 import modalStyles from '@/components/summary/KpiModalCard.module.css';
 import styles from './summary.module.css';
 
@@ -194,31 +195,7 @@ export default async function SummaryPage({
           }
         >
           {roster.map(({ employee }, idx) => (
-            <div key={employee.id} className={modalStyles.memberRow}>
-              <div className={modalStyles.memberRowTop}>
-                <span className={styles.avatar} style={avatarStyle(34, employeeColor(idx))}>
-                  {employee.name[0]}
-                </span>
-                <div>
-                  <div className={modalStyles.memberName}>{employee.name}</div>
-                  <div className={modalStyles.memberPosition}>{employee.position || '—'}</div>
-                </div>
-              </div>
-              <div className={modalStyles.memberDetails}>
-                <div>
-                  <div className={modalStyles.memberDetailLabel}>Email</div>
-                  <div>{employee.email || '—'}</div>
-                </div>
-                <div>
-                  <div className={modalStyles.memberDetailLabel}>Birth Date</div>
-                  <div>{employee.birthDate ? fmtLongDate(employee.birthDate) : '—'}</div>
-                </div>
-                <div>
-                  <div className={modalStyles.memberDetailLabel}>Contact Number</div>
-                  <div>{employee.contactNumber || '—'}</div>
-                </div>
-              </div>
-            </div>
+            <MemberRow key={employee.id} employee={employee} avatarStyle={avatarStyle(34, employeeColor(idx))} />
           ))}
         </KpiModalCard>
       </div>

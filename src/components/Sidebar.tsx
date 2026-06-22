@@ -25,7 +25,7 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ name: '', position: '', email: '', birthDate: '', contactNumber: '' });
+  const [form, setForm] = useState({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
   const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
 
@@ -37,7 +37,7 @@ export default function Sidebar({
 
   function cancelAdd() {
     setAdding(false);
-    setForm({ name: '', position: '', email: '', birthDate: '', contactNumber: '' });
+    setForm({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
     setError('');
   }
 
@@ -48,7 +48,7 @@ export default function Sidebar({
         setError(result.error);
         return;
       }
-      setForm({ name: '', position: '', email: '', birthDate: '', contactNumber: '' });
+      setForm({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
       setError('');
       setAdding(false);
       router.push(`/employee/${result.id}`);
@@ -99,6 +99,13 @@ export default function Sidebar({
               value={form.name}
               onChange={(e) => updateField('name', e.target.value)}
               placeholder="Full name"
+              className={styles.addInput}
+              disabled={pending}
+            />
+            <input
+              value={form.nickname}
+              onChange={(e) => updateField('nickname', e.target.value)}
+              placeholder="Nickname (display name)"
               className={styles.addInput}
               disabled={pending}
             />

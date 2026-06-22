@@ -113,6 +113,81 @@
   margin-bottom: 8px;
 }
 
+.memberRowTopBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.editBtn {
+  flex: none;
+  background: #f1f5f9;
+  color: #334155;
+  border: none;
+  border-radius: 7px;
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.editFieldLabel {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: -2px;
+}
+
+.editInput {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
+  border-radius: 7px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.editError {
+  font-size: 11px;
+  color: #dc2626;
+}
+
+.editActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.saveBtn {
+  flex: 1;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelEditBtn {
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 11px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
 .memberName {
   font-size: 13.5px;
   font-weight: 700;

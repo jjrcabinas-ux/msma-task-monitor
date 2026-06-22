@@ -4,6 +4,7 @@ import type { EmployeeDTO, Status, TaskDTO } from './types';
 function toEmployeeDTO(e: {
   id: string;
   name: string;
+  nickname: string;
   position: string;
   email: string;
   birthDate: string | null;
@@ -13,6 +14,7 @@ function toEmployeeDTO(e: {
   return {
     id: e.id,
     name: e.name,
+    nickname: e.nickname,
     position: e.position,
     email: e.email,
     birthDate: e.birthDate,

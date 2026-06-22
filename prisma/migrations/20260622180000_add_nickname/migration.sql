@@ -1,0 +1,1 @@
+ALTER TABLE "Employee" ADD COLUMN "nickname" TEXT NOT NULL DEFAULT '';

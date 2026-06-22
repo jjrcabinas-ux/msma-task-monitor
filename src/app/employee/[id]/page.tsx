@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getEmployeeWithTasks, getRoster } from '@/lib/data';
 import { todayISO } from '@/lib/dates';
-import { statusCounts } from '@/lib/analytics';
+import { statusCounts, displayName } from '@/lib/analytics';
 import { employeeColor } from '@/lib/colors';
 import { SHOW_ACCOMPLISHMENTS } from '@/lib/config';
 import RemoveMemberControl from '@/components/employee/RemoveMemberControl';
@@ -32,6 +32,7 @@ export default async function EmployeePage({
   const total = tasks.length;
   const completionPct = total ? Math.round((counts.Done / total) * 100) : 0;
   const seg = (n: number) => (total ? (n / total) * 100 : 0);
+  const name = displayName(employee);
 
   return (
     <div className={styles.page}>
@@ -42,17 +43,17 @@ export default async function EmployeePage({
       <div className={styles.headerRow}>
         <div className={styles.identity}>
           <div className={styles.avatarBig} style={{ background: employeeColor(colorIndex) }}>
-            {employee.name[0]}
+            {name[0]}
           </div>
           <div>
-            <h1 className={styles.h1}>{employee.name}</h1>
+            <h1 className={styles.h1}>{name}</h1>
             <div className={styles.subRow}>
               {total} tasks · {completionPct}% complete
             </div>
           </div>
         </div>
         <div className={styles.actions}>
-          {canRemove && <RemoveMemberControl employeeId={employee.id} name={employee.name} />}
+          {canRemove && <RemoveMemberControl employeeId={employee.id} name={name} />}
           <AddDeliverableButton employeeId={employee.id} className={styles.addBtn}>
             + Add Deliverable
           </AddDeliverableButton>

@@ -5,6 +5,7 @@ import { getRoster } from '@/lib/data';
 import { todayISO, fmtShort, isoToParts } from '@/lib/dates';
 import { TEAM_NAME } from '@/lib/config';
 import { prisma } from '@/lib/db';
+import { displayName } from '@/lib/analytics';
 
 export const metadata: Metadata = {
   title: `${TEAM_NAME} — Task Monitoring`,
@@ -21,7 +22,7 @@ export default async function RootLayout({
     roster.map(async (e) => {
       const total = await prisma.task.count({ where: { employeeId: e.id } });
       const done = await prisma.task.count({ where: { employeeId: e.id, status: 'Done' } });
-      return { id: e.id, name: e.name, completionPct: total ? Math.round((done / total) * 100) : 0 };
+      return { id: e.id, name: displayName(e), completionPct: total ? Math.round((done / total) * 100) : 0 };
     })
   );
 

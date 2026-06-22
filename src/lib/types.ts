@@ -13,6 +13,7 @@ export type TaskDTO = {
 export type EmployeeDTO = {
   id: string;
   name: string;
+  nickname: string;
   position: string;
   email: string;
   birthDate: string | null;

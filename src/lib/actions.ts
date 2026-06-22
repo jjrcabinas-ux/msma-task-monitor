@@ -10,18 +10,21 @@ function revalidateAll() {
 
 export async function addEmployeeAction(input: {
   name: string;
+  nickname: string;
   position: string;
   email: string;
   birthDate: string;
   contactNumber: string;
 }): Promise<{ id: string } | { error: string }> {
   const name = input.name.trim();
+  const nickname = input.nickname.trim();
   const position = input.position.trim();
   const email = input.email.trim();
   const birthDate = input.birthDate.trim();
   const contactNumber = input.contactNumber.trim();
 
   if (!name) return { error: 'Name is required.' };
+  if (!nickname) return { error: 'Nickname is required.' };
   if (!position) return { error: 'Position is required.' };
   if (!email) return { error: 'Email address is required.' };
   if (!birthDate) return { error: 'Birth date is required.' };
@@ -31,9 +34,44 @@ export async function addEmployeeAction(input: {
   if (existing) {
     return { id: existing.id };
   }
-  const created = await prisma.employee.create({ data: { name, position, email, birthDate, contactNumber } });
+  const created = await prisma.employee.create({ data: { name, nickname, position, email, birthDate, contactNumber } });
   revalidateAll();
   return { id: created.id };
+}
+
+export async function updateEmployeeAction(
+  id: string,
+  input: {
+    name: string;
+    nickname: string;
+    position: string;
+    email: string;
+    birthDate: string;
+    contactNumber: string;
+  }
+): Promise<{ ok: true } | { error: string }> {
+  const name = input.name.trim();
+  const nickname = input.nickname.trim();
+  const position = input.position.trim();
+  const email = input.email.trim();
+  const birthDate = input.birthDate.trim();
+  const contactNumber = input.contactNumber.trim();
+
+  if (!name) return { error: 'Name is required.' };
+  if (!nickname) return { error: 'Nickname is required.' };
+  if (!position) return { error: 'Position is required.' };
+  if (!email) return { error: 'Email address is required.' };
+  if (!birthDate) return { error: 'Birth date is required.' };
+  if (!contactNumber) return { error: 'Contact number is required.' };
+
+  const conflict = await prisma.employee.findUnique({ where: { name } });
+  if (conflict && conflict.id !== id) {
+    return { error: 'Another team member already has that name.' };
+  }
+
+  await prisma.employee.update({ where: { id }, data: { name, nickname, position, email, birthDate, contactNumber } });
+  revalidateAll();
+  return { ok: true };
 }
 
 export async function removeEmployeeAction(id: string): Promise<{ ok: true } | { error: string }> {

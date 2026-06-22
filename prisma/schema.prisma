@@ -13,6 +13,7 @@ datasource db {
 model Employee {
   id            String   @id @default(cuid())
   name          String   @unique
+  nickname      String   @default("")
   position      String   @default("")
   email         String   @default("")
   birthDate     String?

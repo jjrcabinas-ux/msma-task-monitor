@@ -195,6 +195,11 @@
   padding: 16px 12px 8px;
 }
 
+.memberListScroll {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
 .navAvatar {
   width: 24px;
   height: 24px;

@@ -117,23 +117,25 @@ export default function Sidebar({
 
           <div className={styles.sectionLabel}>TEAM MEMBERS</div>
 
-          {employees.map((emp, idx) => {
-            const active = pathname === `/${cluster}/employee/${emp.id}`;
-            return (
-              <Link
-                key={emp.id}
-                href={`/${cluster}/employee/${emp.id}`}
-                className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                onClick={() => setMobileOpen(false)}
-              >
-                <div className={styles.navAvatar} style={{ background: employeeColor(idx) }}>
-                  {emp.name[0]}
-                </div>
-                <span className={styles.navName}>{emp.name}</span>
-                <span className={styles.navPct}>{emp.completionPct}%</span>
-              </Link>
-            );
-          })}
+          <div className={styles.memberListScroll}>
+            {employees.map((emp, idx) => {
+              const active = pathname === `/${cluster}/employee/${emp.id}`;
+              return (
+                <Link
+                  key={emp.id}
+                  href={`/${cluster}/employee/${emp.id}`}
+                  className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <div className={styles.navAvatar} style={{ background: employeeColor(idx) }}>
+                    {emp.name[0]}
+                  </div>
+                  <span className={styles.navName}>{emp.name}</span>
+                  <span className={styles.navPct}>{emp.completionPct}%</span>
+                </Link>
+              );
+            })}
+          </div>
 
           {adding ? (
             <div className={styles.addBox}>

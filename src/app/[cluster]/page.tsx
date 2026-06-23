@@ -256,9 +256,11 @@ export default async function SummaryPage({
             </div>
           }
         >
-          {roster.map(({ employee }, idx) => (
-            <MemberRow key={employee.id} employee={employee} cluster={cluster} avatarStyle={avatarStyle(34, employeeColor(idx))} />
-          ))}
+          <div className={modalStyles.memberListScroll}>
+            {roster.map(({ employee }, idx) => (
+              <MemberRow key={employee.id} employee={employee} cluster={cluster} avatarStyle={avatarStyle(34, employeeColor(idx))} />
+            ))}
+          </div>
         </KpiModalCard>
       </div>
 

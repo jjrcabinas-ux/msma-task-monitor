@@ -106,6 +106,11 @@
   border-bottom: 1px solid #f5f7fa;
 }
 
+.memberListScroll {
+  max-height: 635px;
+  overflow-y: auto;
+}
+
 .memberRowTop {
   display: flex;
   align-items: center;

@@ -49,6 +49,16 @@ export async function getRosterWithTasks(cluster: ClusterSlug): Promise<{ employ
   }));
 }
 
+export async function getAllEmployeesForReminders(): Promise<
+  { id: string; name: string; email: string; cluster: ClusterSlug }[]
+> {
+  const employees = await prisma.employee.findMany({
+    where: { email: { not: '' } },
+    select: { id: true, name: true, email: true, cluster: true },
+  });
+  return employees as { id: string; name: string; email: string; cluster: ClusterSlug }[];
+}
+
 export async function getEmployeeWithTasks(id: string, cluster: ClusterSlug) {
   const e = await prisma.employee.findFirst({
     where: { id, cluster },

@@ -107,7 +107,7 @@
 }
 
 .memberListScroll {
-  max-height: 635px;
+  max-height: min(635px, calc(80vh - 80px));
   overflow-y: auto;
 }
 

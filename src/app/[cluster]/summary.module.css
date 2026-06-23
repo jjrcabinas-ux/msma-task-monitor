@@ -285,16 +285,19 @@
 
 .taxCalCode {
   flex: none;
-  width: 96px;
+  width: 104px;
   font-size: 10.5px;
   font-weight: 700;
   color: #64748b;
   background: #f1f5f9;
-  padding: 5px 6px;
+  padding: 6px 7px;
   border-radius: 6px;
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.35;
   align-self: flex-start;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .taxCalLabel {

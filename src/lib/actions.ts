@@ -108,9 +108,13 @@ export async function removeEmployeeAction(id: string, cluster: ClusterSlug): Pr
   return { ok: true };
 }
 
-export async function addTaskAction(employeeId: string, date: string | null = null): Promise<{ id: string }> {
+export async function addTaskAction(
+  employeeId: string,
+  date: string | null = null,
+  taskGeneral = ''
+): Promise<{ id: string }> {
   const task = await prisma.task.create({
-    data: { employeeId, date, taskGeneral: '', taskDetails: '', status: 'Pending', helpNeeded: '' },
+    data: { employeeId, date, taskGeneral, taskDetails: '', status: 'Pending', helpNeeded: '' },
   });
   revalidateAll();
   return { id: task.id };

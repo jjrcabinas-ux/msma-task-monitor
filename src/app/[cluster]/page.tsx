@@ -4,6 +4,7 @@ import { getRosterWithTasks } from '@/lib/data';
 import { isClusterSlug } from '@/lib/clusters';
 import { periodRange } from '@/lib/period';
 import { todayISO, fmtLongFromIso, fmtShort } from '@/lib/dates';
+import { upcomingBirFilings } from '@/lib/birCalendar';
 import {
   buildKpis,
   buildTrend,
@@ -21,6 +22,7 @@ import PeriodFilter from '@/components/PeriodFilter';
 import KpiModalCard from '@/components/summary/KpiModalCard';
 import BlockerRow from '@/components/summary/BlockerRow';
 import MemberRow from '@/components/summary/MemberRow';
+import TaxCalendarCard from '@/components/summary/TaxCalendarCard';
 import modalStyles from '@/components/summary/KpiModalCard.module.css';
 import styles from './summary.module.css';
 
@@ -60,6 +62,8 @@ export default async function SummaryPage({
   const empCards = buildEmployeeCards(roster);
   const blockers = buildBlockers(roster, today);
   const teamBar = teamStackedBar(kpi.done, kpi.ongoing, kpi.pending, kpi.total);
+  const birFilings = upcomingBirFilings(today);
+  const taxRoster = roster.map(({ employee }) => ({ id: employee.id, name: employee.name }));
 
   return (
     <div className={styles.page}>
@@ -211,6 +215,33 @@ export default async function SummaryPage({
         </KpiModalCard>
       </div>
 
+      <div className={styles.twoColUneven}>
+        <div className={`${styles.card} ${styles.cardPad}`}>
+          <div className={styles.sectionTitleTight}>Today&rsquo;s Snapshot</div>
+          <div className={styles.snapshotSub}>{fmtLongFromIso(today)} — click a task to open it</div>
+          {todayRows.length === 0 && <div className={styles.emptyNote}>No tasks dated today.</div>}
+          {todayRows.map(({ task }) => {
+            const meta = STATUS_META[task.status];
+            return (
+              <Link key={task.id} href={`/${cluster}/employee/${task.employeeId}?highlight=${task.id}`} className={styles.snapshotRow}>
+                <span className={styles.avatar} style={avatarStyle(28, employeeColor(task.empIndex))}>
+                  {task.empName[0]}
+                </span>
+                <div className={styles.snapshotTask}>
+                  <span className={styles.taskName}>{task.taskGeneral || '(untitled)'}</span>
+                  <span className={styles.taskDetails}> — {task.taskDetails}</span>
+                </div>
+                <span className={styles.statusBadge} style={{ background: meta.bg, color: meta.color }}>
+                  {meta.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        <TaxCalendarCard cluster={cluster} filings={birFilings} roster={taxRoster} />
+      </div>
+
       <div className={styles.twoCol}>
         <div className={`${styles.card} ${styles.cardPad}`}>
           <div className={styles.sectionTitle}>Task Status — Whole Team</div>
@@ -289,29 +320,6 @@ export default async function SummaryPage({
             </Link>
           ))}
         </div>
-      </div>
-
-      <div className={`${styles.card} ${styles.cardPad}`} style={{ marginBottom: 18 }}>
-        <div className={styles.sectionTitleTight}>Today&rsquo;s Snapshot</div>
-        <div className={styles.snapshotSub}>{fmtLongFromIso(today)} — click a task to open it</div>
-        {todayRows.length === 0 && <div className={styles.emptyNote}>No tasks dated today.</div>}
-        {todayRows.map(({ task }) => {
-          const meta = STATUS_META[task.status];
-          return (
-            <Link key={task.id} href={`/${cluster}/employee/${task.employeeId}?highlight=${task.id}`} className={styles.snapshotRow}>
-              <span className={styles.avatar} style={avatarStyle(28, employeeColor(task.empIndex))}>
-                {task.empName[0]}
-              </span>
-              <div className={styles.snapshotTask}>
-                <span className={styles.taskName}>{task.taskGeneral || '(untitled)'}</span>
-                <span className={styles.taskDetails}> — {task.taskDetails}</span>
-              </div>
-              <span className={styles.statusBadge} style={{ background: meta.bg, color: meta.color }}>
-                {meta.label}
-              </span>
-            </Link>
-          );
-        })}
       </div>
 
       <div className={styles.membersHeading}>

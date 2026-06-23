@@ -80,7 +80,7 @@ export default function Sidebar({
         <button className={styles.hamburger} onClick={() => setMobileOpen(true)} aria-label="Open menu">
           ☰
         </button>
-        <Image src="/logo.png" alt="MSMA" width={903} height={495} className={styles.mobileBarLogo} />
+        <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={styles.mobileBarLogo} />
         <span className={styles.mobileBarTitle}>{clusterLabel}</span>
       </div>
 
@@ -92,7 +92,7 @@ export default function Sidebar({
         </button>
         <div className={styles.brand}>
           <div className={styles.brandRow}>
-            <Image src="/logo.png" alt="MSMA" width={903} height={495} className={styles.logo} />
+            <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={styles.logo} />
             <div className={styles.brandText}>
               <div className={styles.teamName}>{clusterLabel}</div>
               <div className={styles.subtitle}>Task Monitoring</div>

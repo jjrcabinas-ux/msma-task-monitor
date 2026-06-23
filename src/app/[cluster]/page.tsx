@@ -21,7 +21,7 @@ import PeriodFilter from '@/components/PeriodFilter';
 import KpiModalCard from '@/components/summary/KpiModalCard';
 import BlockerRow from '@/components/summary/BlockerRow';
 import MemberRow from '@/components/summary/MemberRow';
-import TaxCalendarCard from '@/components/summary/TaxCalendarCard';
+import TodayRow from '@/components/summary/TodayRow';
 import modalStyles from '@/components/summary/KpiModalCard.module.css';
 import styles from './summary.module.css';
 
@@ -57,7 +57,21 @@ export default async function SummaryPage({
   const trend = buildTrend(kpi.periodTasks);
   const workload = buildWorkload(roster, range);
   const leaderboard = buildLeaderboard(roster, range);
-  const todayRows = buildTodaySnapshot(roster, today);
+  const SNAPSHOT_STATUS_ORDER = { Done: 0, Ongoing: 1, Pending: 2 } as const;
+  const todayRows = buildTodaySnapshot(roster, today).sort(
+    (a, b) => SNAPSHOT_STATUS_ORDER[a.task.status] - SNAPSHOT_STATUS_ORDER[b.task.status]
+  );
+  const snapshotRows = todayRows.map(({ task }) => ({
+    id: task.id,
+    href: `/${cluster}/employee/${task.employeeId}?highlight=${task.id}`,
+    avatarColor: employeeColor(task.empIndex),
+    avatarLabel: task.empName[0],
+    name: task.taskGeneral || '(untitled)',
+    details: task.taskDetails,
+    statusLabel: STATUS_META[task.status].label,
+    statusColor: STATUS_META[task.status].color,
+    statusBg: STATUS_META[task.status].bg,
+  }));
   const empCards = buildEmployeeCards(roster);
   const blockers = buildBlockers(roster, today);
   const teamBar = teamStackedBar(kpi.done, kpi.ongoing, kpi.pending, kpi.total);
@@ -248,32 +262,7 @@ export default async function SummaryPage({
         </KpiModalCard>
       </div>
 
-      <div className={styles.twoColUneven}>
-        <div className={`${styles.card} ${styles.cardPad}`}>
-          <div className={styles.sectionTitleTight}>Today&rsquo;s Snapshot</div>
-          <div className={styles.snapshotSub}>{fmtLongFromIso(today)} — click a task to open it</div>
-          {todayRows.length === 0 && <div className={styles.emptyNote}>No tasks dated today.</div>}
-          {todayRows.map(({ task }) => {
-            const meta = STATUS_META[task.status];
-            return (
-              <Link key={task.id} href={`/${cluster}/employee/${task.employeeId}?highlight=${task.id}`} className={styles.snapshotRow}>
-                <span className={styles.avatar} style={avatarStyle(28, employeeColor(task.empIndex))}>
-                  {task.empName[0]}
-                </span>
-                <div className={styles.snapshotTask}>
-                  <span className={styles.taskName}>{task.taskGeneral || '(untitled)'}</span>
-                  <span className={styles.taskDetails}> — {task.taskDetails}</span>
-                </div>
-                <span className={styles.statusBadge} style={{ background: meta.bg, color: meta.color }}>
-                  {meta.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-
-        <TaxCalendarCard cluster={cluster} roster={taxRoster} todayIso={today} />
-      </div>
+      <TodayRow cluster={cluster} roster={taxRoster} todayIso={today} dateLabel={fmtLongFromIso(today)} rows={snapshotRows} />
 
       <div className={styles.twoCol}>
         <div className={`${styles.card} ${styles.cardPad}`}>

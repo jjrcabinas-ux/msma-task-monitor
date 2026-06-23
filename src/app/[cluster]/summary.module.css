@@ -168,6 +168,10 @@
   margin-bottom: 18px;
 }
 
+.twoColUnevenTop {
+  align-items: start;
+}
+
 .workloadRow {
   display: flex;
   align-items: center;
@@ -529,6 +533,36 @@
   font-size: 13px;
   color: #94a3b8;
   padding: 8px 0;
+}
+
+.snapshotClip {
+  overflow: hidden;
+  position: relative;
+}
+
+.snapshotClipFaded::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.95));
+  pointer-events: none;
+}
+
+.seeMoreBtn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #2563eb;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .snapshotRow {

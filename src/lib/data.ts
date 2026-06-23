@@ -33,7 +33,7 @@ export async function getRosterWithTasks(cluster: ClusterSlug): Promise<{ employ
   const employees = await prisma.employee.findMany({
     where: { cluster },
     orderBy: { createdAt: 'asc' },
-    include: { tasks: { orderBy: { createdAt: 'asc' } } },
+    include: { tasks: { orderBy: [{ date: 'asc' }, { createdAt: 'asc' }] } },
   });
   return employees.map((e) => ({
     employee: toEmployeeDTO(e),
@@ -52,7 +52,7 @@ export async function getRosterWithTasks(cluster: ClusterSlug): Promise<{ employ
 export async function getEmployeeWithTasks(id: string, cluster: ClusterSlug) {
   const e = await prisma.employee.findFirst({
     where: { id, cluster },
-    include: { tasks: { orderBy: { createdAt: 'asc' } } },
+    include: { tasks: { orderBy: [{ date: 'asc' }, { createdAt: 'asc' }] } },
   });
   if (!e) return null;
   return {

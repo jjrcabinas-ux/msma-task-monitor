@@ -1,21 +1,19 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getAllEmployeesForReminders } from '@/lib/data';
-import { addDays, fmtLongDate } from '@/lib/dates';
 
 export const dynamic = 'force-dynamic';
 
-function manilaTodayISO(): string {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Asia/Manila',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date());
-  const y = parts.find((p) => p.type === 'year')!.value;
-  const m = parts.find((p) => p.type === 'month')!.value;
-  const d = parts.find((p) => p.type === 'day')!.value;
-  return `${y}-${m}-${d}`;
+const SUBJECT = 'Weekly task monitoring reminder';
+
+function buildHtml(appUrl: string | undefined): string {
+  return `
+    <p>Hi team,</p>
+    <p>Another week wrapped — and a good one. Thank you all for the work you put in. Whether it was a deadline met, a tricky problem solved, or just steady progress on the day-to-day, it adds up and it doesn't go unnoticed. Nice work, everyone.</p>
+    <p>With that, one small housekeeping item to set us up for next week: please take a few minutes to update the${appUrl ? ` <a href="${appUrl}">task monitoring sheet</a>` : ' task monitoring sheet'} before you log off. Make sure your completed items are marked done and your tasks for next week are listed and current.</p>
+    <p>Keeping it up to date helps all of us stay aligned and walk into Monday knowing exactly where things stand.</p>
+    <p>Thanks again for a strong week. Enjoy the weekend!</p>
+  `;
 }
 
 export async function GET(req: Request) {
@@ -29,27 +27,17 @@ export async function GET(req: Request) {
     return NextResponse.json({ sent: 0, failed: 0, total: 0 });
   }
 
-  const todayIso = manilaTodayISO();
-  const nextMonday = addDays(todayIso, 3);
-  const nextFriday = addDays(todayIso, 7);
-  const weekLabel = `${fmtLongDate(nextMonday)} – ${fmtLongDate(nextFriday)}`;
-  const appUrl = process.env.REMINDER_APP_URL;
-
   const resend = new Resend(process.env.RESEND_API_KEY);
   const from = process.env.REMINDER_FROM_EMAIL || 'onboarding@resend.dev';
+  const html = buildHtml(process.env.REMINDER_APP_URL);
 
   const results = await Promise.allSettled(
     employees.map((e) =>
       resend.emails.send({
         from,
         to: e.email,
-        subject: `Reminder: add next week's deliverables (${weekLabel})`,
-        html: `
-          <p>Hi ${e.name},</p>
-          <p>It's Friday — please open MSMA Task Monitoring and add your deliverables for next week (<strong>${weekLabel}</strong>).</p>
-          ${appUrl ? `<p><a href="${appUrl}">Open MSMA Task Monitoring</a></p>` : ''}
-          <p>This keeps the team's tracker up to date before the new week starts.</p>
-        `,
+        subject: SUBJECT,
+        html,
       })
     )
   );

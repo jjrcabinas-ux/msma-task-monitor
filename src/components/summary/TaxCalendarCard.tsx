@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { addTaskAction } from '@/lib/actions';
-import { birFilingsForMonth, type BirFiling } from '@/lib/birCalendar';
+import { birFilingsForDate, birFilingsForMonth, type BirFiling } from '@/lib/birCalendar';
 import type { ClusterSlug } from '@/lib/clusters';
-import { MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isoToParts, todayISO } from '@/lib/dates';
+import { MONFULL, WEEKSHORT, addDays, daysInMonth, firstWeekdayOfMonth, isoToParts, todayISO } from '@/lib/dates';
 import styles from '@/app/[cluster]/summary.module.css';
 
 const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
@@ -66,6 +66,8 @@ export default function TaxCalendarCard({
   }
 
   const selectedFilings = selectedDate ? filingsByDay.get(isoToParts(selectedDate).d) || [] : [];
+  const todayFilings = birFilingsForDate(clientToday);
+  const tomorrowFilings = birFilingsForDate(addDays(clientToday, 1));
 
   function openDay(iso: string, marked: boolean) {
     if (!marked) return;
@@ -81,6 +83,35 @@ export default function TaxCalendarCard({
       const { id } = await addTaskAction(employeeId, filing.dueDate, taskGeneral);
       router.push(`/${cluster}/employee/${employeeId}?highlight=${id}`);
     });
+  }
+
+  function renderFiling(f: BirFiling) {
+    return (
+      <div key={f.id}>
+        <button
+          type="button"
+          className={styles.birCalFilingRow}
+          onClick={() => setExpandedFilingId(expandedFilingId === f.id ? null : f.id)}
+          disabled={pending}
+        >
+          <span className={styles.taxCalCode}>{f.code}</span>
+          <div className={styles.birCalFilingBody}>
+            <div className={styles.taxCalLabel}>{f.label}</div>
+            <div className={styles.taxCalPeriod}>{f.periodLabel}</div>
+          </div>
+        </button>
+        {expandedFilingId === f.id && (
+          <div className={styles.birCalEmployeeList}>
+            <div className={styles.taxCalPopoverTitle}>Add task for</div>
+            {roster.map((r) => (
+              <div key={r.id} className={styles.taxCalPopoverRow} onClick={() => assign(f, r.id)}>
+                {r.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -128,6 +159,30 @@ export default function TaxCalendarCard({
         })}
       </div>
 
+      <div className={styles.dueTodayWrap}>
+        <div className={`${styles.dueTodayHeading} ${styles.dueTodayHeadingHot}`}>
+          Due Today
+          {todayFilings.length > 0 && <span className={styles.dueTodayCount}>{todayFilings.length}</span>}
+        </div>
+        {todayFilings.length === 0 ? (
+          <div className={styles.emptyNote}>Nothing due today.</div>
+        ) : (
+          todayFilings.map(renderFiling)
+        )}
+      </div>
+
+      <div className={styles.dueTodayWrap}>
+        <div className={styles.dueTodayHeading}>
+          Upcoming — Tomorrow
+          {tomorrowFilings.length > 0 && <span className={styles.dueTodayCount}>{tomorrowFilings.length}</span>}
+        </div>
+        {tomorrowFilings.length === 0 ? (
+          <div className={styles.emptyNote}>Nothing due tomorrow.</div>
+        ) : (
+          tomorrowFilings.map(renderFiling)
+        )}
+      </div>
+
       {selectedDate && (
         <div className={styles.birCalOverlay} onClick={() => setSelectedDate(null)}>
           <div className={styles.birCalModal} onClick={(e) => e.stopPropagation()}>
@@ -137,34 +192,7 @@ export default function TaxCalendarCard({
                 ×
               </button>
             </div>
-            <div className={styles.birCalModalBody}>
-              {selectedFilings.map((f) => (
-                <div key={f.id}>
-                  <button
-                    type="button"
-                    className={styles.birCalFilingRow}
-                    onClick={() => setExpandedFilingId(expandedFilingId === f.id ? null : f.id)}
-                    disabled={pending}
-                  >
-                    <span className={styles.taxCalCode}>{f.code}</span>
-                    <div className={styles.birCalFilingBody}>
-                      <div className={styles.taxCalLabel}>{f.label}</div>
-                      <div className={styles.taxCalPeriod}>{f.periodLabel}</div>
-                    </div>
-                  </button>
-                  {expandedFilingId === f.id && (
-                    <div className={styles.birCalEmployeeList}>
-                      <div className={styles.taxCalPopoverTitle}>Add task for</div>
-                      {roster.map((r) => (
-                        <div key={r.id} className={styles.taxCalPopoverRow} onClick={() => assign(f, r.id)}>
-                          {r.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            <div className={styles.birCalModalBody}>{selectedFilings.map(renderFiling)}</div>
           </div>
         </div>
       )}

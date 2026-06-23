@@ -39,7 +39,7 @@
 
 .kpiGrid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -330,6 +330,40 @@
 
 .taxCalPopoverRow:hover {
   background: #f8fafc;
+}
+
+.dueTodayWrap {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dueTodayHeading {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.dueTodayHeadingHot {
+  color: #dc2626;
+}
+
+.dueTodayCount {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #94a3b8;
+  border-radius: 999px;
+  padding: 1px 7px;
+  line-height: 1.4;
+}
+
+.dueTodayHeadingHot .dueTodayCount {
+  background: #dc2626;
 }
 
 .birCalHeader {

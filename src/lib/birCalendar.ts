@@ -128,6 +128,11 @@ const SEMIANNUAL = [
   { code: 'Automobile Sworn Stmt', label: 'Sworn statements of automobile manufacturers, assemblers or importers' },
 ];
 
+export function birFilingsForDate(iso: string): BirFiling[] {
+  const [y, m] = iso.split('-').map(Number);
+  return birFilingsForMonth(y, m - 1).filter((f) => f.dueDate === iso);
+}
+
 export function birFilingsForMonth(year: number, monthIndex0: number): BirFiling[] {
   const filings: BirFiling[] = [];
   const covered = shiftMonth(year, monthIndex0, -1);

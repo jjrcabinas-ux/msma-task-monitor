@@ -136,6 +136,41 @@ export default async function SummaryPage({
         </KpiModalCard>
 
         <KpiModalCard
+          title={`Ongoing Tasks (${kpi.ongoing})`}
+          card={
+            <div className={`${styles.card} ${styles.kpiCard}`}>
+              <div className={styles.kpiLabel}>Ongoing</div>
+              <div className={styles.kpiNumber} style={{ color: '#1d4ed8' }}>
+                {kpi.ongoing}
+              </div>
+            </div>
+          }
+        >
+          {kpi.periodTasks.filter((t) => t.status === 'Ongoing').length === 0 && (
+            <div className={modalStyles.modalEmpty}>No ongoing tasks in this period.</div>
+          )}
+          {kpi.periodTasks
+            .filter((t) => t.status === 'Ongoing')
+            .map((t) => (
+              <Link key={t.id} href={`/${cluster}/employee/${t.employeeId}?highlight=${t.id}`} className={modalStyles.modalRow}>
+                <span className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))}>
+                  {t.empName[0]}
+                </span>
+                <div className={modalStyles.modalRowBody}>
+                  <div className={modalStyles.modalRowTitle}>{t.taskGeneral || '(untitled)'}</div>
+                  <div className={modalStyles.modalRowSub}>
+                    {t.empName}
+                    {t.date ? ` · ${fmtShort(t.date)}` : ''}
+                  </div>
+                </div>
+                <span className={styles.statusBadge} style={{ background: STATUS_META.Ongoing.bg, color: STATUS_META.Ongoing.color }}>
+                  {STATUS_META.Ongoing.label}
+                </span>
+              </Link>
+            ))}
+        </KpiModalCard>
+
+        <KpiModalCard
           title={`Completed Tasks (${kpi.done})`}
           card={
             <div className={`${styles.card} ${styles.kpiCard}`}>

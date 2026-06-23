@@ -8,7 +8,7 @@ export default function ClusterPickerPage() {
   return (
     <div className={styles.page}>
       <div className={styles.heading}>
-        <Image src="/logo.jpg" alt="MSMA" width={903} height={495} className={styles.logo} priority />
+        <Image src="/logo.png" alt="MSMA" width={903} height={495} className={styles.logo} priority />
         <h1 className={styles.h1}>{APP_NAME}</h1>
         <div className={styles.subtitle}>Select a cluster to continue</div>
       </div>

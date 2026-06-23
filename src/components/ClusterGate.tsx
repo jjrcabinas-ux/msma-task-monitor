@@ -35,7 +35,7 @@ export default function ClusterGate({
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <Image src="/logo.jpg" alt="MSMA" width={903} height={495} className={styles.logo} priority />
+        <Image src="/logo.png" alt="MSMA" width={903} height={495} className={styles.logo} priority />
         <div className={styles.title}>{clusterLabel}</div>
         <div className={styles.subtitle}>Enter the cluster password to continue</div>
         <div className={styles.inputRow}>

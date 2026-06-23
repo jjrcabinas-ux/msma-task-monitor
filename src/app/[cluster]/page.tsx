@@ -4,7 +4,6 @@ import { getRosterWithTasks } from '@/lib/data';
 import { isClusterSlug } from '@/lib/clusters';
 import { periodRange } from '@/lib/period';
 import { todayISO, fmtLongFromIso, fmtShort } from '@/lib/dates';
-import { upcomingBirFilings } from '@/lib/birCalendar';
 import {
   buildKpis,
   buildTrend,
@@ -62,7 +61,6 @@ export default async function SummaryPage({
   const empCards = buildEmployeeCards(roster);
   const blockers = buildBlockers(roster, today);
   const teamBar = teamStackedBar(kpi.done, kpi.ongoing, kpi.pending, kpi.total);
-  const birFilings = upcomingBirFilings(today);
   const taxRoster = roster.map(({ employee }) => ({ id: employee.id, name: employee.name }));
 
   return (
@@ -239,7 +237,7 @@ export default async function SummaryPage({
           })}
         </div>
 
-        <TaxCalendarCard cluster={cluster} filings={birFilings} roster={taxRoster} />
+        <TaxCalendarCard cluster={cluster} roster={taxRoster} todayIso={today} />
       </div>
 
       <div className={styles.twoCol}>

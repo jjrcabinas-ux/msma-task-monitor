@@ -29,48 +29,36 @@ function toIso(d: Date): string {
 // General reference dates for manual (non-eFPS) filers, based on BIR's published Tax Reminder
 // schedule (bir.gov.ph/tax-reminder). Actual deadlines can shift for holidays or BIR-issued
 // extensions, so this is a planning aid, not a substitute for confirming with BIR/your accountant.
-export function upcomingBirFilings(todayIso: string, horizonDays = 120): BirFiling[] {
-  const today = new Date(`${todayIso}T00:00:00`);
-  const horizonEnd = new Date(today);
-  horizonEnd.setDate(horizonEnd.getDate() + horizonDays);
+export function birFilingsForMonth(year: number, monthIndex0: number): BirFiling[] {
   const filings: BirFiling[] = [];
 
-  for (let offset = -2; offset <= 8; offset++) {
-    const covered = new Date(today.getFullYear(), today.getMonth() + offset, 1);
-    // Standard deadline is the 10th of the following month, except taxes withheld in December,
-    // which are due January 15 (extra time for year-end annualization).
-    const isDecember = covered.getMonth() === 11;
-    const due = isDecember
-      ? new Date(covered.getFullYear() + 1, 0, 15)
-      : new Date(covered.getFullYear(), covered.getMonth() + 1, 10);
-    if (due < today || due > horizonEnd) continue;
-    for (const f of MONTHLY_FORMS) {
-      filings.push({
-        id: `${f.code}-${covered.getFullYear()}-${pad(covered.getMonth() + 1)}`,
-        code: f.code,
-        label: f.label,
-        periodLabel: `${MON[covered.getMonth()]} ${covered.getFullYear()}`,
-        dueDate: toIso(due),
-      });
-    }
+  // Monthly forms are due the 10th of the month following the covered month, except taxes
+  // withheld in December, which get until January 15 (extra time for year-end annualization).
+  const covered = new Date(year, monthIndex0 - 1, 1);
+  const dueDay = covered.getMonth() === 11 ? 15 : 10;
+  const monthlyDue = new Date(year, monthIndex0, dueDay);
+  for (const f of MONTHLY_FORMS) {
+    filings.push({
+      id: `${f.code}-${covered.getFullYear()}-${pad(covered.getMonth() + 1)}`,
+      code: f.code,
+      label: f.label,
+      periodLabel: `${MON[covered.getMonth()]} ${covered.getFullYear()}`,
+      dueDate: toIso(monthlyDue),
+    });
   }
 
-  for (let qOffset = -1; qOffset <= 3; qOffset++) {
-    const quarterStartMonth = Math.floor(today.getMonth() / 3) * 3 + qOffset * 3;
-    const quarterEndDate = new Date(today.getFullYear(), quarterStartMonth + 3, 0);
-    const quarterIndex = Math.floor(quarterEndDate.getMonth() / 3);
-    for (const f of QUARTERLY_FORMS) {
-      if (f.code === '1701Q' && quarterIndex === 3) continue;
-      const due = new Date(quarterEndDate.getFullYear(), quarterEndDate.getMonth() + f.monthsAfterQuarter, f.dueDay);
-      if (due < today || due > horizonEnd) continue;
-      filings.push({
-        id: `${f.code}-${quarterEndDate.getFullYear()}-Q${quarterIndex + 1}`,
-        code: f.code,
-        label: f.label,
-        periodLabel: `Q${quarterIndex + 1} ${quarterEndDate.getFullYear()}`,
-        dueDate: toIso(due),
-      });
-    }
+  for (const f of QUARTERLY_FORMS) {
+    const quarterEnd = new Date(year, monthIndex0 - f.monthsAfterQuarter, 1);
+    if (quarterEnd.getMonth() % 3 !== 2) continue; // only fires when this month is the actual due month
+    const quarterIndex = Math.floor(quarterEnd.getMonth() / 3);
+    if (f.code === '1701Q' && quarterIndex === 3) continue; // Q4 covered by the annual return instead
+    filings.push({
+      id: `${f.code}-${quarterEnd.getFullYear()}-Q${quarterIndex + 1}`,
+      code: f.code,
+      label: f.label,
+      periodLabel: `Q${quarterIndex + 1} ${quarterEnd.getFullYear()}`,
+      dueDate: toIso(new Date(year, monthIndex0, f.dueDay)),
+    });
   }
 
   return filings.sort((a, b) => (a.dueDate < b.dueDate ? -1 : a.dueDate > b.dueDate ? 1 : a.code.localeCompare(b.code)));

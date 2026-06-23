@@ -285,22 +285,28 @@
 
 .taxCalCode {
   flex: none;
-  font-size: 11px;
+  width: 96px;
+  font-size: 10.5px;
   font-weight: 700;
   color: #64748b;
   background: #f1f5f9;
-  padding: 4px 8px;
+  padding: 5px 6px;
   border-radius: 6px;
+  text-align: center;
+  line-height: 1.3;
+  align-self: flex-start;
 }
 
 .taxCalLabel {
   font-size: 12.5px;
   font-weight: 600;
+  line-height: 1.35;
 }
 
 .taxCalPeriod {
-  font-size: 11.5px;
+  font-size: 11px;
   color: #94a3b8;
+  margin-top: 3px;
 }
 
 .taxCalPopoverTitle {
@@ -417,7 +423,7 @@
   background: #fff;
   border-radius: 14px;
   width: 100%;
-  max-width: 380px;
+  max-width: 480px;
   max-height: 80vh;
   display: flex;
   flex-direction: column;
@@ -459,10 +465,10 @@
 
 .birCalFilingRow {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 14px;
   width: 100%;
-  padding: 10px 4px;
+  padding: 12px 4px;
   border: none;
   border-bottom: 1px solid #f5f7fa;
   background: none;

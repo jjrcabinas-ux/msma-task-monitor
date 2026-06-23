@@ -207,8 +207,13 @@
   overflow: visible;
 }
 
+.tableScroll {
+  overflow-x: auto;
+}
+
 .table {
   width: 100%;
+  min-width: 560px;
   border-collapse: collapse;
   table-layout: fixed;
 }
@@ -453,5 +458,11 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 18px 16px 40px;
   }
 }

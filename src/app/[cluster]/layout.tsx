@@ -6,6 +6,7 @@ import { isClusterSlug, clusterName } from '@/lib/clusters';
 import { todayISO, fmtShort, isoToParts } from '@/lib/dates';
 import { prisma } from '@/lib/db';
 import { displayName } from '@/lib/analytics';
+import styles from './layout.module.css';
 
 export async function generateMetadata({
   params,
@@ -45,9 +46,9 @@ export default async function ClusterLayout({
   const todayLabel = `Today · ${fmtShort(today)}, ${y}`;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#eef1f5' }}>
+    <div className={styles.shell}>
       <Sidebar cluster={cluster} clusterLabel={clusterName(cluster)} todayLabel={todayLabel} employees={counts} />
-      <main style={{ flex: 1, minWidth: 0, overflowX: 'hidden' }}>{children}</main>
+      <main className={styles.main}>{children}</main>
     </div>
   );
 }

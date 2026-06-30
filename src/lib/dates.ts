@@ -49,6 +49,15 @@ export function fmtLongDate(iso: string): string {
   return `${MONFULL[m - 1]} ${d}, ${y}`;
 }
 
+export function mondayOf(iso: string): string {
+  const { y, m, d } = isoToParts(iso);
+  const dt = new Date(y, m - 1, d);
+  const dow = dt.getDay();
+  const diffToMonday = dow === 0 ? -6 : 1 - dow;
+  dt.setDate(dt.getDate() + diffToMonday);
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+}
+
 export function daysInMonth(year: number, monthIndex0: number): number {
   return new Date(year, monthIndex0 + 1, 0).getDate();
 }

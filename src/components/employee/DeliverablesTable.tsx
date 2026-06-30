@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { TaskDTO } from '@/lib/types';
-import { MONFULL, WEEKSHORT, addDays, daysInMonth, firstWeekdayOfMonth, fmtShort, isoToParts } from '@/lib/dates';
+import { MONFULL, WEEKSHORT, addDays, daysInMonth, firstWeekdayOfMonth, fmtShort, isoToParts, mondayOf } from '@/lib/dates';
 import AddDeliverableButton from './AddDeliverableButton';
 import DeliverableRow from './DeliverableRow';
 import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
@@ -20,8 +20,9 @@ export default function DeliverablesTable({
   todayIso: string;
   highlightTaskId: string | null;
 }) {
-  const [weekStart, setWeekStart] = useState(addDays(todayIso, -6));
-  const [weekEnd, setWeekEnd] = useState(todayIso);
+  const thisMonday = mondayOf(todayIso);
+  const [weekStart, setWeekStart] = useState(thisMonday);
+  const [weekEnd, setWeekEnd] = useState(addDays(thisMonday, 4));
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingStart, setPendingStart] = useState<string | null>(null);
   const initialParts = isoToParts(todayIso);
@@ -29,7 +30,7 @@ export default function DeliverablesTable({
   const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const isCurrentWeek = weekStart === addDays(todayIso, -6) && weekEnd === todayIso;
+  const isCurrentWeek = weekStart === thisMonday && weekEnd === addDays(thisMonday, 4);
   const olderCount = tasks.filter((t) => t.date && t.date < weekStart).length;
   const visibleTasks = tasks.filter((t) => !t.date || (t.date >= weekStart && t.date <= weekEnd));
 
@@ -42,7 +43,8 @@ export default function DeliverablesTable({
     if (highlightTaskId == null) return;
     const target = tasks.find((t) => t.id === highlightTaskId);
     if (target?.date && (target.date < weekStart || target.date > weekEnd)) {
-      setRange(addDays(target.date, -6), target.date);
+      const monday = mondayOf(target.date);
+      setRange(monday, addDays(monday, 4));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightTaskId]);
@@ -104,11 +106,11 @@ export default function DeliverablesTable({
     <div className={styles.tableCard}>
       <div className={styles.tableToolbar}>
         <span className={styles.tableToolbarLabel}>
-          {isCurrentWeek ? `Showing this week (since ${fmtShort(weekStart)})` : `Showing ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`}
+          {isCurrentWeek ? `Showing this week (${fmtShort(weekStart)} – ${fmtShort(weekEnd)})` : `Showing ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`}
         </span>
         <div className={styles.tableToolbarActions}>
           {!isCurrentWeek && (
-            <button type="button" className={styles.seeMoreLink} onClick={() => setRange(addDays(todayIso, -6), todayIso)}>
+            <button type="button" className={styles.seeMoreLink} onClick={() => setRange(thisMonday, addDays(thisMonday, 4))}>
               Back to this week
             </button>
           )}
@@ -116,7 +118,7 @@ export default function DeliverablesTable({
             <button
               type="button"
               className={styles.seeMoreLink}
-              onClick={() => setRange(addDays(weekStart, -7), addDays(weekStart, -1))}
+              onClick={() => setRange(addDays(weekStart, -7), addDays(weekStart, -3))}
             >
               View previous weeks ({olderCount})
             </button>

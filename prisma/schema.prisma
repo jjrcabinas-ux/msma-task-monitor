@@ -32,6 +32,7 @@ model Task {
   employeeId  String
   employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   date        String?
+  dueDate     String?
   taskGeneral String   @default("")
   taskDetails String   @default("")
   status      String   @default("Pending")

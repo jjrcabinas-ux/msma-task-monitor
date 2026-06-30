@@ -184,13 +184,15 @@ export default function DeliverablesTable({
             <col style={{ width: 118 }} />
             <col />
             <col style={{ width: 118 }} />
+            <col style={{ width: 118 }} />
             <col style={{ width: 188 }} />
             <col style={{ width: 40 }} />
           </colgroup>
           <thead>
             <tr className={styles.theadRow}>
-              <th className={styles.th}>Date</th>
+              <th className={styles.th}>Date Created</th>
               <th className={styles.th}>Deliverables</th>
+              <th className={styles.th}>Due Date</th>
               <th className={styles.th}>Status</th>
               <th className={styles.th}>Help Needed</th>
               <th></th>

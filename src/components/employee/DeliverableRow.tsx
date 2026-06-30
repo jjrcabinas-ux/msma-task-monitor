@@ -24,6 +24,7 @@ export default function DeliverableRow({
   const rowRef = useRef<HTMLTableRowElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerField, setPickerField] = useState<'date' | 'dueDate'>('date');
   const initialParts = task.date ? isoToParts(task.date) : isoToParts(todayIso);
   const [pickerYear, setPickerYear] = useState(initialParts.y);
   const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
@@ -56,11 +57,13 @@ export default function DeliverableRow({
     return () => document.removeEventListener('mousedown', onOutside);
   }, [pickerOpen]);
 
-  function openPicker() {
+  function openPicker(field: 'date' | 'dueDate') {
     if (lockedForFields) return;
-    const parts = task.date ? isoToParts(task.date) : isoToParts(clientToday);
+    const current = field === 'date' ? task.date : task.dueDate;
+    const parts = current ? isoToParts(current) : isoToParts(clientToday);
     setPickerYear(parts.y);
     setPickerMonth(parts.m - 1);
+    setPickerField(field);
     setPickerOpen(true);
   }
 
@@ -80,7 +83,11 @@ export default function DeliverableRow({
 
   function pickDate(iso: string) {
     setPickerOpen(false);
-    updateTaskAction(task.id, { date: iso });
+    if (pickerField === 'date') {
+      updateTaskAction(task.id, { date: iso });
+    } else {
+      updateTaskAction(task.id, { dueDate: iso });
+    }
   }
 
   function onStatusChange(value: Status) {
@@ -107,10 +114,56 @@ export default function DeliverableRow({
     days.push({ label: String(d), iso: `${pickerYear}-${pad(pickerMonth + 1)}-${pad(d)}` });
   }
 
+  function renderPicker(activeValue: string | null) {
+    return (
+      <div ref={popoverRef} className={`${styles.popover} ${styles.pickerPopover}`}>
+        <div className={styles.pickerHeader}>
+          <div className={styles.pickerNavBtn} onClick={() => stepMonth(-1)}>
+            ‹
+          </div>
+          <div className={styles.pickerMonthLabel}>
+            {MONFULL[pickerMonth]} {pickerYear}
+          </div>
+          <div className={styles.pickerNavBtn} onClick={() => stepMonth(1)}>
+            ›
+          </div>
+        </div>
+        <div className={styles.pickerWeekdays}>
+          {WEEKSHORT.map((wd) => (
+            <div key={wd} className={styles.pickerWeekday}>
+              {wd}
+            </div>
+          ))}
+        </div>
+        <div className={styles.pickerDays}>
+          {Array.from({ length: first }).map((_, i) => (
+            <div key={`pad-${i}`} />
+          ))}
+          {days.map((day) => {
+            const isSel = day.iso === activeValue;
+            const isToday = day.iso === clientToday;
+            return (
+              <div
+                key={day.iso}
+                className={`${styles.pickerDay} ${isSel ? styles.pickerDaySelected : ''} ${!isSel && isToday ? styles.pickerDayToday : ''}`}
+                onClick={() => pickDate(day.iso)}
+              >
+                {day.label}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <tr ref={rowRef} className={`${styles.row} ${highlighted ? styles.rowHighlight : ''}`}>
       <td className={styles.td}>
-        <div className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`} onClick={openPicker}>
+        <div
+          className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`}
+          onClick={() => openPicker('date')}
+        >
           <span style={{ fontSize: 12 }}>{lockedForFields ? '🔒' : '📅'}</span>
           {task.date ? (
             <span className={styles.dateBtnLabel}>
@@ -120,46 +173,7 @@ export default function DeliverableRow({
             <span className={styles.dateBtnPlaceholder}>Pick date</span>
           )}
         </div>
-        {pickerOpen && (
-          <div ref={popoverRef} className={`${styles.popover} ${styles.pickerPopover}`}>
-            <div className={styles.pickerHeader}>
-              <div className={styles.pickerNavBtn} onClick={() => stepMonth(-1)}>
-                ‹
-              </div>
-              <div className={styles.pickerMonthLabel}>
-                {MONFULL[pickerMonth]} {pickerYear}
-              </div>
-              <div className={styles.pickerNavBtn} onClick={() => stepMonth(1)}>
-                ›
-              </div>
-            </div>
-            <div className={styles.pickerWeekdays}>
-              {WEEKSHORT.map((wd) => (
-                <div key={wd} className={styles.pickerWeekday}>
-                  {wd}
-                </div>
-              ))}
-            </div>
-            <div className={styles.pickerDays}>
-              {Array.from({ length: first }).map((_, i) => (
-                <div key={`pad-${i}`} />
-              ))}
-              {days.map((day) => {
-                const isSel = day.iso === task.date;
-                const isToday = day.iso === clientToday;
-                return (
-                  <div
-                    key={day.iso}
-                    className={`${styles.pickerDay} ${isSel ? styles.pickerDaySelected : ''} ${!isSel && isToday ? styles.pickerDayToday : ''}`}
-                    onClick={() => pickDate(day.iso)}
-                  >
-                    {day.label}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {pickerOpen && pickerField === 'date' && renderPicker(task.date)}
       </td>
       <td className={styles.tdText}>
         <input
@@ -171,6 +185,22 @@ export default function DeliverableRow({
           readOnly={lockedForFields}
         />
         <TaskDetailsCell key={`d-${task.id}`} taskId={task.id} initialValue={task.taskDetails} readOnly={lockedForFields} />
+      </td>
+      <td className={styles.td}>
+        <div
+          className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`}
+          onClick={() => openPicker('dueDate')}
+        >
+          <span style={{ fontSize: 12 }}>{lockedForFields ? '🔒' : '📅'}</span>
+          {task.dueDate ? (
+            <span className={styles.dateBtnLabel}>
+              {MON[isoToParts(task.dueDate).m - 1]} {isoToParts(task.dueDate).d}
+            </span>
+          ) : (
+            <span className={styles.dateBtnPlaceholder}>Set due date</span>
+          )}
+        </div>
+        {pickerOpen && pickerField === 'dueDate' && renderPicker(task.dueDate)}
       </td>
       <td className={styles.td}>
         <select

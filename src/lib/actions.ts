@@ -245,7 +245,14 @@ export async function addTaskAction(
 
 export async function updateTaskAction(
   taskId: string,
-  patch: Partial<{ date: string | null; taskGeneral: string; taskDetails: string; status: Status; helpNeeded: string }>
+  patch: Partial<{
+    date: string | null;
+    dueDate: string | null;
+    taskGeneral: string;
+    taskDetails: string;
+    status: Status;
+    helpNeeded: string;
+  }>
 ): Promise<{ ok: true } | { error: string }> {
   const existing = await prisma.task.findUnique({
     where: { id: taskId },

@@ -4,6 +4,7 @@ export type TaskDTO = {
   id: string;
   employeeId: string;
   date: string | null;
+  dueDate: string | null;
   taskGeneral: string;
   taskDetails: string;
   status: Status;

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { TaskDTO } from '@/lib/types';
 import { MONFULL, WEEKSHORT, addDays, daysInMonth, firstWeekdayOfMonth, fmtShort, isoToParts, mondayOf } from '@/lib/dates';
+import StickyOffsetMeasurer from '@/components/StickyOffsetMeasurer';
 import AddDeliverableButton from './AddDeliverableButton';
 import DeliverableRow from './DeliverableRow';
 import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
@@ -107,7 +108,7 @@ export default function DeliverablesTable({
 
   return (
     <div className={styles.tableCard}>
-      <div className={styles.tableToolbar}>
+      <StickyOffsetMeasurer className={styles.tableToolbar} cssVar="--toolbar-offset">
         <span className={styles.tableToolbarLabel}>
           {showAll
             ? 'Showing all deliverables'
@@ -219,7 +220,7 @@ export default function DeliverablesTable({
             )}
           </div>
         </div>
-      </div>
+      </StickyOffsetMeasurer>
       <div className={styles.tableScroll}>
         <table className={styles.table}>
           <colgroup>
@@ -237,7 +238,7 @@ export default function DeliverablesTable({
               <th className={styles.th}>Deliverables</th>
               <th className={styles.th}>Status</th>
               <th className={styles.th}>Help Needed</th>
-              <th></th>
+              <th className={styles.th}></th>
             </tr>
           </thead>
           <tbody>

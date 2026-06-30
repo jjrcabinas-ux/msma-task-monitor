@@ -309,7 +309,17 @@
 }
 
 .tableScroll {
-  overflow-x: auto;
+  overflow-x: visible;
+}
+
+@media (max-width: 860px) {
+  /* Below this width the table needs horizontal scroll to stay usable, which
+     means it becomes its own scroll container -- the sticky column-header
+     row can then only stick within this box, not the page, so it loses its
+     freeze on small screens as a tradeoff for staying scrollable at all. */
+  .tableScroll {
+    overflow-x: auto;
+  }
 }
 
 .table {
@@ -332,6 +342,10 @@
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  position: sticky;
+  top: calc(var(--sticky-offset, 213px) + var(--toolbar-offset, 41px));
+  z-index: 10;
+  background: #f8fafc;
 }
 
 .row {

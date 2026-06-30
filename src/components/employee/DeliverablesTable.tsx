@@ -233,8 +233,8 @@ export default function DeliverablesTable({
           </colgroup>
           <thead>
             <tr className={styles.theadRow}>
-              <th className={styles.th}>Date Created</th>
-              <th className={styles.th}>Due Date</th>
+              <th className={`${styles.th} ${styles.thRight}`}>Created</th>
+              <th className={`${styles.th} ${styles.thRight}`}>Due Date</th>
               <th className={styles.th}>Deliverables</th>
               <th className={styles.th}>Status</th>
               <th className={styles.th}>Help Needed</th>

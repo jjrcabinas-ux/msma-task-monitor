@@ -7,6 +7,7 @@ import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isTaskLocked
 import { STATUS_META } from '@/lib/colors';
 import type { Status, TaskDTO } from '@/lib/types';
 import TaskDetailsCell from './TaskDetailsCell';
+import HelpNeededCell from './HelpNeededCell';
 import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
 
 const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
@@ -200,13 +201,12 @@ export default function DeliverableRow({
           className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`}
           onClick={(e) => openPicker('date', e.currentTarget)}
         >
-          <span style={{ fontSize: 12 }}>{lockedForFields ? '🔒' : '📅'}</span>
           {task.date ? (
             <span className={styles.dateBtnLabel}>
               {MON[isoToParts(task.date).m - 1]} {isoToParts(task.date).d}
             </span>
           ) : (
-            <span className={styles.dateBtnPlaceholder}>Pick date</span>
+            <span className={styles.dateBtnPlaceholder}>—</span>
           )}
         </div>
         {pickerOpen && pickerField === 'date' && renderPicker(task.date)}
@@ -216,13 +216,12 @@ export default function DeliverableRow({
           className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`}
           onClick={(e) => openPicker('dueDate', e.currentTarget)}
         >
-          <span style={{ fontSize: 12 }}>{lockedForFields ? '🔒' : '📅'}</span>
           {task.dueDate ? (
             <span className={styles.dateBtnLabel}>
               {MON[isoToParts(task.dueDate).m - 1]} {isoToParts(task.dueDate).d}
             </span>
           ) : (
-            <span className={styles.dateBtnPlaceholder}>Set due date</span>
+            <span className={styles.dateBtnPlaceholder}>—</span>
           )}
         </div>
         {pickerOpen && pickerField === 'dueDate' && renderPicker(task.dueDate)}
@@ -243,7 +242,10 @@ export default function DeliverableRow({
           value={status}
           onChange={(e) => onStatusChange(e.target.value as Status)}
           className={styles.statusSelect}
-          style={{ background: sm.bg, color: sm.color }}
+          style={{
+            background: `radial-gradient(circle 3px at 12px 50%, ${sm.dot} 99%, transparent 100%), ${sm.bg}`,
+            color: sm.color,
+          }}
           disabled={statusAndHelpLocked}
         >
           <option value="Pending">Pending</option>
@@ -255,15 +257,7 @@ export default function DeliverableRow({
         )}
       </td>
       <td className={styles.tdText}>
-        <textarea
-          key={`h-${task.id}`}
-          defaultValue={task.helpNeeded}
-          onBlur={(e) => updateTaskAction(task.id, { helpNeeded: e.target.value })}
-          placeholder="Any roadblocks?"
-          rows={2}
-          className={styles.helpTextarea}
-          readOnly={statusAndHelpLocked}
-        />
+        <HelpNeededCell key={`h-${task.id}`} taskId={task.id} initialValue={task.helpNeeded} readOnly={statusAndHelpLocked} />
       </td>
       <td className={styles.tdCenter}>
         {!canEdit ? (

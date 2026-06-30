@@ -183,10 +183,10 @@
 
 .statsCard {
   background: #fff;
-  border: 1px solid #e6e9ef;
+  border: 1px solid #dbe1ea;
   border-radius: 12px;
   padding: 16px 20px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.07);
   margin-bottom: 18px;
   display: flex;
   align-items: center;
@@ -214,10 +214,10 @@
 
 .statLabel {
   font-size: 11px;
-  color: #94a3b8;
+  font-weight: 700;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 600;
 }
 
 .statValue {
@@ -228,9 +228,9 @@
 
 .tableCard {
   background: #fff;
-  border: 1px solid #e6e9ef;
+  border: 1px solid #dbe1ea;
   border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.07);
   overflow: visible;
 }
 
@@ -239,7 +239,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 9px 20px;
   border-bottom: 1px solid #e6e9ef;
   position: sticky;
   top: var(--sticky-offset, 213px);
@@ -249,8 +249,11 @@
 }
 
 .tableToolbarLabel {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 700;
   color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .tableToolbarActions {
@@ -336,7 +339,7 @@
 
 .th {
   text-align: left;
-  padding: 11px 14px;
+  padding: 8px 20px;
   font-size: 11px;
   font-weight: 700;
   color: #64748b;
@@ -346,6 +349,10 @@
   top: calc(var(--sticky-offset, 213px) + var(--toolbar-offset, 41px));
   z-index: 10;
   background: #f8fafc;
+}
+
+.thRight {
+  text-align: right;
 }
 
 .row {
@@ -362,51 +369,48 @@
 }
 
 .td {
-  padding: 10px 14px;
+  padding: 7px 20px;
   vertical-align: top;
   position: relative;
 }
 
 .tdText {
-  padding: 8px 14px;
+  padding: 6px 20px;
   vertical-align: top;
 }
 
 .tdCenter {
-  padding: 10px 8px;
+  padding: 7px 8px;
   vertical-align: top;
   text-align: center;
 }
 
 .dateBtn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  width: 108px;
+  justify-content: flex-end;
+  width: 100%;
   box-sizing: border-box;
-  padding: 6px 9px;
-  border-radius: 7px;
-  border: 1px solid #e6e9ef;
-  background: #fff;
+  padding: 2px 0;
+  border: none;
+  background: none;
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
+  color: #475569;
 }
 
 .dateBtn:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
+  color: #2563eb;
 }
 
 .dateBtnLocked {
   cursor: default;
-  background: #f8fafc;
   color: #94a3b8;
 }
 
 .dateBtnLocked:hover {
-  border-color: #e6e9ef;
-  background: #f8fafc;
+  color: #94a3b8;
 }
 
 .lockedIcon {
@@ -423,14 +427,14 @@
 
 .dateBtnLabel {
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .dateBtnPlaceholder {
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 12.5px;
+  color: #cbd5e1;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -556,7 +560,7 @@
 
 .taskDetailsPlaceholder {
   font-size: 12.5px;
-  color: #94a3b8;
+  color: #cbd5e1;
   padding: 3px 0;
   cursor: text;
 }
@@ -586,7 +590,7 @@
   appearance: none;
   border: none;
   border-radius: 7px;
-  padding: 6px 10px;
+  padding: 5px 10px 5px 22px;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
@@ -602,6 +606,22 @@
   color: #475569;
   padding: 6px 8px;
   line-height: 1.4;
+}
+
+.helpText {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.4;
+  cursor: text;
+  padding: 3px 0;
+}
+
+.helpPlaceholder {
+  font-size: 12.5px;
+  color: #cbd5e1;
+  line-height: 1.4;
+  cursor: text;
+  padding: 3px 0;
 }
 
 .deleteBtn {

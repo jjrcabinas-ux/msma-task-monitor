@@ -229,7 +229,8 @@ export async function removeEmployeeAction(id: string, cluster: ClusterSlug): Pr
 export async function addTaskAction(
   employeeId: string,
   date: string | null = null,
-  taskGeneral = ''
+  taskGeneral = '',
+  extra?: { dueDate?: string | null; taskDetails?: string; status?: Status; helpNeeded?: string }
 ): Promise<{ id: string } | { error: string }> {
   const employee = await prisma.employee.findUnique({ where: { id: employeeId }, select: { cluster: true } });
   if (!employee) return { error: 'Team member not found.' };
@@ -237,7 +238,15 @@ export async function addTaskAction(
     return { error: 'You can only add deliverables for yourself.' };
   }
   const task = await prisma.task.create({
-    data: { employeeId, date, taskGeneral, taskDetails: '', status: 'Pending', helpNeeded: '' },
+    data: {
+      employeeId,
+      date,
+      taskGeneral,
+      dueDate: extra?.dueDate ?? null,
+      taskDetails: extra?.taskDetails ?? '',
+      status: extra?.status ?? 'Pending',
+      helpNeeded: extra?.helpNeeded ?? '',
+    },
   });
   revalidateAll();
   return { id: task.id };

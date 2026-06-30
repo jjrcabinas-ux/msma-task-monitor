@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { TaskDTO } from '@/lib/types';
-import { addDays, fmtShort } from '@/lib/dates';
+import { MONFULL, WEEKSHORT, addDays, daysInMonth, firstWeekdayOfMonth, fmtShort, isoToParts } from '@/lib/dates';
 import AddDeliverableButton from './AddDeliverableButton';
 import DeliverableRow from './DeliverableRow';
 import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
+
+const pad = (n: number) => (n < 10 ? `0${n}` : String(n));
 
 export default function DeliverablesTable({
   employeeId,
@@ -18,24 +20,137 @@ export default function DeliverablesTable({
   todayIso: string;
   highlightTaskId: string | null;
 }) {
-  const weekStart = addDays(todayIso, -6);
-  const highlightIsOlder = highlightTaskId != null && tasks.some((t) => t.id === highlightTaskId && t.date && t.date < weekStart);
-  const [showAll, setShowAll] = useState(highlightIsOlder);
+  const [weekEnd, setWeekEnd] = useState(todayIso);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const initialParts = isoToParts(todayIso);
+  const [pickerYear, setPickerYear] = useState(initialParts.y);
+  const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  const weekStart = addDays(weekEnd, -6);
+  const isCurrentWeek = weekEnd === todayIso;
   const olderCount = tasks.filter((t) => t.date && t.date < weekStart).length;
-  const visibleTasks = showAll ? tasks : tasks.filter((t) => !t.date || t.date >= weekStart);
+  const visibleTasks = tasks.filter((t) => !t.date || (t.date >= weekStart && t.date <= weekEnd));
+
+  useEffect(() => {
+    if (highlightTaskId == null) return;
+    const target = tasks.find((t) => t.id === highlightTaskId);
+    if (target?.date && (target.date < weekStart || target.date > weekEnd)) {
+      setWeekEnd(target.date);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightTaskId]);
+
+  useEffect(() => {
+    if (!pickerOpen) return;
+    function onOutside(e: MouseEvent) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setPickerOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [pickerOpen]);
+
+  function openPicker() {
+    const parts = isoToParts(weekEnd);
+    setPickerYear(parts.y);
+    setPickerMonth(parts.m - 1);
+    setPickerOpen(true);
+  }
+
+  function stepMonth(delta: number) {
+    let m = pickerMonth + delta;
+    let y = pickerYear;
+    if (m < 0) {
+      m = 11;
+      y -= 1;
+    } else if (m > 11) {
+      m = 0;
+      y += 1;
+    }
+    setPickerMonth(m);
+    setPickerYear(y);
+  }
+
+  function pickWeekFor(iso: string) {
+    setPickerOpen(false);
+    setWeekEnd(iso > todayIso ? todayIso : iso);
+  }
+
+  const dim = daysInMonth(pickerYear, pickerMonth);
+  const first = firstWeekdayOfMonth(pickerYear, pickerMonth);
+  const days: { label: string; iso: string }[] = [];
+  for (let d = 1; d <= dim; d++) {
+    days.push({ label: String(d), iso: `${pickerYear}-${pad(pickerMonth + 1)}-${pad(d)}` });
+  }
 
   return (
     <div className={styles.tableCard}>
-      {olderCount > 0 && (
-        <div className={styles.tableToolbar}>
-          <span className={styles.tableToolbarLabel}>
-            {showAll ? 'Showing all deliverables' : `Showing this week (since ${fmtShort(weekStart)})`}
-          </span>
-          <button type="button" className={styles.seeMoreLink} onClick={() => setShowAll((v) => !v)}>
-            {showAll ? 'Hide previous weeks' : `View previous weeks (${olderCount})`}
-          </button>
+      <div className={styles.tableToolbar}>
+        <span className={styles.tableToolbarLabel}>
+          {isCurrentWeek ? `Showing this week (since ${fmtShort(weekStart)})` : `Showing week of ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`}
+        </span>
+        <div className={styles.tableToolbarActions}>
+          {!isCurrentWeek && (
+            <button type="button" className={styles.seeMoreLink} onClick={() => setWeekEnd(todayIso)}>
+              Back to this week
+            </button>
+          )}
+          {isCurrentWeek && olderCount > 0 && (
+            <button type="button" className={styles.seeMoreLink} onClick={() => setWeekEnd(addDays(weekStart, -1))}>
+              View previous weeks ({olderCount})
+            </button>
+          )}
+          <div style={{ position: 'relative' }}>
+            <button type="button" className={styles.calendarIconBtn} onClick={openPicker} title="Pick a specific week">
+              📅
+            </button>
+            {pickerOpen && (
+              <div ref={popoverRef} className={`${styles.popover} ${styles.pickerPopover}`} style={{ top: 30, right: 0, left: 'auto' }}>
+                <div className={styles.pickerHeader}>
+                  <div className={styles.pickerNavBtn} onClick={() => stepMonth(-1)}>
+                    ‹
+                  </div>
+                  <div className={styles.pickerMonthLabel}>
+                    {MONFULL[pickerMonth]} {pickerYear}
+                  </div>
+                  <div className={styles.pickerNavBtn} onClick={() => stepMonth(1)}>
+                    ›
+                  </div>
+                </div>
+                <div className={styles.pickerWeekdays}>
+                  {WEEKSHORT.map((wd) => (
+                    <div key={wd} className={styles.pickerWeekday}>
+                      {wd}
+                    </div>
+                  ))}
+                </div>
+                <div className={styles.pickerDays}>
+                  {Array.from({ length: first }).map((_, i) => (
+                    <div key={`pad-${i}`} />
+                  ))}
+                  {days.map((day) => {
+                    const inSelectedWeek = day.iso >= weekStart && day.iso <= weekEnd;
+                    const isToday = day.iso === todayIso;
+                    const isFuture = day.iso > todayIso;
+                    return (
+                      <div
+                        key={day.iso}
+                        className={`${styles.pickerDay} ${inSelectedWeek ? styles.pickerDaySelected : ''} ${!inSelectedWeek && isToday ? styles.pickerDayToday : ''}`}
+                        style={isFuture ? { opacity: 0.35, cursor: 'default' } : undefined}
+                        onClick={() => !isFuture && pickWeekFor(day.iso)}
+                      >
+                        {day.label}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
       <div className={styles.tableScroll}>
         <table className={styles.table}>
           <colgroup>

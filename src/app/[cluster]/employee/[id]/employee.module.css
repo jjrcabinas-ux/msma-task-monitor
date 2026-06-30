@@ -248,6 +248,30 @@
   color: #64748b;
 }
 
+.tableToolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.calendarIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid #e6e9ef;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.calendarIconBtn:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
 .tableScroll {
   overflow-x: auto;
 }

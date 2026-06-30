@@ -8,6 +8,7 @@ import { isTaskLocked, todayISO } from './dates';
 import {
   canEditEmployee,
   clearMemberSession,
+  clusterPasswordToken,
   hashPassword,
   isAdminUnlocked,
   setMemberSession,
@@ -28,7 +29,7 @@ export async function unlockClusterAction(
     return { error: 'Incorrect password.' };
   }
   const cookieStore = await cookies();
-  cookieStore.set(clusterUnlockCookieName(cluster), '1', {
+  cookieStore.set(clusterUnlockCookieName(cluster), clusterPasswordToken(cluster)!, {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',

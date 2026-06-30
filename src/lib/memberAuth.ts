@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
-import { clusterUnlockCookieName, type ClusterSlug } from './clusters';
+import { CLUSTERS, clusterUnlockCookieName, type ClusterSlug } from './clusters';
 
 const SESSION_SECRET = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || 'msma-task-monitor-dev-secret';
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24; // expires daily
@@ -54,9 +54,17 @@ export async function getMemberSession(cluster: ClusterSlug): Promise<{ employee
   return { employeeId };
 }
 
+export function clusterPasswordToken(cluster: ClusterSlug): string | null {
+  const expected = process.env[CLUSTERS[cluster].passwordEnv];
+  if (!expected) return null;
+  return sign(`admin:${cluster}:${expected}`);
+}
+
 export async function isAdminUnlocked(cluster: ClusterSlug): Promise<boolean> {
+  const token = clusterPasswordToken(cluster);
+  if (!token) return false;
   const cookieStore = await cookies();
-  return cookieStore.get(clusterUnlockCookieName(cluster))?.value === '1';
+  return cookieStore.get(clusterUnlockCookieName(cluster))?.value === token;
 }
 
 export async function canEditEmployee(cluster: ClusterSlug, employeeId: string): Promise<boolean> {

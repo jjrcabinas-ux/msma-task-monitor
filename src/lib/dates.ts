@@ -49,6 +49,13 @@ export function fmtLongDate(iso: string): string {
   return `${MONFULL[m - 1]} ${d}, ${y}`;
 }
 
+export const EDIT_WINDOW_DAYS = 14;
+
+export function isTaskLocked(dateIso: string | null | undefined, todayIso: string): boolean {
+  if (!dateIso) return false;
+  return daysBetween(dateIso, todayIso) >= EDIT_WINDOW_DAYS;
+}
+
 export function mondayOf(iso: string): string {
   const { y, m, d } = isoToParts(iso);
   const dt = new Date(y, m - 1, d);

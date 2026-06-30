@@ -344,6 +344,22 @@
   background: #f8fafc;
 }
 
+.dateBtnLocked {
+  cursor: default;
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.dateBtnLocked:hover {
+  border-color: #e6e9ef;
+  background: #f8fafc;
+}
+
+.lockedIcon {
+  font-size: 13px;
+  opacity: 0.55;
+}
+
 .dateBtnLabel {
   font-size: 12.5px;
   font-weight: 600;
@@ -453,6 +469,12 @@
   font-weight: 600;
   color: #0f172a;
   padding: 3px 0;
+}
+
+.taskGeneralInput:read-only,
+.helpTextarea:read-only {
+  color: #94a3b8;
+  cursor: default;
 }
 
 .taskDetailsTextarea {

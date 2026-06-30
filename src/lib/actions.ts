@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { prisma } from './db';
 import { CLUSTERS, clusterUnlockCookieName, type ClusterSlug } from './clusters';
+import { isTaskLocked, todayISO } from './dates';
 import type { Status } from './types';
 
 function revalidateAll() {
@@ -123,13 +124,21 @@ export async function addTaskAction(
 export async function updateTaskAction(
   taskId: string,
   patch: Partial<{ date: string | null; taskGeneral: string; taskDetails: string; status: Status; helpNeeded: string }>
-): Promise<{ ok: true }> {
+): Promise<{ ok: true } | { error: string }> {
+  const existing = await prisma.task.findUnique({ where: { id: taskId }, select: { date: true } });
+  if (existing && isTaskLocked(existing.date, todayISO())) {
+    return { error: 'This deliverable is more than 2 weeks old and can no longer be edited.' };
+  }
   await prisma.task.update({ where: { id: taskId }, data: patch });
   revalidateAll();
   return { ok: true };
 }
 
-export async function deleteTaskAction(taskId: string): Promise<{ ok: true }> {
+export async function deleteTaskAction(taskId: string): Promise<{ ok: true } | { error: string }> {
+  const existing = await prisma.task.findUnique({ where: { id: taskId }, select: { date: true } });
+  if (existing && isTaskLocked(existing.date, todayISO())) {
+    return { error: 'This deliverable is more than 2 weeks old and can no longer be edited.' };
+  }
   await prisma.task.delete({ where: { id: taskId } });
   revalidateAll();
   return { ok: true };

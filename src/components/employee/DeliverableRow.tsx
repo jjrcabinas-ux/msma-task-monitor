@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { deleteTaskAction, updateTaskAction } from '@/lib/actions';
-import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isoToParts, todayISO } from '@/lib/dates';
+import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isTaskLocked, isoToParts, todayISO } from '@/lib/dates';
 import { STATUS_META } from '@/lib/colors';
 import type { Status, TaskDTO } from '@/lib/types';
 import TaskDetailsCell from './TaskDetailsCell';
@@ -55,6 +55,7 @@ export default function DeliverableRow({
   }, [pickerOpen]);
 
   function openPicker() {
+    if (locked) return;
     const parts = task.date ? isoToParts(task.date) : isoToParts(clientToday);
     setPickerYear(parts.y);
     setPickerMonth(parts.m - 1);
@@ -81,10 +82,12 @@ export default function DeliverableRow({
   }
 
   function onStatusChange(value: Status) {
+    if (locked) return;
     setStatus(value);
     updateTaskAction(task.id, { status: value });
   }
 
+  const locked = isTaskLocked(task.date, clientToday);
   const sm = STATUS_META[status];
   const dim = daysInMonth(pickerYear, pickerMonth);
   const first = firstWeekdayOfMonth(pickerYear, pickerMonth);
@@ -96,8 +99,8 @@ export default function DeliverableRow({
   return (
     <tr ref={rowRef} className={`${styles.row} ${highlighted ? styles.rowHighlight : ''}`}>
       <td className={styles.td}>
-        <div className={styles.dateBtn} onClick={openPicker}>
-          <span style={{ fontSize: 12 }}>📅</span>
+        <div className={`${styles.dateBtn} ${locked ? styles.dateBtnLocked : ''}`} onClick={openPicker}>
+          <span style={{ fontSize: 12 }}>{locked ? '🔒' : '📅'}</span>
           {task.date ? (
             <span className={styles.dateBtnLabel}>
               {MON[isoToParts(task.date).m - 1]} {isoToParts(task.date).d}
@@ -154,8 +157,9 @@ export default function DeliverableRow({
           onBlur={(e) => updateTaskAction(task.id, { taskGeneral: e.target.value })}
           placeholder="Task (general)"
           className={styles.taskGeneralInput}
+          readOnly={locked}
         />
-        <TaskDetailsCell key={`d-${task.id}`} taskId={task.id} initialValue={task.taskDetails} />
+        <TaskDetailsCell key={`d-${task.id}`} taskId={task.id} initialValue={task.taskDetails} readOnly={locked} />
       </td>
       <td className={styles.td}>
         <select
@@ -163,6 +167,7 @@ export default function DeliverableRow({
           onChange={(e) => onStatusChange(e.target.value as Status)}
           className={styles.statusSelect}
           style={{ background: sm.bg, color: sm.color }}
+          disabled={locked}
         >
           <option value="Pending">Pending</option>
           <option value="Ongoing">Ongoing</option>
@@ -177,12 +182,19 @@ export default function DeliverableRow({
           placeholder="Any roadblocks?"
           rows={2}
           className={styles.helpTextarea}
+          readOnly={locked}
         />
       </td>
       <td className={styles.tdCenter}>
-        <button className={styles.deleteBtn} onClick={() => deleteTaskAction(task.id)}>
-          ×
-        </button>
+        {locked ? (
+          <span className={styles.lockedIcon} title="Locked — more than 2 weeks old">
+            🔒
+          </span>
+        ) : (
+          <button className={styles.deleteBtn} onClick={() => deleteTaskAction(task.id)}>
+            ×
+          </button>
+        )}
       </td>
     </tr>
   );

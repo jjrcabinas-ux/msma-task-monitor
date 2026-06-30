@@ -20,6 +20,7 @@ export default function MemberSignupForm() {
     birthDate: '',
     contactNumber: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [pending, startTransition] = useTransition();
 
@@ -88,15 +89,26 @@ export default function MemberSignupForm() {
           className={styles.input}
           disabled={pending}
         />
-        <input
-          type="password"
-          value={form.password}
-          onChange={(e) => updateField('password', e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && submit()}
-          placeholder="Choose a password"
-          className={styles.input}
-          disabled={pending}
-        />
+        <div className={styles.inputRow}>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={form.password}
+            onChange={(e) => updateField('password', e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submit()}
+            placeholder="Choose a password"
+            className={styles.input}
+            disabled={pending}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className={styles.toggleBtn}
+            disabled={pending}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? 'Hide' : 'Show'}
+          </button>
+        </div>
         <input
           type="date"
           value={form.birthDate}

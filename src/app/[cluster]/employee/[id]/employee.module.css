@@ -209,7 +209,22 @@
 
 .statsNumbers {
   display: flex;
-  gap: 24px;
+  align-items: stretch;
+}
+
+.statBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 22px;
+}
+
+.statBlock:first-child {
+  padding-left: 0;
+}
+
+.statBlock:not(:first-child) {
+  border-left: 1px solid #eef1f5;
 }
 
 .statLabel {
@@ -221,9 +236,10 @@
 }
 
 .statValue {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
 }
 
 .tableCard {

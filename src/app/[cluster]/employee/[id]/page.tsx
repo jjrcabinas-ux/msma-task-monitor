@@ -80,19 +80,19 @@ export default async function EmployeePage({
             </div>
           </div>
           <div className={styles.statsNumbers}>
-            <div>
+            <div className={styles.statBlock}>
               <div className={styles.statLabel}>Done</div>
               <div className={styles.statValue} style={{ color: '#16a34a' }}>
                 {counts.Done}
               </div>
             </div>
-            <div>
+            <div className={styles.statBlock}>
               <div className={styles.statLabel}>Ongoing</div>
               <div className={styles.statValue} style={{ color: '#3b82f6' }}>
                 {counts.Ongoing}
               </div>
             </div>
-            <div>
+            <div className={styles.statBlock}>
               <div className={styles.statLabel}>Pending</div>
               <div className={styles.statValue} style={{ color: '#f59e0b' }}>
                 {counts.Pending}

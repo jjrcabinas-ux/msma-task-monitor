@@ -6,6 +6,7 @@ import { isClusterSlug, clusterName } from '@/lib/clusters';
 import { todayISO, fmtShort, isoToParts } from '@/lib/dates';
 import { prisma } from '@/lib/db';
 import { displayName } from '@/lib/analytics';
+import { getMemberSession, isAdminUnlocked } from '@/lib/memberAuth';
 import styles from './layout.module.css';
 
 export async function generateMetadata({
@@ -45,9 +46,20 @@ export default async function ClusterLayout({
   const { y } = isoToParts(today);
   const todayLabel = `Today · ${fmtShort(today)}, ${y}`;
 
+  const isAdmin = await isAdminUnlocked(cluster);
+  const session = await getMemberSession(cluster);
+  const viewer = session ? roster.find((e) => e.id === session.employeeId) || null : null;
+
   return (
     <div className={styles.shell}>
-      <Sidebar cluster={cluster} clusterLabel={clusterName(cluster)} todayLabel={todayLabel} employees={counts} />
+      <Sidebar
+        cluster={cluster}
+        clusterLabel={clusterName(cluster)}
+        todayLabel={todayLabel}
+        employees={counts}
+        isAdmin={isAdmin}
+        viewerName={viewer ? displayName(viewer) : null}
+      />
       <main className={styles.main}>{children}</main>
     </div>
   );

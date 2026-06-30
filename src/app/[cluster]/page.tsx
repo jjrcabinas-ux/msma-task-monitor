@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getRosterWithTasks } from '@/lib/data';
 import { isClusterSlug } from '@/lib/clusters';
+import { isAdminUnlocked } from '@/lib/memberAuth';
 import { periodRange } from '@/lib/period';
 import { todayISO, fmtLongFromIso, fmtShort } from '@/lib/dates';
 import {
@@ -51,6 +52,7 @@ export default async function SummaryPage({
   const today = todayISO();
   const range = periodRange(period, sp.start, sp.end);
 
+  const isAdmin = await isAdminUnlocked(cluster);
   const roster = await getRosterWithTasks(cluster);
   const kpi = buildKpis(roster, range, today);
   const ring = ringGeometry(kpi.completionPct);
@@ -258,7 +260,13 @@ export default async function SummaryPage({
         >
           <div className={modalStyles.memberListScroll}>
             {roster.map(({ employee }, idx) => (
-              <MemberRow key={employee.id} employee={employee} cluster={cluster} avatarStyle={avatarStyle(34, employeeColor(idx))} />
+              <MemberRow
+                key={employee.id}
+                employee={employee}
+                cluster={cluster}
+                avatarStyle={avatarStyle(34, employeeColor(idx))}
+                canEdit={isAdmin}
+              />
             ))}
           </div>
         </KpiModalCard>

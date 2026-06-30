@@ -14,11 +14,13 @@ export default function DeliverablesTable({
   tasks,
   todayIso,
   highlightTaskId,
+  canEdit,
 }: {
   employeeId: string;
   tasks: TaskDTO[];
   todayIso: string;
   highlightTaskId: string | null;
+  canEdit: boolean;
 }) {
   const thisMonday = mondayOf(todayIso);
   const [weekStart, setWeekStart] = useState(thisMonday);
@@ -196,14 +198,22 @@ export default function DeliverablesTable({
           </thead>
           <tbody>
             {visibleTasks.map((task) => (
-              <DeliverableRow key={task.id} task={task} todayIso={todayIso} highlighted={task.id === highlightTaskId} />
+              <DeliverableRow
+                key={task.id}
+                task={task}
+                todayIso={todayIso}
+                highlighted={task.id === highlightTaskId}
+                canEdit={canEdit}
+              />
             ))}
           </tbody>
         </table>
       </div>
-      <AddDeliverableButton employeeId={employeeId} className={styles.addRow}>
-        + Add deliverable
-      </AddDeliverableButton>
+      {canEdit && (
+        <AddDeliverableButton employeeId={employeeId} className={styles.addRow}>
+          + Add deliverable
+        </AddDeliverableButton>
+      )}
     </div>
   );
 }

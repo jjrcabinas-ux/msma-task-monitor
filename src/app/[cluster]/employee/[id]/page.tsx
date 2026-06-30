@@ -5,6 +5,7 @@ import { isClusterSlug } from '@/lib/clusters';
 import { todayISO } from '@/lib/dates';
 import { statusCounts, displayName } from '@/lib/analytics';
 import { employeeColor } from '@/lib/colors';
+import { getMemberSession, isAdminUnlocked } from '@/lib/memberAuth';
 import RemoveMemberControl from '@/components/employee/RemoveMemberControl';
 import AddDeliverableButton from '@/components/employee/AddDeliverableButton';
 import DeliverablesTable from '@/components/employee/DeliverablesTable';
@@ -28,7 +29,11 @@ export default async function EmployeePage({
 
   const roster = await getRoster(cluster);
   const colorIndex = roster.findIndex((e) => e.id === id);
-  const canRemove = roster.length > 1;
+
+  const isAdmin = await isAdminUnlocked(cluster);
+  const session = await getMemberSession(cluster);
+  const canEdit = isAdmin || session?.employeeId === employee.id;
+  const canRemove = isAdmin && roster.length > 1;
 
   const counts = statusCounts(tasks);
   const total = tasks.length;
@@ -57,9 +62,11 @@ export default async function EmployeePage({
           </div>
           <div className={styles.actions}>
             {canRemove && <RemoveMemberControl employeeId={employee.id} cluster={cluster} name={name} />}
-            <AddDeliverableButton employeeId={employee.id} className={styles.addBtn}>
-              + Add Deliverable
-            </AddDeliverableButton>
+            {canEdit && (
+              <AddDeliverableButton employeeId={employee.id} className={styles.addBtn}>
+                + Add Deliverable
+              </AddDeliverableButton>
+            )}
           </div>
         </div>
 
@@ -99,6 +106,7 @@ export default async function EmployeePage({
         tasks={tasks}
         todayIso={todayISO()}
         highlightTaskId={highlight || null}
+        canEdit={canEdit}
       />
     </div>
   );

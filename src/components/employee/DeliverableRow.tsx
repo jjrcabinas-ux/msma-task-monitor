@@ -14,10 +14,12 @@ export default function DeliverableRow({
   task,
   todayIso,
   highlighted,
+  canEdit,
 }: {
   task: TaskDTO;
   todayIso: string;
   highlighted: boolean;
+  canEdit: boolean;
 }) {
   const rowRef = useRef<HTMLTableRowElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -87,7 +89,7 @@ export default function DeliverableRow({
     updateTaskAction(task.id, { status: value });
   }
 
-  const locked = isTaskLocked(task.date, clientToday);
+  const locked = !canEdit || isTaskLocked(task.date, clientToday);
   const sm = STATUS_META[status];
   const dim = daysInMonth(pickerYear, pickerMonth);
   const first = firstWeekdayOfMonth(pickerYear, pickerMonth);
@@ -187,7 +189,10 @@ export default function DeliverableRow({
       </td>
       <td className={styles.tdCenter}>
         {locked ? (
-          <span className={styles.lockedIcon} title="Locked — more than 2 weeks old">
+          <span
+            className={styles.lockedIcon}
+            title={!canEdit ? 'View only — you can only edit your own deliverables' : 'Locked — more than 2 weeks old'}
+          >
             🔒
           </span>
         ) : (

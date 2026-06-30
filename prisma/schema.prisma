@@ -17,6 +17,7 @@ model Employee {
   nickname      String   @default("")
   position      String   @default("")
   email         String   @default("")
+  password      String?
   birthDate     String?
   contactNumber String   @default("")
   createdAt     DateTime @default(now())

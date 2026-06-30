@@ -255,6 +255,42 @@
   border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
+.accountRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  margin-bottom: 2px;
+}
+
+.accountLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountLogoutBtn {
+  flex: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.accountLogoutBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
 .memberListScroll {
   max-height: 220px;
   overflow-y: auto;

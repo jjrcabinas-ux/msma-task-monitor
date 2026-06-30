@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import { addEmployeeAction } from '@/lib/actions';
+import { addEmployeeAction, memberLogoutAction } from '@/lib/actions';
 import type { ClusterSlug } from '@/lib/clusters';
 import { employeeColor } from '@/lib/colors';
 import { fmtShort, isoToParts, todayISO } from '@/lib/dates';
@@ -21,11 +21,15 @@ export default function Sidebar({
   clusterLabel,
   todayLabel,
   employees,
+  isAdmin,
+  viewerName,
 }: {
   cluster: ClusterSlug;
   clusterLabel: string;
   todayLabel: string;
   employees: NavEmployee[];
+  isAdmin: boolean;
+  viewerName: string | null;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -51,6 +55,13 @@ export default function Sidebar({
   }, []);
 
   const isSummaryActive = pathname === `/${cluster}`;
+
+  function logout() {
+    startTransition(async () => {
+      await memberLogoutAction(cluster);
+      router.refresh();
+    });
+  }
 
   function updateField(field: keyof typeof form, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -146,70 +157,71 @@ export default function Sidebar({
                 })}
               </div>
 
-              {adding ? (
-                <div className={styles.addBox}>
-                  <input
-                    autoFocus
-                    value={form.name}
-                    onChange={(e) => updateField('name', e.target.value)}
-                    placeholder="Full name"
-                    className={styles.addInput}
-                    disabled={pending}
-                  />
-                  <input
-                    value={form.nickname}
-                    onChange={(e) => updateField('nickname', e.target.value)}
-                    placeholder="Nickname (display name)"
-                    className={styles.addInput}
-                    disabled={pending}
-                  />
-                  <input
-                    value={form.position}
-                    onChange={(e) => updateField('position', e.target.value)}
-                    placeholder="Position"
-                    className={styles.addInput}
-                    disabled={pending}
-                  />
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => updateField('email', e.target.value)}
-                    placeholder="Email address"
-                    className={styles.addInput}
-                    disabled={pending}
-                  />
-                  <label className={styles.addFieldLabel}>Birth date</label>
-                  <input
-                    type="date"
-                    value={form.birthDate}
-                    onChange={(e) => updateField('birthDate', e.target.value)}
-                    className={styles.addInput}
-                    disabled={pending}
-                  />
-                  <input
-                    type="tel"
-                    value={form.contactNumber}
-                    onChange={(e) => updateField('contactNumber', e.target.value)}
-                    placeholder="Contact number"
-                    className={styles.addInput}
-                    disabled={pending}
-                  />
-                  {error && <div className={styles.addError}>{error}</div>}
-                  <div className={styles.addActions}>
-                    <button onClick={submitAdd} className={styles.addBtn} disabled={pending}>
-                      Add
-                    </button>
-                    <button onClick={cancelAdd} className={styles.cancelBtn} disabled={pending}>
-                      Cancel
-                    </button>
+              {isAdmin &&
+                (adding ? (
+                  <div className={styles.addBox}>
+                    <input
+                      autoFocus
+                      value={form.name}
+                      onChange={(e) => updateField('name', e.target.value)}
+                      placeholder="Full name"
+                      className={styles.addInput}
+                      disabled={pending}
+                    />
+                    <input
+                      value={form.nickname}
+                      onChange={(e) => updateField('nickname', e.target.value)}
+                      placeholder="Nickname (display name)"
+                      className={styles.addInput}
+                      disabled={pending}
+                    />
+                    <input
+                      value={form.position}
+                      onChange={(e) => updateField('position', e.target.value)}
+                      placeholder="Position"
+                      className={styles.addInput}
+                      disabled={pending}
+                    />
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => updateField('email', e.target.value)}
+                      placeholder="Email address"
+                      className={styles.addInput}
+                      disabled={pending}
+                    />
+                    <label className={styles.addFieldLabel}>Birth date</label>
+                    <input
+                      type="date"
+                      value={form.birthDate}
+                      onChange={(e) => updateField('birthDate', e.target.value)}
+                      className={styles.addInput}
+                      disabled={pending}
+                    />
+                    <input
+                      type="tel"
+                      value={form.contactNumber}
+                      onChange={(e) => updateField('contactNumber', e.target.value)}
+                      placeholder="Contact number"
+                      className={styles.addInput}
+                      disabled={pending}
+                    />
+                    {error && <div className={styles.addError}>{error}</div>}
+                    <div className={styles.addActions}>
+                      <button onClick={submitAdd} className={styles.addBtn} disabled={pending}>
+                        Add
+                      </button>
+                      <button onClick={cancelAdd} className={styles.cancelBtn} disabled={pending}>
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className={styles.addTrigger} onClick={() => setAdding(true)}>
-                  <div className={styles.addIcon}>+</div>
-                  <span className={styles.navLabel}>Add member</span>
-                </div>
-              )}
+                ) : (
+                  <div className={styles.addTrigger} onClick={() => setAdding(true)}>
+                    <div className={styles.addIcon}>+</div>
+                    <span className={styles.navLabel}>Add member</span>
+                  </div>
+                ))}
             </>
           )}
 
@@ -265,6 +277,19 @@ export default function Sidebar({
         </nav>
 
         <div className={styles.bottomLinks}>
+          {viewerName ? (
+            <div className={styles.accountRow}>
+              <span className={styles.accountLabel}>Logged in as {viewerName}</span>
+              <button type="button" className={styles.accountLogoutBtn} onClick={logout} disabled={pending}>
+                Log out
+              </button>
+            </div>
+          ) : (
+            <Link href={`/${cluster}/login`} className={styles.navItem} onClick={() => setMobileOpen(false)}>
+              <div className={styles.navIcon}>👤</div>
+              <span className={styles.navLabel}>{isAdmin ? 'Log in as a member' : 'Log in'}</span>
+            </Link>
+          )}
           <Link href="/" className={styles.navItem} onClick={() => setMobileOpen(false)}>
             <div className={styles.navIcon}>⌂</div>
             <span className={styles.navLabel}>All Clusters</span>

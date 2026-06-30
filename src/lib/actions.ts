@@ -5,6 +5,14 @@ import { cookies } from 'next/headers';
 import { prisma } from './db';
 import { CLUSTERS, clusterUnlockCookieName, type ClusterSlug } from './clusters';
 import { isTaskLocked, todayISO } from './dates';
+import {
+  canEditEmployee,
+  clearMemberSession,
+  hashPassword,
+  isAdminUnlocked,
+  setMemberSession,
+  verifyPassword,
+} from './memberAuth';
 import type { Status } from './types';
 
 function revalidateAll() {
@@ -29,6 +37,36 @@ export async function unlockClusterAction(
   return { ok: true };
 }
 
+export async function memberLoginAction(
+  cluster: ClusterSlug,
+  email: string,
+  password: string
+): Promise<{ id: string; name: string } | { error: string }> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const plainPassword = password.trim();
+  if (!normalizedEmail) return { error: 'Email is required.' };
+  if (!plainPassword) return { error: 'Password is required.' };
+
+  const employee = await prisma.employee.findFirst({
+    where: { cluster, email: { equals: normalizedEmail, mode: 'insensitive' } },
+  });
+  if (!employee) return { error: 'No team member found with that email.' };
+
+  if (!employee.password) {
+    await prisma.employee.update({ where: { id: employee.id }, data: { password: hashPassword(plainPassword) } });
+  } else if (!verifyPassword(plainPassword, employee.password)) {
+    return { error: 'Incorrect password.' };
+  }
+
+  await setMemberSession(cluster, employee.id);
+  return { id: employee.id, name: employee.name };
+}
+
+export async function memberLogoutAction(cluster: ClusterSlug): Promise<{ ok: true }> {
+  await clearMemberSession(cluster);
+  return { ok: true };
+}
+
 export async function addEmployeeAction(
   cluster: ClusterSlug,
   input: {
@@ -40,6 +78,8 @@ export async function addEmployeeAction(
     contactNumber: string;
   }
 ): Promise<{ id: string } | { error: string }> {
+  if (!(await isAdminUnlocked(cluster))) return { error: 'Admin access required.' };
+
   const name = input.name.trim();
   const nickname = input.nickname.trim();
   const position = input.position.trim();
@@ -77,6 +117,8 @@ export async function updateEmployeeAction(
     contactNumber: string;
   }
 ): Promise<{ ok: true } | { error: string }> {
+  if (!(await isAdminUnlocked(cluster))) return { error: 'Admin access required.' };
+
   const name = input.name.trim();
   const nickname = input.nickname.trim();
   const position = input.position.trim();
@@ -102,6 +144,7 @@ export async function updateEmployeeAction(
 }
 
 export async function removeEmployeeAction(id: string, cluster: ClusterSlug): Promise<{ ok: true } | { error: string }> {
+  if (!(await isAdminUnlocked(cluster))) return { error: 'Admin access required.' };
   const count = await prisma.employee.count({ where: { cluster } });
   if (count <= 1) return { error: 'At least one team member must remain.' };
   await prisma.employee.delete({ where: { id } });
@@ -113,7 +156,12 @@ export async function addTaskAction(
   employeeId: string,
   date: string | null = null,
   taskGeneral = ''
-): Promise<{ id: string }> {
+): Promise<{ id: string } | { error: string }> {
+  const employee = await prisma.employee.findUnique({ where: { id: employeeId }, select: { cluster: true } });
+  if (!employee) return { error: 'Team member not found.' };
+  if (!(await canEditEmployee(employee.cluster as ClusterSlug, employeeId))) {
+    return { error: 'You can only add deliverables for yourself.' };
+  }
   const task = await prisma.task.create({
     data: { employeeId, date, taskGeneral, taskDetails: '', status: 'Pending', helpNeeded: '' },
   });
@@ -125,8 +173,15 @@ export async function updateTaskAction(
   taskId: string,
   patch: Partial<{ date: string | null; taskGeneral: string; taskDetails: string; status: Status; helpNeeded: string }>
 ): Promise<{ ok: true } | { error: string }> {
-  const existing = await prisma.task.findUnique({ where: { id: taskId }, select: { date: true } });
-  if (existing && isTaskLocked(existing.date, todayISO())) {
+  const existing = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: { date: true, employeeId: true, employee: { select: { cluster: true } } },
+  });
+  if (!existing) return { error: 'Deliverable not found.' };
+  if (!(await canEditEmployee(existing.employee.cluster as ClusterSlug, existing.employeeId))) {
+    return { error: 'You can only edit your own deliverables.' };
+  }
+  if (isTaskLocked(existing.date, todayISO())) {
     return { error: 'This deliverable is more than 2 weeks old and can no longer be edited.' };
   }
   await prisma.task.update({ where: { id: taskId }, data: patch });
@@ -135,8 +190,15 @@ export async function updateTaskAction(
 }
 
 export async function deleteTaskAction(taskId: string): Promise<{ ok: true } | { error: string }> {
-  const existing = await prisma.task.findUnique({ where: { id: taskId }, select: { date: true } });
-  if (existing && isTaskLocked(existing.date, todayISO())) {
+  const existing = await prisma.task.findUnique({
+    where: { id: taskId },
+    select: { date: true, employeeId: true, employee: { select: { cluster: true } } },
+  });
+  if (!existing) return { error: 'Deliverable not found.' };
+  if (!(await canEditEmployee(existing.employee.cluster as ClusterSlug, existing.employeeId))) {
+    return { error: 'You can only edit your own deliverables.' };
+  }
+  if (isTaskLocked(existing.date, todayISO())) {
     return { error: 'This deliverable is more than 2 weeks old and can no longer be edited.' };
   }
   await prisma.task.delete({ where: { id: taskId } });

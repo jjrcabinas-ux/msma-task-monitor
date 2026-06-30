@@ -13,10 +13,12 @@ export default function MemberRow({
   employee,
   cluster,
   avatarStyle,
+  canEdit,
 }: {
   employee: EmployeeDTO;
   cluster: ClusterSlug;
   avatarStyle: CSSProperties;
+  canEdit: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -134,9 +136,11 @@ export default function MemberRow({
           <div className={styles.memberName}>{name}</div>
           <div className={styles.memberPosition}>{employee.position || '—'}</div>
         </div>
-        <button type="button" className={styles.editBtn} onClick={startEdit}>
-          Edit
-        </button>
+        {canEdit && (
+          <button type="button" className={styles.editBtn} onClick={startEdit}>
+            Edit
+          </button>
+        )}
       </div>
       <div className={styles.memberDetails}>
         <div>

@@ -368,12 +368,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  width: 108px;
+  box-sizing: border-box;
   padding: 6px 9px;
   border-radius: 7px;
   border: 1px solid #e6e9ef;
   background: #fff;
   cursor: pointer;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .dateBtn:hover {
@@ -407,11 +410,15 @@
 .dateBtnLabel {
   font-size: 12.5px;
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dateBtnPlaceholder {
   font-size: 12px;
   color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pickerPopover {

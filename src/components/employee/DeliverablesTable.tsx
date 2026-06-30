@@ -223,7 +223,7 @@ export default function DeliverablesTable({
       <div className={styles.tableScroll}>
         <table className={styles.table}>
           <colgroup>
-            <col style={{ width: 118 }} />
+            <col style={{ width: 140 }} />
             <col style={{ width: 140 }} />
             <col />
             <col style={{ width: 118 }} />

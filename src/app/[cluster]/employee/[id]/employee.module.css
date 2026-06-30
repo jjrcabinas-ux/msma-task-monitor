@@ -588,13 +588,19 @@
 
 .statusSelect {
   appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-sizing: border-box;
   border: none;
   border-radius: 7px;
-  padding: 5px 10px 5px 22px;
+  padding: 5px 8px 5px 20px;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
   width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .helpTextarea {

@@ -18,7 +18,13 @@
   background: transparent;
 }
 
-.tabActive {
+.tab:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.tabActive,
+.tabActive:hover {
   background: #2563eb;
   color: #fff;
 }
@@ -36,6 +42,10 @@
   font-size: 12.5px;
   color: #1e293b;
   background: #fff;
+}
+
+.dateInput:hover {
+  border-color: #cbd5e1;
 }
 
 .to {

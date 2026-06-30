@@ -1,4 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import type { TaskDTO } from '@/lib/types';
+import { addDays, fmtShort } from '@/lib/dates';
 import AddDeliverableButton from './AddDeliverableButton';
 import DeliverableRow from './DeliverableRow';
 import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
@@ -14,8 +18,24 @@ export default function DeliverablesTable({
   todayIso: string;
   highlightTaskId: string | null;
 }) {
+  const weekStart = addDays(todayIso, -6);
+  const highlightIsOlder = highlightTaskId != null && tasks.some((t) => t.id === highlightTaskId && t.date && t.date < weekStart);
+  const [showAll, setShowAll] = useState(highlightIsOlder);
+  const olderCount = tasks.filter((t) => t.date && t.date < weekStart).length;
+  const visibleTasks = showAll ? tasks : tasks.filter((t) => !t.date || t.date >= weekStart);
+
   return (
     <div className={styles.tableCard}>
+      {olderCount > 0 && (
+        <div className={styles.tableToolbar}>
+          <span className={styles.tableToolbarLabel}>
+            {showAll ? 'Showing all deliverables' : `Showing this week (since ${fmtShort(weekStart)})`}
+          </span>
+          <button type="button" className={styles.seeMoreLink} onClick={() => setShowAll((v) => !v)}>
+            {showAll ? 'Hide previous weeks' : `View previous weeks (${olderCount})`}
+          </button>
+        </div>
+      )}
       <div className={styles.tableScroll}>
         <table className={styles.table}>
           <colgroup>
@@ -35,7 +55,7 @@ export default function DeliverablesTable({
             </tr>
           </thead>
           <tbody>
-            {tasks.map((task) => (
+            {visibleTasks.map((task) => (
               <DeliverableRow key={task.id} task={task} todayIso={todayIso} highlighted={task.id === highlightTaskId} />
             ))}
           </tbody>

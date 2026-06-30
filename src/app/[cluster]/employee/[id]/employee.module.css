@@ -58,6 +58,10 @@
   cursor: pointer;
 }
 
+.removeBtn:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
 .addBtn {
   background: #2563eb;
   color: #fff;
@@ -68,6 +72,10 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);
+}
+
+.addBtn:hover:not(:disabled) {
+  background: #1d4ed8;
 }
 
 .addBtn:disabled,
@@ -123,6 +131,10 @@
   cursor: pointer;
 }
 
+.confirmRemoveBtn:hover {
+  background: #b91c1c;
+}
+
 .confirmCancelBtn {
   background: #f1f5f9;
   color: #475569;
@@ -132,6 +144,10 @@
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.confirmCancelBtn:hover {
+  background: #e2e8f0;
 }
 
 .errorText {
@@ -207,6 +223,20 @@
   overflow: visible;
 }
 
+.tableToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e6e9ef;
+}
+
+.tableToolbarLabel {
+  font-size: 12px;
+  color: #64748b;
+}
+
 .tableScroll {
   overflow-x: auto;
 }
@@ -237,7 +267,12 @@
   border-bottom: 1px solid #f1f5f9;
 }
 
-.rowHighlight {
+.row:hover {
+  background: #fafbfc;
+}
+
+.rowHighlight,
+.rowHighlight:hover {
   background: #eff6ff;
 }
 
@@ -267,6 +302,11 @@
   border: 1px solid #e6e9ef;
   background: #fff;
   cursor: pointer;
+}
+
+.dateBtn:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
 }
 
 .dateBtnLabel {
@@ -306,6 +346,10 @@
   background: #f1f5f9;
 }
 
+.pickerNavBtn:hover {
+  background: #e2e8f0;
+}
+
 .pickerMonthLabel {
   font-size: 13px;
   font-weight: 700;
@@ -342,7 +386,12 @@
   color: #334155;
 }
 
-.pickerDaySelected {
+.pickerDay:hover {
+  background: #f1f5f9;
+}
+
+.pickerDaySelected,
+.pickerDaySelected:hover {
   background: #2563eb;
   color: #fff;
   font-weight: 700;
@@ -398,6 +447,10 @@
   color: #2563eb;
   cursor: pointer;
   margin-top: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
 }
 
 .statusSelect {
@@ -436,6 +489,11 @@
   background: transparent;
 }
 
+.deleteBtn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
 .addRow {
   display: block;
   width: 100%;
@@ -448,6 +506,10 @@
   cursor: pointer;
   border: none;
   border-top: 1px solid #f1f5f9;
+}
+
+.addRow:hover {
+  background: #f8fafc;
 }
 
 @keyframes fadeIn {

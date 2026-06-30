@@ -165,7 +165,13 @@
   margin-bottom: 2px;
 }
 
-.navItemActive {
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.navItemActive,
+.navItemActive:hover {
   background: rgba(37, 99, 235, 0.22);
   color: #fff;
 }

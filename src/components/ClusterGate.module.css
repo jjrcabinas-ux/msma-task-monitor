@@ -55,6 +55,11 @@
   padding: 10px 12px;
   font-size: 13.5px;
   min-width: 0;
+  transition: border-color 0.15s ease;
+}
+
+.input:hover {
+  border-color: #94a3b8;
 }
 
 .toggleBtn {
@@ -67,6 +72,10 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.toggleBtn:hover:not(:disabled) {
+  background: #e2e8f0;
 }
 
 .toggleBtn:disabled {
@@ -91,6 +100,10 @@
   font-weight: 600;
   cursor: pointer;
   margin-top: 6px;
+}
+
+.btn:hover:not(:disabled) {
+  background: #1d4ed8;
 }
 
 .btn:disabled {

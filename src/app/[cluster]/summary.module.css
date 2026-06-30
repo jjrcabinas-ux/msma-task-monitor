@@ -35,6 +35,7 @@
   border: 1px solid #e6e9ef;
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s ease;
 }
 
 .kpiGrid {
@@ -53,6 +54,12 @@
 
 .kpiCard {
   padding: 16px 18px;
+}
+
+.kpiCard:hover,
+.kpiCardRing:hover {
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
 }
 
 .kpiLabel {
@@ -176,8 +183,14 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 5px 0;
+  padding: 5px 6px;
+  margin: 0 -6px;
+  border-radius: 7px;
   cursor: pointer;
+}
+
+.workloadRow:hover {
+  background: #f8fafc;
 }
 
 .workloadName {
@@ -220,8 +233,14 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 6px 0;
+  padding: 6px 6px;
+  margin: 0 -6px;
+  border-radius: 7px;
   cursor: pointer;
+}
+
+.lbRow:hover {
+  background: #f8fafc;
 }
 
 .lbRank {
@@ -390,6 +409,10 @@
   background: #f1f5f9;
 }
 
+.birCalNavBtn:hover {
+  background: #e2e8f0;
+}
+
 .birCalMonthLabel {
   font-size: 13.5px;
   font-weight: 700;
@@ -499,6 +522,10 @@
   justify-content: center;
 }
 
+.birCalModalClose:hover {
+  background: #e2e8f0;
+}
+
 .birCalModalBody {
   overflow-y: auto;
   padding: 10px 20px 18px;
@@ -511,7 +538,7 @@
   width: 100%;
   padding: 12px 4px;
   border: none;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid #f1f5f9;
   background: none;
   font: inherit;
   color: inherit;
@@ -526,7 +553,7 @@
 
 .birCalEmployeeList {
   padding-bottom: 8px;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .emptyNote {
@@ -565,6 +592,10 @@
   cursor: pointer;
 }
 
+.seeMoreBtn:hover {
+  background: #e2e8f0;
+}
+
 .snapshotRow {
   display: flex;
   align-items: center;
@@ -574,6 +605,11 @@
   cursor: pointer;
   border: 1px solid #f1f5f9;
   margin-bottom: 6px;
+}
+
+.snapshotRow:hover {
+  background: #f8fafc;
+  border-color: #e6e9ef;
 }
 
 .avatar {
@@ -630,6 +666,11 @@
 .empCard {
   padding: 16px 18px;
   cursor: pointer;
+}
+
+.empCard:hover {
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
 }
 
 .empCardTop {
@@ -696,7 +737,7 @@
   align-items: flex-start;
   gap: 14px;
   padding: 13px 20px;
-  border-bottom: 1px solid #f5f7fa;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .blockerRight {
@@ -717,6 +758,10 @@
   color: #2563eb;
   cursor: pointer;
   text-decoration: none;
+}
+
+.helpBtn:hover {
+  background: #dbeafe;
 }
 
 .blockerDate {

@@ -203,8 +203,21 @@
   display: flex;
   height: 11px;
   border-radius: 6px;
-  overflow: hidden;
   background: #f1f5f9;
+}
+
+.statsBar > div {
+  border-radius: 999px;
+  transform-origin: center;
+  transition: transform 0.15s ease;
+}
+
+.statsBar > div:not(:last-child) {
+  margin-right: 3px;
+}
+
+.statsBar > div:hover {
+  transform: scaleY(1.35);
 }
 
 .statsNumbers {

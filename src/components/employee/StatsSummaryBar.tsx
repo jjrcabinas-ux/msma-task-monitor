@@ -34,9 +34,9 @@ export default function StatsSummaryBar({
     <>
       <div className={styles.statsBarWrap}>
         <div className={styles.statsBar}>
-          <div style={{ width: `${seg(counts.Done)}%`, background: '#16a34a' }} />
-          <div style={{ width: `${seg(counts.Ongoing)}%`, background: '#3b82f6' }} />
-          <div style={{ width: `${seg(counts.Pending)}%`, background: '#f59e0b' }} />
+          {counts.Done > 0 && <div style={{ width: `${seg(counts.Done)}%`, background: '#16a34a' }} />}
+          {counts.Ongoing > 0 && <div style={{ width: `${seg(counts.Ongoing)}%`, background: '#3b82f6' }} />}
+          {counts.Pending > 0 && <div style={{ width: `${seg(counts.Pending)}%`, background: '#f59e0b' }} />}
         </div>
       </div>
       <div className={styles.statsNumbers}>

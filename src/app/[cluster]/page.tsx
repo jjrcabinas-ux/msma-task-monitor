@@ -279,9 +279,9 @@ export default async function SummaryPage({
         <div className={`${styles.card} ${styles.cardPad}`}>
           <div className={styles.sectionTitle}>Task Status — Whole Team</div>
           <div className={styles.stackBar}>
-            <div style={{ width: `${teamBar.donePct}%`, background: '#16a34a' }} />
-            <div style={{ width: `${teamBar.ongoingPct}%`, background: '#3b82f6' }} />
-            <div style={{ width: `${teamBar.pendingPct}%`, background: '#f59e0b' }} />
+            {kpi.done > 0 && <div style={{ width: `${teamBar.donePct}%`, background: '#16a34a' }} />}
+            {kpi.ongoing > 0 && <div style={{ width: `${teamBar.ongoingPct}%`, background: '#3b82f6' }} />}
+            {kpi.pending > 0 && <div style={{ width: `${teamBar.pendingPct}%`, background: '#f59e0b' }} />}
           </div>
           <div className={styles.legendRow}>
             <div className={styles.legendItem}>
@@ -371,9 +371,9 @@ export default async function SummaryPage({
                 <div className={styles.empCardPct}>{c.completionPct}%</div>
               </div>
               <div className={styles.empCardBar}>
-                <div style={{ width: `${segPct(c.done)}%`, background: '#16a34a' }} />
-                <div style={{ width: `${segPct(c.ongoing)}%`, background: '#3b82f6' }} />
-                <div style={{ width: `${segPct(c.pending)}%`, background: '#f59e0b' }} />
+                {c.done > 0 && <div style={{ width: `${segPct(c.done)}%`, background: '#16a34a' }} />}
+                {c.ongoing > 0 && <div style={{ width: `${segPct(c.ongoing)}%`, background: '#3b82f6' }} />}
+                {c.pending > 0 && <div style={{ width: `${segPct(c.pending)}%`, background: '#f59e0b' }} />}
               </div>
               <div className={styles.empCardStats}>
                 <span>

@@ -189,37 +189,68 @@
 }
 
 .navLabel {
+  flex: 1;
+  min-width: 0;
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sectionLabel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.navItemToggle {
   width: 100%;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: #64748b;
-  padding: 16px 12px 8px;
   background: none;
   border: none;
-  cursor: pointer;
-  font-family: inherit;
+  font: inherit;
+  color: inherit;
+  text-align: left;
 }
 
-.sectionLabel:hover {
-  color: #94a3b8;
-}
-
-.sectionLabelChevron {
+.navChevron {
   font-size: 9px;
+  color: #64748b;
   transition: transform 0.15s ease;
 }
 
-.sectionLabelChevronOpen {
+.navChevronOpen {
   transform: rotate(90deg);
+}
+
+.soonBadge {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.14);
+  border-radius: 5px;
+  padding: 2px 6px;
+  text-transform: uppercase;
+}
+
+.comingSoonBox {
+  padding: 10px 14px 14px 44px;
+  margin-bottom: 4px;
+}
+
+.comingSoonLead {
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.comingSoonList {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.bottomLinks {
+  padding: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .memberListScroll {

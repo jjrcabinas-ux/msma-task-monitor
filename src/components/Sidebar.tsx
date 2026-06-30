@@ -36,6 +36,8 @@ export default function Sidebar({
   const [clientTodayLabel, setClientTodayLabel] = useState(todayLabel);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(() => employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`));
+  const [auditOpen, setAuditOpen] = useState(false);
+  const [taxOpen, setTaxOpen] = useState(false);
 
   useEffect(() => {
     function syncLabel() {
@@ -102,11 +104,6 @@ export default function Sidebar({
         </div>
 
         <nav className={styles.nav}>
-          <Link href="/" className={styles.navItem} onClick={() => setMobileOpen(false)}>
-            <div className={styles.navIcon}>⌂</div>
-            <span className={styles.navLabel}>All Clusters</span>
-          </Link>
-
           <Link
             href={`/${cluster}`}
             className={`${styles.navItem} ${isSummaryActive ? styles.navItemActive : ''}`}
@@ -118,12 +115,13 @@ export default function Sidebar({
 
           <button
             type="button"
-            className={styles.sectionLabel}
+            className={`${styles.navItem} ${styles.navItemToggle}`}
             onClick={() => setMembersOpen((v) => !v)}
             aria-expanded={membersOpen}
           >
-            <span>TEAM MEMBERS</span>
-            <span className={`${styles.sectionLabelChevron} ${membersOpen ? styles.sectionLabelChevronOpen : ''}`}>▶</span>
+            <div className={styles.navIcon}>☰</div>
+            <span className={styles.navLabel}>Team Members</span>
+            <span className={`${styles.navChevron} ${membersOpen ? styles.navChevronOpen : ''}`}>▶</span>
           </button>
 
           {membersOpen && (
@@ -214,7 +212,64 @@ export default function Sidebar({
               )}
             </>
           )}
+
+          <button
+            type="button"
+            className={`${styles.navItem} ${styles.navItemToggle}`}
+            onClick={() => setAuditOpen((v) => !v)}
+            aria-expanded={auditOpen}
+          >
+            <div className={styles.navIcon}>🛡</div>
+            <span className={styles.navLabel}>Audit Monitoring</span>
+            <span className={styles.soonBadge}>Soon</span>
+            <span className={`${styles.navChevron} ${auditOpen ? styles.navChevronOpen : ''}`}>▶</span>
+          </button>
+
+          {auditOpen && (
+            <div className={styles.comingSoonBox}>
+              <p className={styles.comingSoonLead}>
+                Track audit engagements end-to-end alongside regular deliverables.
+              </p>
+              <ul className={styles.comingSoonList}>
+                <li>See audit assignments, deadlines, and review status per member</li>
+                <li>Flag open PBC items and follow-up requests</li>
+                <li>Surface engagements nearing their deadline cluster-wide</li>
+              </ul>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className={`${styles.navItem} ${styles.navItemToggle}`}
+            onClick={() => setTaxOpen((v) => !v)}
+            aria-expanded={taxOpen}
+          >
+            <div className={styles.navIcon}>🧾</div>
+            <span className={styles.navLabel}>Tax Compliance Monitoring</span>
+            <span className={styles.soonBadge}>Soon</span>
+            <span className={`${styles.navChevron} ${taxOpen ? styles.navChevronOpen : ''}`}>▶</span>
+          </button>
+
+          {taxOpen && (
+            <div className={styles.comingSoonBox}>
+              <p className={styles.comingSoonLead}>
+                Keep tax filing deadlines and statutory compliance visible per client.
+              </p>
+              <ul className={styles.comingSoonList}>
+                <li>Track BIR/SEC filing due dates and submission status</li>
+                <li>Alert on upcoming and missed compliance deadlines</li>
+                <li>Assign filings to team members and monitor completion</li>
+              </ul>
+            </div>
+          )}
         </nav>
+
+        <div className={styles.bottomLinks}>
+          <Link href="/" className={styles.navItem} onClick={() => setMobileOpen(false)}>
+            <div className={styles.navIcon}>⌂</div>
+            <span className={styles.navLabel}>All Clusters</span>
+          </Link>
+        </div>
 
         <div className={styles.footer}>{clientTodayLabel}</div>
       </aside>

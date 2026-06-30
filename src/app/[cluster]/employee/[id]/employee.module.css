@@ -338,6 +338,11 @@
   background: #f1f5f9;
 }
 
+.weekMenuItemActive {
+  color: #2563eb;
+  font-weight: 700;
+}
+
 .tableScroll {
   overflow-x: visible;
 }

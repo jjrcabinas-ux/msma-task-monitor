@@ -127,18 +127,16 @@ export default function DeliverablesTable({
             </button>
             {panel === 'menu' && (
               <div ref={panelRef} className={`${styles.popover} ${styles.weekMenuPopover}`}>
-                {(showAll || !isCurrentWeek) && (
-                  <button
-                    type="button"
-                    className={styles.weekMenuItem}
-                    onClick={() => {
-                      setRange(thisMonday, addDays(thisMonday, 4));
-                      setPanel('none');
-                    }}
-                  >
-                    This week
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className={`${styles.weekMenuItem} ${isCurrentWeek && !showAll ? styles.weekMenuItemActive : ''}`}
+                  onClick={() => {
+                    setRange(thisMonday, addDays(thisMonday, 4));
+                    setPanel('none');
+                  }}
+                >
+                  This week
+                </button>
                 <button
                   type="button"
                   className={styles.weekMenuItem}

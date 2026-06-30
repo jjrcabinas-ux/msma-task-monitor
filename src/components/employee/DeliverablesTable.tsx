@@ -209,7 +209,7 @@ export default function DeliverablesTable({
           <colgroup>
             <col style={{ width: 118 }} />
             <col />
-            <col style={{ width: 118 }} />
+            <col style={{ width: 140 }} />
             <col style={{ width: 118 }} />
             <col style={{ width: 376 }} />
             <col style={{ width: 40 }} />

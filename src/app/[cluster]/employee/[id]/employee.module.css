@@ -368,6 +368,7 @@
   border: 1px solid #e6e9ef;
   background: #fff;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .dateBtn:hover {

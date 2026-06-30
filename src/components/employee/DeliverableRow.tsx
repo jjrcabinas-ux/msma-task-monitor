@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { deleteTaskAction, updateTaskAction } from '@/lib/actions';
 import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isTaskLocked, isoToParts, todayISO } from '@/lib/dates';
 import { STATUS_META } from '@/lib/colors';
@@ -25,6 +26,7 @@ export default function DeliverableRow({
   const popoverRef = useRef<HTMLDivElement>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerField, setPickerField] = useState<'date' | 'dueDate'>('date');
+  const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null);
   const initialParts = task.date ? isoToParts(task.date) : isoToParts(todayIso);
   const [pickerYear, setPickerYear] = useState(initialParts.y);
   const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
@@ -57,13 +59,17 @@ export default function DeliverableRow({
     return () => document.removeEventListener('mousedown', onOutside);
   }, [pickerOpen]);
 
-  function openPicker(field: 'date' | 'dueDate') {
+  function openPicker(field: 'date' | 'dueDate', anchor: HTMLElement) {
     if (lockedForFields) return;
     const current = field === 'date' ? task.date : task.dueDate;
     const parts = current ? isoToParts(current) : isoToParts(clientToday);
     setPickerYear(parts.y);
     setPickerMonth(parts.m - 1);
     setPickerField(field);
+    const rect = anchor.getBoundingClientRect();
+    const popoverWidth = 228;
+    const left = Math.min(rect.left, window.innerWidth - popoverWidth - 8);
+    setPopoverPos({ top: rect.bottom + 6, left: Math.max(8, left) });
     setPickerOpen(true);
   }
 
@@ -115,8 +121,13 @@ export default function DeliverableRow({
   }
 
   function renderPicker(activeValue: string | null) {
-    return (
-      <div ref={popoverRef} className={`${styles.popover} ${styles.pickerPopover}`}>
+    if (!popoverPos) return null;
+    return createPortal(
+      <div
+        ref={popoverRef}
+        className={`${styles.popover} ${styles.pickerPopover}`}
+        style={{ position: 'fixed', top: popoverPos.top, left: popoverPos.left, right: 'auto' }}
+      >
         <div className={styles.pickerHeader}>
           <div className={styles.pickerNavBtn} onClick={() => stepMonth(-1)}>
             ‹
@@ -153,7 +164,8 @@ export default function DeliverableRow({
             );
           })}
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
@@ -162,7 +174,7 @@ export default function DeliverableRow({
       <td className={styles.td}>
         <div
           className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`}
-          onClick={() => openPicker('date')}
+          onClick={(e) => openPicker('date', e.currentTarget)}
         >
           <span style={{ fontSize: 12 }}>{lockedForFields ? '🔒' : '📅'}</span>
           {task.date ? (
@@ -189,7 +201,7 @@ export default function DeliverableRow({
       <td className={styles.td}>
         <div
           className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`}
-          onClick={() => openPicker('dueDate')}
+          onClick={(e) => openPicker('dueDate', e.currentTarget)}
         >
           <span style={{ fontSize: 12 }}>{lockedForFields ? '🔒' : '📅'}</span>
           {task.dueDate ? (

@@ -25,15 +25,14 @@ export default function DeliverablesTable({
   const thisMonday = mondayOf(todayIso);
   const [weekStart, setWeekStart] = useState(thisMonday);
   const [weekEnd, setWeekEnd] = useState(addDays(thisMonday, 4));
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [panel, setPanel] = useState<'none' | 'menu' | 'picker'>('none');
   const [pendingStart, setPendingStart] = useState<string | null>(null);
   const initialParts = isoToParts(todayIso);
   const [pickerYear, setPickerYear] = useState(initialParts.y);
   const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const isCurrentWeek = weekStart === thisMonday && weekEnd === addDays(thisMonday, 4);
-  const olderCount = tasks.filter((t) => t.date && t.date < weekStart).length;
   const visibleTasks = tasks.filter((t) => !t.date || (t.date >= weekStart && t.date <= weekEnd));
 
   function setRange(start: string, end: string) {
@@ -52,23 +51,23 @@ export default function DeliverablesTable({
   }, [highlightTaskId]);
 
   useEffect(() => {
-    if (!pickerOpen) return;
+    if (panel === 'none') return;
     function onOutside(e: MouseEvent) {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setPickerOpen(false);
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setPanel('none');
         setPendingStart(null);
       }
     }
     document.addEventListener('mousedown', onOutside);
     return () => document.removeEventListener('mousedown', onOutside);
-  }, [pickerOpen]);
+  }, [panel]);
 
   function openPicker() {
     const parts = isoToParts(weekEnd);
     setPickerYear(parts.y);
     setPickerMonth(parts.m - 1);
     setPendingStart(null);
-    setPickerOpen(true);
+    setPanel('picker');
   }
 
   function stepMonth(delta: number) {
@@ -94,7 +93,7 @@ export default function DeliverablesTable({
     const to = pendingStart < iso ? iso : pendingStart;
     setRange(from, to);
     setPendingStart(null);
-    setPickerOpen(false);
+    setPanel('none');
   }
 
   const dim = daysInMonth(pickerYear, pickerMonth);
@@ -111,26 +110,55 @@ export default function DeliverablesTable({
           {isCurrentWeek ? `Showing this week (${fmtShort(weekStart)} – ${fmtShort(weekEnd)})` : `Showing ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`}
         </span>
         <div className={styles.tableToolbarActions}>
-          {!isCurrentWeek && (
-            <button type="button" className={styles.seeMoreLink} onClick={() => setRange(thisMonday, addDays(thisMonday, 4))}>
-              Back to this week
-            </button>
-          )}
-          {isCurrentWeek && olderCount > 0 && (
+          <div style={{ position: 'relative' }}>
             <button
               type="button"
-              className={styles.seeMoreLink}
-              onClick={() => setRange(addDays(weekStart, -7), addDays(weekStart, -3))}
+              className={styles.weekMenuBtn}
+              onClick={() => setPanel((p) => (p === 'menu' ? 'none' : 'menu'))}
             >
-              View previous weeks ({olderCount})
+              View weeks <span className={styles.weekMenuChevron}>▾</span>
             </button>
-          )}
-          <div style={{ position: 'relative' }}>
-            <button type="button" className={styles.calendarIconBtn} onClick={openPicker} title="Pick a specific week">
-              📅
-            </button>
-            {pickerOpen && (
-              <div ref={popoverRef} className={`${styles.popover} ${styles.pickerPopover}`} style={{ top: 30, right: 0, left: 'auto' }}>
+            {panel === 'menu' && (
+              <div ref={panelRef} className={`${styles.popover} ${styles.weekMenuPopover}`}>
+                {!isCurrentWeek && (
+                  <button
+                    type="button"
+                    className={styles.weekMenuItem}
+                    onClick={() => {
+                      setRange(thisMonday, addDays(thisMonday, 4));
+                      setPanel('none');
+                    }}
+                  >
+                    This week
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={styles.weekMenuItem}
+                  onClick={() => {
+                    setRange(addDays(weekStart, -7), addDays(weekStart, -3));
+                    setPanel('none');
+                  }}
+                >
+                  View previous week
+                </button>
+                <button
+                  type="button"
+                  className={styles.weekMenuItem}
+                  onClick={() => {
+                    setRange(addDays(weekStart, 7), addDays(weekStart, 11));
+                    setPanel('none');
+                  }}
+                >
+                  View upcoming week
+                </button>
+                <button type="button" className={styles.weekMenuItem} onClick={openPicker}>
+                  View custom date…
+                </button>
+              </div>
+            )}
+            {panel === 'picker' && (
+              <div ref={panelRef} className={`${styles.popover} ${styles.pickerPopover}`} style={{ top: 36, right: 0, left: 'auto' }}>
                 <div className={styles.pickerHeader}>
                   <div className={styles.pickerNavBtn} onClick={() => stepMonth(-1)}>
                     ‹
@@ -160,13 +188,11 @@ export default function DeliverablesTable({
                     const isPendingStart = pendingStart === day.iso;
                     const inAppliedRange = !pendingStart && day.iso >= weekStart && day.iso <= weekEnd;
                     const isToday = day.iso === todayIso;
-                    const isFuture = day.iso > todayIso;
                     return (
                       <div
                         key={day.iso}
                         className={`${styles.pickerDay} ${inAppliedRange || isPendingStart ? styles.pickerDaySelected : ''} ${!inAppliedRange && !isPendingStart && isToday ? styles.pickerDayToday : ''}`}
-                        style={isFuture ? { opacity: 0.35, cursor: 'default' } : undefined}
-                        onClick={() => !isFuture && onDayClick(day.iso)}
+                        onClick={() => onDayClick(day.iso)}
                       >
                         {day.label}
                       </div>

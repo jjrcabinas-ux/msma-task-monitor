@@ -10,6 +10,7 @@ import StickyOffsetMeasurer from '@/components/StickyOffsetMeasurer';
 import RemoveMemberControl from '@/components/employee/RemoveMemberControl';
 import AddDeliverableButton from '@/components/employee/AddDeliverableButton';
 import DeliverablesTable from '@/components/employee/DeliverablesTable';
+import StatsSummaryBar from '@/components/employee/StatsSummaryBar';
 import styles from './employee.module.css';
 
 export default async function EmployeePage({
@@ -39,7 +40,6 @@ export default async function EmployeePage({
   const counts = statusCounts(tasks);
   const total = tasks.length;
   const completionPct = total ? Math.round((counts.Done / total) * 100) : 0;
-  const seg = (n: number) => (total ? (n / total) * 100 : 0);
   const name = displayName(employee);
 
   return (
@@ -72,33 +72,7 @@ export default async function EmployeePage({
         </div>
 
         <div className={styles.statsCard}>
-          <div className={styles.statsBarWrap}>
-            <div className={styles.statsBar}>
-              <div style={{ width: `${seg(counts.Done)}%`, background: '#16a34a' }} />
-              <div style={{ width: `${seg(counts.Ongoing)}%`, background: '#3b82f6' }} />
-              <div style={{ width: `${seg(counts.Pending)}%`, background: '#f59e0b' }} />
-            </div>
-          </div>
-          <div className={styles.statsNumbers}>
-            <div className={styles.statBlock}>
-              <div className={styles.statLabel}>Done</div>
-              <div className={styles.statValue} style={{ color: '#16a34a' }}>
-                {counts.Done}
-              </div>
-            </div>
-            <div className={styles.statBlock}>
-              <div className={styles.statLabel}>Ongoing</div>
-              <div className={styles.statValue} style={{ color: '#3b82f6' }}>
-                {counts.Ongoing}
-              </div>
-            </div>
-            <div className={styles.statBlock}>
-              <div className={styles.statLabel}>Pending</div>
-              <div className={styles.statValue} style={{ color: '#f59e0b' }}>
-                {counts.Pending}
-              </div>
-            </div>
-          </div>
+          <StatsSummaryBar tasks={tasks} cluster={cluster} employeeId={employee.id} counts={counts} />
         </div>
       </StickyOffsetMeasurer>
 

@@ -35,6 +35,7 @@ export default function Sidebar({
   const [pending, startTransition] = useTransition();
   const [clientTodayLabel, setClientTodayLabel] = useState(todayLabel);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(() => employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`));
 
   useEffect(() => {
     function syncLabel() {
@@ -115,91 +116,103 @@ export default function Sidebar({
             <span className={styles.navLabel}>Team Summary</span>
           </Link>
 
-          <div className={styles.sectionLabel}>TEAM MEMBERS</div>
+          <button
+            type="button"
+            className={styles.sectionLabel}
+            onClick={() => setMembersOpen((v) => !v)}
+            aria-expanded={membersOpen}
+          >
+            <span>TEAM MEMBERS</span>
+            <span className={`${styles.sectionLabelChevron} ${membersOpen ? styles.sectionLabelChevronOpen : ''}`}>▶</span>
+          </button>
 
-          <div className={styles.memberListScroll}>
-            {employees.map((emp, idx) => {
-              const active = pathname === `/${cluster}/employee/${emp.id}`;
-              return (
-                <Link
-                  key={emp.id}
-                  href={`/${cluster}/employee/${emp.id}`}
-                  className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <div className={styles.navAvatar} style={{ background: employeeColor(idx) }}>
-                    {emp.name[0]}
-                  </div>
-                  <span className={styles.navName}>{emp.name}</span>
-                  <span className={styles.navPct}>{emp.completionPct}%</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {adding ? (
-            <div className={styles.addBox}>
-              <input
-                autoFocus
-                value={form.name}
-                onChange={(e) => updateField('name', e.target.value)}
-                placeholder="Full name"
-                className={styles.addInput}
-                disabled={pending}
-              />
-              <input
-                value={form.nickname}
-                onChange={(e) => updateField('nickname', e.target.value)}
-                placeholder="Nickname (display name)"
-                className={styles.addInput}
-                disabled={pending}
-              />
-              <input
-                value={form.position}
-                onChange={(e) => updateField('position', e.target.value)}
-                placeholder="Position"
-                className={styles.addInput}
-                disabled={pending}
-              />
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => updateField('email', e.target.value)}
-                placeholder="Email address"
-                className={styles.addInput}
-                disabled={pending}
-              />
-              <label className={styles.addFieldLabel}>Birth date</label>
-              <input
-                type="date"
-                value={form.birthDate}
-                onChange={(e) => updateField('birthDate', e.target.value)}
-                className={styles.addInput}
-                disabled={pending}
-              />
-              <input
-                type="tel"
-                value={form.contactNumber}
-                onChange={(e) => updateField('contactNumber', e.target.value)}
-                placeholder="Contact number"
-                className={styles.addInput}
-                disabled={pending}
-              />
-              {error && <div className={styles.addError}>{error}</div>}
-              <div className={styles.addActions}>
-                <button onClick={submitAdd} className={styles.addBtn} disabled={pending}>
-                  Add
-                </button>
-                <button onClick={cancelAdd} className={styles.cancelBtn} disabled={pending}>
-                  Cancel
-                </button>
+          {membersOpen && (
+            <>
+              <div className={styles.memberListScroll}>
+                {employees.map((emp, idx) => {
+                  const active = pathname === `/${cluster}/employee/${emp.id}`;
+                  return (
+                    <Link
+                      key={emp.id}
+                      href={`/${cluster}/employee/${emp.id}`}
+                      className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <div className={styles.navAvatar} style={{ background: employeeColor(idx) }}>
+                        {emp.name[0]}
+                      </div>
+                      <span className={styles.navName}>{emp.name}</span>
+                      <span className={styles.navPct}>{emp.completionPct}%</span>
+                    </Link>
+                  );
+                })}
               </div>
-            </div>
-          ) : (
-            <div className={styles.addTrigger} onClick={() => setAdding(true)}>
-              <div className={styles.addIcon}>+</div>
-              <span className={styles.navLabel}>Add member</span>
-            </div>
+
+              {adding ? (
+                <div className={styles.addBox}>
+                  <input
+                    autoFocus
+                    value={form.name}
+                    onChange={(e) => updateField('name', e.target.value)}
+                    placeholder="Full name"
+                    className={styles.addInput}
+                    disabled={pending}
+                  />
+                  <input
+                    value={form.nickname}
+                    onChange={(e) => updateField('nickname', e.target.value)}
+                    placeholder="Nickname (display name)"
+                    className={styles.addInput}
+                    disabled={pending}
+                  />
+                  <input
+                    value={form.position}
+                    onChange={(e) => updateField('position', e.target.value)}
+                    placeholder="Position"
+                    className={styles.addInput}
+                    disabled={pending}
+                  />
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => updateField('email', e.target.value)}
+                    placeholder="Email address"
+                    className={styles.addInput}
+                    disabled={pending}
+                  />
+                  <label className={styles.addFieldLabel}>Birth date</label>
+                  <input
+                    type="date"
+                    value={form.birthDate}
+                    onChange={(e) => updateField('birthDate', e.target.value)}
+                    className={styles.addInput}
+                    disabled={pending}
+                  />
+                  <input
+                    type="tel"
+                    value={form.contactNumber}
+                    onChange={(e) => updateField('contactNumber', e.target.value)}
+                    placeholder="Contact number"
+                    className={styles.addInput}
+                    disabled={pending}
+                  />
+                  {error && <div className={styles.addError}>{error}</div>}
+                  <div className={styles.addActions}>
+                    <button onClick={submitAdd} className={styles.addBtn} disabled={pending}>
+                      Add
+                    </button>
+                    <button onClick={cancelAdd} className={styles.cancelBtn} disabled={pending}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.addTrigger} onClick={() => setAdding(true)}>
+                  <div className={styles.addIcon}>+</div>
+                  <span className={styles.navLabel}>Add member</span>
+                </div>
+              )}
+            </>
           )}
         </nav>
 

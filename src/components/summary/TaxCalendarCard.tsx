@@ -80,8 +80,9 @@ export default function TaxCalendarCard({
     setExpandedFilingId(null);
     startTransition(async () => {
       const taskGeneral = `${filing.code} — ${filing.label} (${filing.periodLabel})`;
-      const { id } = await addTaskAction(employeeId, filing.dueDate, taskGeneral);
-      router.push(`/${cluster}/employee/${employeeId}?highlight=${id}`);
+      const result = await addTaskAction(employeeId, filing.dueDate, taskGeneral);
+      if ('error' in result) return;
+      router.push(`/${cluster}/employee/${employeeId}?highlight=${result.id}`);
     });
   }
 

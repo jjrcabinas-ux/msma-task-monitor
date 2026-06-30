@@ -211,17 +211,6 @@ export default function DeliverableRow({
         </div>
         {pickerOpen && pickerField === 'date' && renderPicker(task.date)}
       </td>
-      <td className={styles.tdText}>
-        <input
-          key={`g-${task.id}`}
-          defaultValue={task.taskGeneral}
-          onBlur={(e) => updateTaskAction(task.id, { taskGeneral: e.target.value })}
-          placeholder="Task (general)"
-          className={styles.taskGeneralInput}
-          readOnly={lockedForFields}
-        />
-        <TaskDetailsCell key={`d-${task.id}`} taskId={task.id} initialValue={task.taskDetails} readOnly={lockedForFields} />
-      </td>
       <td className={styles.td}>
         <div
           className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`}
@@ -237,6 +226,17 @@ export default function DeliverableRow({
           )}
         </div>
         {pickerOpen && pickerField === 'dueDate' && renderPicker(task.dueDate)}
+      </td>
+      <td className={styles.tdText}>
+        <input
+          key={`g-${task.id}`}
+          defaultValue={task.taskGeneral}
+          onBlur={(e) => updateTaskAction(task.id, { taskGeneral: e.target.value })}
+          placeholder="Task (general)"
+          className={styles.taskGeneralInput}
+          readOnly={lockedForFields}
+        />
+        <TaskDetailsCell key={`d-${task.id}`} taskId={task.id} initialValue={task.taskDetails} readOnly={lockedForFields} />
       </td>
       <td className={styles.td}>
         <select

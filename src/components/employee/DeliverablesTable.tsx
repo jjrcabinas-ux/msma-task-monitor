@@ -27,15 +27,17 @@ export default function DeliverablesTable({
   const [weekEnd, setWeekEnd] = useState(addDays(thisMonday, 4));
   const [panel, setPanel] = useState<'none' | 'menu' | 'picker'>('none');
   const [pendingStart, setPendingStart] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const initialParts = isoToParts(todayIso);
   const [pickerYear, setPickerYear] = useState(initialParts.y);
   const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
   const panelRef = useRef<HTMLDivElement>(null);
 
   const isCurrentWeek = weekStart === thisMonday && weekEnd === addDays(thisMonday, 4);
-  const visibleTasks = tasks.filter((t) => !t.date || (t.date >= weekStart && t.date <= weekEnd));
+  const visibleTasks = showAll ? tasks : tasks.filter((t) => !t.date || (t.date >= weekStart && t.date <= weekEnd));
 
   function setRange(start: string, end: string) {
+    setShowAll(false);
     setWeekStart(start);
     setWeekEnd(end);
   }
@@ -107,7 +109,11 @@ export default function DeliverablesTable({
     <div className={styles.tableCard}>
       <div className={styles.tableToolbar}>
         <span className={styles.tableToolbarLabel}>
-          {isCurrentWeek ? `Showing this week (${fmtShort(weekStart)} – ${fmtShort(weekEnd)})` : `Showing ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`}
+          {showAll
+            ? 'Showing all deliverables'
+            : isCurrentWeek
+              ? `Showing this week (${fmtShort(weekStart)} – ${fmtShort(weekEnd)})`
+              : `Showing ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`}
         </span>
         <div className={styles.tableToolbarActions}>
           <div style={{ position: 'relative' }}>
@@ -120,7 +126,7 @@ export default function DeliverablesTable({
             </button>
             {panel === 'menu' && (
               <div ref={panelRef} className={`${styles.popover} ${styles.weekMenuPopover}`}>
-                {!isCurrentWeek && (
+                {(showAll || !isCurrentWeek) && (
                   <button
                     type="button"
                     className={styles.weekMenuItem}
@@ -154,6 +160,16 @@ export default function DeliverablesTable({
                 </button>
                 <button type="button" className={styles.weekMenuItem} onClick={openPicker}>
                   View custom date…
+                </button>
+                <button
+                  type="button"
+                  className={styles.weekMenuItem}
+                  onClick={() => {
+                    setShowAll(true);
+                    setPanel('none');
+                  }}
+                >
+                  View all
                 </button>
               </div>
             )}

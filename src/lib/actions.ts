@@ -67,6 +67,53 @@ export async function memberLogoutAction(cluster: ClusterSlug): Promise<{ ok: tr
   return { ok: true };
 }
 
+export async function memberSignupAction(
+  cluster: ClusterSlug,
+  input: {
+    name: string;
+    nickname: string;
+    position: string;
+    email: string;
+    password: string;
+    birthDate: string;
+    contactNumber: string;
+  }
+): Promise<{ id: string; name: string } | { error: string }> {
+  const name = input.name.trim();
+  const nickname = input.nickname.trim();
+  const position = input.position.trim();
+  const email = input.email.trim().toLowerCase();
+  const password = input.password.trim();
+  const birthDate = input.birthDate.trim();
+  const contactNumber = input.contactNumber.trim();
+
+  if (!name) return { error: 'Name is required.' };
+  if (!nickname) return { error: 'Nickname is required.' };
+  if (!position) return { error: 'Position is required.' };
+  if (!email) return { error: 'Email address is required.' };
+  if (!password || password.length < 4) return { error: 'Password must be at least 4 characters.' };
+  if (!birthDate) return { error: 'Birth date is required.' };
+  if (!contactNumber) return { error: 'Contact number is required.' };
+
+  const existingName = await prisma.employee.findUnique({ where: { cluster_name: { cluster, name } } });
+  if (existingName) {
+    return { error: 'Someone in this cluster already has that name. Log in instead, or contact your admin.' };
+  }
+  const existingEmail = await prisma.employee.findFirst({
+    where: { cluster, email: { equals: email, mode: 'insensitive' } },
+  });
+  if (existingEmail) {
+    return { error: 'An account with that email already exists in this cluster. Log in instead.' };
+  }
+
+  const created = await prisma.employee.create({
+    data: { cluster, name, nickname, position, email, birthDate, contactNumber, password: hashPassword(password) },
+  });
+  await setMemberSession(cluster, created.id);
+  revalidateAll();
+  return { id: created.id, name: created.name };
+}
+
 export async function addEmployeeAction(
   cluster: ClusterSlug,
   input: {

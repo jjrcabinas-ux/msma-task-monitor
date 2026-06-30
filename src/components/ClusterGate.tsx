@@ -67,6 +67,9 @@ export default function ClusterGate({
         <Link href={`/login/${cluster}`} className={styles.memberLoginLink}>
           Team member? Log in with your email instead
         </Link>
+        <Link href="/signup" className={styles.memberLoginLink}>
+          New here? Create an account
+        </Link>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { memberLoginAction } from '@/lib/actions';
@@ -38,10 +39,7 @@ export default function MemberLoginForm({
       <div className={styles.card}>
         <Image src="/logo.png" alt="MSMA" width={903} height={495} className={styles.logo} priority />
         <div className={styles.title}>{clusterLabel}</div>
-        <div className={styles.subtitle}>
-          Log in with your email. First time? Enter the email your admin registered and choose a password — it'll be
-          saved for next time.
-        </div>
+        <div className={styles.subtitle}>Log in with your email and password.</div>
         <input
           autoFocus
           type="email"
@@ -65,6 +63,9 @@ export default function MemberLoginForm({
         <button onClick={submit} className={styles.btn} disabled={pending}>
           {pending ? 'Checking…' : 'Log in'}
         </button>
+        <Link href="/signup" className={styles.memberLoginLink}>
+          New here? Create an account
+        </Link>
       </div>
     </div>
   );

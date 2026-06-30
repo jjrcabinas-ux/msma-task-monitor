@@ -20,23 +20,29 @@ export default function DeliverablesTable({
   todayIso: string;
   highlightTaskId: string | null;
 }) {
+  const [weekStart, setWeekStart] = useState(addDays(todayIso, -6));
   const [weekEnd, setWeekEnd] = useState(todayIso);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [pendingStart, setPendingStart] = useState<string | null>(null);
   const initialParts = isoToParts(todayIso);
   const [pickerYear, setPickerYear] = useState(initialParts.y);
   const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  const weekStart = addDays(weekEnd, -6);
-  const isCurrentWeek = weekEnd === todayIso;
+  const isCurrentWeek = weekStart === addDays(todayIso, -6) && weekEnd === todayIso;
   const olderCount = tasks.filter((t) => t.date && t.date < weekStart).length;
   const visibleTasks = tasks.filter((t) => !t.date || (t.date >= weekStart && t.date <= weekEnd));
+
+  function setRange(start: string, end: string) {
+    setWeekStart(start);
+    setWeekEnd(end);
+  }
 
   useEffect(() => {
     if (highlightTaskId == null) return;
     const target = tasks.find((t) => t.id === highlightTaskId);
     if (target?.date && (target.date < weekStart || target.date > weekEnd)) {
-      setWeekEnd(target.date);
+      setRange(addDays(target.date, -6), target.date);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightTaskId]);
@@ -46,6 +52,7 @@ export default function DeliverablesTable({
     function onOutside(e: MouseEvent) {
       if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         setPickerOpen(false);
+        setPendingStart(null);
       }
     }
     document.addEventListener('mousedown', onOutside);
@@ -56,6 +63,7 @@ export default function DeliverablesTable({
     const parts = isoToParts(weekEnd);
     setPickerYear(parts.y);
     setPickerMonth(parts.m - 1);
+    setPendingStart(null);
     setPickerOpen(true);
   }
 
@@ -73,9 +81,16 @@ export default function DeliverablesTable({
     setPickerYear(y);
   }
 
-  function pickWeekFor(iso: string) {
+  function onDayClick(iso: string) {
+    if (pendingStart == null) {
+      setPendingStart(iso);
+      return;
+    }
+    const from = pendingStart < iso ? pendingStart : iso;
+    const to = pendingStart < iso ? iso : pendingStart;
+    setRange(from, to);
+    setPendingStart(null);
     setPickerOpen(false);
-    setWeekEnd(iso > todayIso ? todayIso : iso);
   }
 
   const dim = daysInMonth(pickerYear, pickerMonth);
@@ -89,16 +104,20 @@ export default function DeliverablesTable({
     <div className={styles.tableCard}>
       <div className={styles.tableToolbar}>
         <span className={styles.tableToolbarLabel}>
-          {isCurrentWeek ? `Showing this week (since ${fmtShort(weekStart)})` : `Showing week of ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`}
+          {isCurrentWeek ? `Showing this week (since ${fmtShort(weekStart)})` : `Showing ${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`}
         </span>
         <div className={styles.tableToolbarActions}>
           {!isCurrentWeek && (
-            <button type="button" className={styles.seeMoreLink} onClick={() => setWeekEnd(todayIso)}>
+            <button type="button" className={styles.seeMoreLink} onClick={() => setRange(addDays(todayIso, -6), todayIso)}>
               Back to this week
             </button>
           )}
           {isCurrentWeek && olderCount > 0 && (
-            <button type="button" className={styles.seeMoreLink} onClick={() => setWeekEnd(addDays(weekStart, -1))}>
+            <button
+              type="button"
+              className={styles.seeMoreLink}
+              onClick={() => setRange(addDays(weekStart, -7), addDays(weekStart, -1))}
+            >
               View previous weeks ({olderCount})
             </button>
           )}
@@ -119,6 +138,9 @@ export default function DeliverablesTable({
                     ›
                   </div>
                 </div>
+                <div className={styles.pickerHint}>
+                  {pendingStart ? `From ${fmtShort(pendingStart)} — pick an end date` : 'Pick a start date, then an end date'}
+                </div>
                 <div className={styles.pickerWeekdays}>
                   {WEEKSHORT.map((wd) => (
                     <div key={wd} className={styles.pickerWeekday}>
@@ -131,15 +153,16 @@ export default function DeliverablesTable({
                     <div key={`pad-${i}`} />
                   ))}
                   {days.map((day) => {
-                    const inSelectedWeek = day.iso >= weekStart && day.iso <= weekEnd;
+                    const isPendingStart = pendingStart === day.iso;
+                    const inAppliedRange = !pendingStart && day.iso >= weekStart && day.iso <= weekEnd;
                     const isToday = day.iso === todayIso;
                     const isFuture = day.iso > todayIso;
                     return (
                       <div
                         key={day.iso}
-                        className={`${styles.pickerDay} ${inSelectedWeek ? styles.pickerDaySelected : ''} ${!inSelectedWeek && isToday ? styles.pickerDayToday : ''}`}
+                        className={`${styles.pickerDay} ${inAppliedRange || isPendingStart ? styles.pickerDaySelected : ''} ${!inAppliedRange && !isPendingStart && isToday ? styles.pickerDayToday : ''}`}
                         style={isFuture ? { opacity: 0.35, cursor: 'default' } : undefined}
-                        onClick={() => !isFuture && pickWeekFor(day.iso)}
+                        onClick={() => !isFuture && onDayClick(day.iso)}
                       >
                         {day.label}
                       </div>

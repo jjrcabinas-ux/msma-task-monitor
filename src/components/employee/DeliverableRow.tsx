@@ -57,7 +57,7 @@ export default function DeliverableRow({
   }, [pickerOpen]);
 
   function openPicker() {
-    if (locked) return;
+    if (lockedForFields) return;
     const parts = task.date ? isoToParts(task.date) : isoToParts(clientToday);
     setPickerYear(parts.y);
     setPickerMonth(parts.m - 1);
@@ -84,12 +84,21 @@ export default function DeliverableRow({
   }
 
   function onStatusChange(value: Status) {
-    if (locked) return;
+    if (!canEdit) return;
+    if (aged) {
+      const confirmed = window.confirm(
+        "This task is more than 2 weeks old. Make sure you've informed your direct supervisor about why it's still open before changing its status. Continue?"
+      );
+      if (!confirmed) return;
+    }
     setStatus(value);
     updateTaskAction(task.id, { status: value });
   }
 
-  const locked = !canEdit || isTaskLocked(task.date, clientToday);
+  const aged = isTaskLocked(task.date, clientToday);
+  // Permission-locked rows are fully view-only; aged-but-permitted rows still allow status/help-needed.
+  const lockedForFields = !canEdit || aged;
+  const statusAndHelpLocked = !canEdit;
   const sm = STATUS_META[status];
   const dim = daysInMonth(pickerYear, pickerMonth);
   const first = firstWeekdayOfMonth(pickerYear, pickerMonth);
@@ -101,8 +110,8 @@ export default function DeliverableRow({
   return (
     <tr ref={rowRef} className={`${styles.row} ${highlighted ? styles.rowHighlight : ''}`}>
       <td className={styles.td}>
-        <div className={`${styles.dateBtn} ${locked ? styles.dateBtnLocked : ''}`} onClick={openPicker}>
-          <span style={{ fontSize: 12 }}>{locked ? '🔒' : '📅'}</span>
+        <div className={`${styles.dateBtn} ${lockedForFields ? styles.dateBtnLocked : ''}`} onClick={openPicker}>
+          <span style={{ fontSize: 12 }}>{lockedForFields ? '🔒' : '📅'}</span>
           {task.date ? (
             <span className={styles.dateBtnLabel}>
               {MON[isoToParts(task.date).m - 1]} {isoToParts(task.date).d}
@@ -159,9 +168,9 @@ export default function DeliverableRow({
           onBlur={(e) => updateTaskAction(task.id, { taskGeneral: e.target.value })}
           placeholder="Task (general)"
           className={styles.taskGeneralInput}
-          readOnly={locked}
+          readOnly={lockedForFields}
         />
-        <TaskDetailsCell key={`d-${task.id}`} taskId={task.id} initialValue={task.taskDetails} readOnly={locked} />
+        <TaskDetailsCell key={`d-${task.id}`} taskId={task.id} initialValue={task.taskDetails} readOnly={lockedForFields} />
       </td>
       <td className={styles.td}>
         <select
@@ -169,12 +178,15 @@ export default function DeliverableRow({
           onChange={(e) => onStatusChange(e.target.value as Status)}
           className={styles.statusSelect}
           style={{ background: sm.bg, color: sm.color }}
-          disabled={locked}
+          disabled={statusAndHelpLocked}
         >
           <option value="Pending">Pending</option>
           <option value="Ongoing">Ongoing</option>
           <option value="Done">Done</option>
         </select>
+        {aged && canEdit && (
+          <div className={styles.agedNotice}>⚠ 2+ weeks old — inform your supervisor before changing status</div>
+        )}
       </td>
       <td className={styles.tdText}>
         <textarea
@@ -184,15 +196,16 @@ export default function DeliverableRow({
           placeholder="Any roadblocks?"
           rows={2}
           className={styles.helpTextarea}
-          readOnly={locked}
+          readOnly={statusAndHelpLocked}
         />
       </td>
       <td className={styles.tdCenter}>
-        {locked ? (
-          <span
-            className={styles.lockedIcon}
-            title={!canEdit ? 'View only — you can only edit your own deliverables' : 'Locked — more than 2 weeks old'}
-          >
+        {!canEdit ? (
+          <span className={styles.lockedIcon} title="View only — you can only edit your own deliverables">
+            🔒
+          </span>
+        ) : aged ? (
+          <span className={styles.lockedIcon} title="More than 2 weeks old — date and text can no longer be edited or deleted">
             🔒
           </span>
         ) : (

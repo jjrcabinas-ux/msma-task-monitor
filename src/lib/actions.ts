@@ -256,7 +256,13 @@ export async function updateTaskAction(
     return { error: 'You can only edit your own deliverables.' };
   }
   if (isTaskLocked(existing.date, todayISO())) {
-    return { error: 'This deliverable is more than 2 weeks old and can no longer be edited.' };
+    const patchedKeys = Object.keys(patch);
+    const disallowed = patchedKeys.some((key) => key !== 'status' && key !== 'helpNeeded');
+    if (disallowed) {
+      return {
+        error: 'This deliverable is more than 2 weeks old — only its status and help needed can still be updated.',
+      };
+    }
   }
   await prisma.task.update({ where: { id: taskId }, data: patch });
   revalidateAll();

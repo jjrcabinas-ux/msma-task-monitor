@@ -62,6 +62,32 @@ export async function memberLoginAction(
   return { id: employee.id, name: employee.name };
 }
 
+export async function memberRecoverWithClusterPasswordAction(
+  cluster: ClusterSlug,
+  email: string,
+  clusterPassword: string,
+  newPassword: string
+): Promise<{ id: string; name: string } | { error: string }> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const plainNewPassword = newPassword.trim();
+  if (!normalizedEmail) return { error: 'Email is required.' };
+  if (!plainNewPassword || plainNewPassword.length < 4) return { error: 'New password must be at least 4 characters.' };
+
+  const expected = process.env[CLUSTERS[cluster].passwordEnv];
+  if (!expected || clusterPassword !== expected) {
+    return { error: 'Incorrect cluster password.' };
+  }
+
+  const employee = await prisma.employee.findFirst({
+    where: { cluster, email: { equals: normalizedEmail, mode: 'insensitive' } },
+  });
+  if (!employee) return { error: 'No team member found with that email.' };
+
+  await prisma.employee.update({ where: { id: employee.id }, data: { password: hashPassword(plainNewPassword) } });
+  await setMemberSession(cluster, employee.id);
+  return { id: employee.id, name: employee.name };
+}
+
 export async function memberLogoutAction(cluster: ClusterSlug): Promise<{ ok: true }> {
   await clearMemberSession(cluster);
   return { ok: true };

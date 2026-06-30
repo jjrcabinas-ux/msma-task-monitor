@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { deleteTaskAction, updateTaskAction } from '@/lib/actions';
 import { MON, MONFULL, WEEKSHORT, daysInMonth, firstWeekdayOfMonth, isTaskLocked, isoToParts, todayISO } from '@/lib/dates';
@@ -26,6 +26,9 @@ export default function DeliverableRow({
   const popoverRef = useRef<HTMLDivElement>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerField, setPickerField] = useState<'date' | 'dueDate'>('date');
+  const [anchorRect, setAnchorRect] = useState<{ top: number; bottom: number; left: number; right: number } | null>(
+    null
+  );
   const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null);
   const initialParts = task.date ? isoToParts(task.date) : isoToParts(todayIso);
   const [pickerYear, setPickerYear] = useState(initialParts.y);
@@ -59,6 +62,28 @@ export default function DeliverableRow({
     return () => document.removeEventListener('mousedown', onOutside);
   }, [pickerOpen]);
 
+  useLayoutEffect(() => {
+    if (!pickerOpen || !anchorRect || !popoverRef.current) return;
+    const el = popoverRef.current;
+    const margin = 8;
+    const { width, height } = el.getBoundingClientRect();
+
+    let top = anchorRect.bottom + 6;
+    if (top + height > window.innerHeight - margin) {
+      const above = anchorRect.top - height - 6;
+      top = above >= margin ? above : Math.max(margin, window.innerHeight - height - margin);
+    }
+
+    let left = anchorRect.left;
+    if (left + width > window.innerWidth - margin) {
+      left = anchorRect.right - width;
+    }
+    left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+
+    setPopoverPos((prev) => (prev && prev.top === top && prev.left === left ? prev : { top, left }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pickerOpen, anchorRect, pickerYear, pickerMonth]);
+
   function openPicker(field: 'date' | 'dueDate', anchor: HTMLElement) {
     if (lockedForFields) return;
     const current = field === 'date' ? task.date : task.dueDate;
@@ -67,9 +92,8 @@ export default function DeliverableRow({
     setPickerMonth(parts.m - 1);
     setPickerField(field);
     const rect = anchor.getBoundingClientRect();
-    const popoverWidth = 228;
-    const left = Math.min(rect.left, window.innerWidth - popoverWidth - 8);
-    setPopoverPos({ top: rect.bottom + 6, left: Math.max(8, left) });
+    setAnchorRect({ top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right });
+    setPopoverPos({ top: rect.bottom + 6, left: Math.min(rect.left, window.innerWidth - 228 - 8) });
     setPickerOpen(true);
   }
 

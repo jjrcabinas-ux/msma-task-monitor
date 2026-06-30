@@ -241,6 +241,11 @@
   gap: 12px;
   padding: 10px 14px;
   border-bottom: 1px solid #e6e9ef;
+  position: sticky;
+  top: var(--sticky-offset, 213px);
+  z-index: 15;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
 }
 
 .tableToolbarLabel {

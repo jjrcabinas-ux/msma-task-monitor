@@ -6,6 +6,7 @@ import { todayISO } from '@/lib/dates';
 import { statusCounts, displayName } from '@/lib/analytics';
 import { employeeColor } from '@/lib/colors';
 import { getMemberSession, isAdminUnlocked } from '@/lib/memberAuth';
+import StickyOffsetMeasurer from '@/components/StickyOffsetMeasurer';
 import RemoveMemberControl from '@/components/employee/RemoveMemberControl';
 import AddDeliverableButton from '@/components/employee/AddDeliverableButton';
 import DeliverablesTable from '@/components/employee/DeliverablesTable';
@@ -43,7 +44,7 @@ export default async function EmployeePage({
 
   return (
     <div className={styles.page}>
-      <div className={styles.stickyHeader}>
+      <StickyOffsetMeasurer className={styles.stickyHeader}>
         <Link href={`/${cluster}`} className={styles.backLink}>
           ‹ Back to Team Summary
         </Link>
@@ -99,7 +100,7 @@ export default async function EmployeePage({
             </div>
           </div>
         </div>
-      </div>
+      </StickyOffsetMeasurer>
 
       <DeliverablesTable
         employeeId={employee.id}

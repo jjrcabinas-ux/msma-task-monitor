@@ -132,6 +132,7 @@ export default async function SummaryPage({
           )}
           {kpi.periodTasks
             .filter((t) => t.status === 'Pending')
+            .sort((a, b) => (a.date || '9999-99-99').localeCompare(b.date || '9999-99-99'))
             .map((t) => (
               <Link key={t.id} href={`/${cluster}/employee/${t.employeeId}?highlight=${t.id}`} className={modalStyles.modalRow}>
                 <span className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))}>

@@ -2,6 +2,17 @@
   padding: 30px 34px 56px;
 }
 
+.stickyHeader {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #eef1f5;
+  padding-top: 30px;
+  margin: -30px -34px 0;
+  padding-left: 34px;
+  padding-right: 34px;
+}
+
 .backLink {
   display: inline-flex;
   align-items: center;
@@ -526,5 +537,12 @@
 @media (max-width: 600px) {
   .page {
     padding: 18px 16px 40px;
+  }
+
+  .stickyHeader {
+    padding-top: 18px;
+    margin: -18px -16px 0;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 }

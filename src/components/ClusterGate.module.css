@@ -110,3 +110,15 @@
   opacity: 0.7;
   cursor: default;
 }
+
+.memberLoginLink {
+  font-size: 12px;
+  color: #2563eb;
+  font-weight: 600;
+  margin-top: 4px;
+  text-align: center;
+}
+
+.memberLoginLink:hover {
+  text-decoration: underline;
+}

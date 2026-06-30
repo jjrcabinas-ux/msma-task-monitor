@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { unlockClusterAction } from '@/lib/actions';
@@ -63,6 +64,9 @@ export default function ClusterGate({
         <button onClick={submit} className={styles.btn} disabled={pending}>
           {pending ? 'Checking…' : 'Unlock'}
         </button>
+        <Link href={`/login/${cluster}`} className={styles.memberLoginLink}>
+          Team member? Log in with your email instead
+        </Link>
       </div>
     </div>
   );

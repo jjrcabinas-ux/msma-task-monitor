@@ -285,7 +285,7 @@ export default function Sidebar({
               </button>
             </div>
           ) : (
-            <Link href={`/${cluster}/login`} className={styles.navItem} onClick={() => setMobileOpen(false)}>
+            <Link href={`/login/${cluster}`} className={styles.navItem} onClick={() => setMobileOpen(false)}>
               <div className={styles.navIcon}>👤</div>
               <span className={styles.navLabel}>{isAdmin ? 'Log in as a member' : 'Log in'}</span>
             </Link>

@@ -360,14 +360,10 @@ export default async function SummaryPage({
       </div>
       <div className={styles.cardsGrid}>
         {empCards.map((c) => {
-          const color = employeeColor(c.colorIndex);
           const segPct = (n: number) => (c.total ? (n / c.total) * 100 : 0);
           return (
             <Link key={c.id} href={`/${cluster}/employee/${c.id}`} className={`${styles.card} ${styles.empCard}`}>
               <div className={styles.empCardTop}>
-                <div className={styles.avatar} style={avatarStyle(38, color)}>
-                  {c.initial}
-                </div>
                 <div style={{ flex: 1 }}>
                   <div className={styles.empCardName}>{c.name}</div>
                   <div className={styles.empCardTotal}>{c.total} tasks</div>

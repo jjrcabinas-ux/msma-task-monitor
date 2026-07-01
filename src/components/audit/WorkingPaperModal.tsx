@@ -16,12 +16,10 @@ type Section = AuditIndexData['sections'][number];
 
 export default function WorkingPaperModal({
   indexData,
-  isAdmin,
   onClose,
   onUpdate,
 }: {
   indexData: AuditIndexData;
-  isAdmin: boolean;
   onClose: () => void;
   onUpdate: (updated: AuditIndexData) => void;
 }) {
@@ -108,7 +106,6 @@ export default function WorkingPaperModal({
   const portal = (
     <div className={styles.wpiOverlay}>
       <div className={styles.wpiModal}>
-        {/* Modal header */}
         <div className={styles.wpiHeader}>
           <div className={styles.wpiHeaderLeft}>
             <div className={styles.wpiHeaderTitle}>Working Paper Index</div>
@@ -120,7 +117,6 @@ export default function WorkingPaperModal({
           <button type="button" className={styles.wpiCloseBtn} onClick={onClose}>×</button>
         </div>
 
-        {/* Tabs */}
         <div className={styles.wpiTabs}>
           {data.sections.map((sec, i) => (
             <button
@@ -132,19 +128,15 @@ export default function WorkingPaperModal({
               {sec.name}
             </button>
           ))}
-          {isAdmin && (
-            <button type="button" className={styles.wpiTabAdd} onClick={() => setShowAddSection(true)}>
-              + Add More
-            </button>
-          )}
+          <button type="button" className={styles.wpiTabAdd} onClick={() => setShowAddSection(true)}>
+            + Add More
+          </button>
         </div>
 
-        {/* Tab content */}
         {currentSection && (
           <div className={styles.wpiContent}>
             <AnnualFileIndexTable
               section={currentSection}
-              isAdmin={isAdmin}
               onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
               onAddItem={() => addItemToSection(currentSection.id)}
               onRemoveItem={(itemId) => removeItem(currentSection.id, itemId)}
@@ -153,7 +145,6 @@ export default function WorkingPaperModal({
         )}
       </div>
 
-      {/* Add Section Modal */}
       {showAddSection && (
         <AddSectionModal
           onClose={() => setShowAddSection(false)}
@@ -170,20 +161,17 @@ export default function WorkingPaperModal({
 
 function AnnualFileIndexTable({
   section,
-  isAdmin,
   onUpdateItem,
   onAddItem,
   onRemoveItem,
 }: {
   section: Section;
-  isAdmin: boolean;
   onUpdateItem: (itemId: string, field: keyof Item, value: string | boolean) => void;
   onAddItem: () => void;
   onRemoveItem: (itemId: string) => void;
 }) {
   return (
     <div className={styles.a4Paper}>
-      {/* A4 Header */}
       <div className={styles.a4Header}>
         <div className={styles.a4HeaderLeft}>
           <span className={styles.a4HeaderTitle}>ANNUAL FILE INDEX</span>
@@ -197,7 +185,6 @@ function AnnualFileIndexTable({
         </div>
       </div>
 
-      {/* Table */}
       <table className={styles.a4Table}>
         <thead>
           <tr>
@@ -206,7 +193,7 @@ function AnnualFileIndexTable({
             </th>
             <th className={styles.a4Th}>Initials</th>
             <th className={styles.a4Th}>Source Document</th>
-            {isAdmin && <th className={styles.a4Th} style={{ width: 28 }} />}
+            <th className={styles.a4Th} style={{ width: 52 }} />
           </tr>
         </thead>
         <tbody>
@@ -214,28 +201,24 @@ function AnnualFileIndexTable({
             <AuditItemRow
               key={item.id}
               item={item}
-              isAdmin={isAdmin}
               onUpdate={onUpdateItem}
               onRemove={onRemoveItem}
             />
           ))}
           {section.items.length === 0 && (
             <tr>
-              <td colSpan={isAdmin ? 5 : 4} className={styles.a4Empty}>
-                No items yet. {isAdmin && 'Click "+ Add Row" to begin.'}
+              <td colSpan={5} className={styles.a4Empty}>
+                No items yet. Click &ldquo;+ Add Row&rdquo; to begin.
               </td>
             </tr>
           )}
         </tbody>
       </table>
 
-      {isAdmin && (
-        <button type="button" className={styles.a4AddRowBtn} onClick={onAddItem}>
-          + Add Row
-        </button>
-      )}
+      <button type="button" className={styles.a4AddRowBtn} onClick={onAddItem}>
+        + Add Row
+      </button>
 
-      {/* Notes */}
       <div className={styles.a4Notes}>
         <strong>Notes:</strong>
         <div className={styles.a4NotesSub}>Please see Supporting Documentation (RR Folder)</div>
@@ -248,12 +231,10 @@ function AnnualFileIndexTable({
 
 function AuditItemRow({
   item,
-  isAdmin,
   onUpdate,
   onRemove,
 }: {
   item: Item;
-  isAdmin: boolean;
   onUpdate: (itemId: string, field: keyof Item, value: string | boolean) => void;
   onRemove: (itemId: string) => void;
 }) {
@@ -261,65 +242,55 @@ function AuditItemRow({
     <tr className={`${styles.a4Tr} ${item.isNA ? styles.a4TrNA : ''}`}>
       <td className={`${styles.a4Td} ${styles.a4TdNum}`}>{item.refNum}</td>
       <td className={styles.a4Td}>
-        {isAdmin ? (
-          <input
-            className={styles.a4CellInput}
-            value={item.description}
-            onChange={(e) => onUpdate(item.id, 'description', e.target.value)}
-            placeholder="Description"
-          />
-        ) : (
-          item.description
-        )}
+        <input
+          className={styles.a4CellInput}
+          value={item.description}
+          onChange={(e) => onUpdate(item.id, 'description', e.target.value)}
+          placeholder="Description"
+        />
       </td>
       <td className={`${styles.a4Td} ${styles.a4TdInitials}`}>
         {item.isNA ? (
           <span className={styles.a4NATag}>NA</span>
-        ) : isAdmin ? (
+        ) : (
           <input
             className={`${styles.a4CellInput} ${styles.a4InitialsInput}`}
             value={item.initials}
             onChange={(e) => onUpdate(item.id, 'initials', e.target.value)}
             placeholder="—"
           />
-        ) : (
-          <span className={styles.a4InitialsBox}>{item.initials || '—'}</span>
         )}
       </td>
       <td className={styles.a4Td}>
-        {item.isNA ? null : isAdmin ? (
+        {!item.isNA && (
           <input
             className={styles.a4CellInput}
             value={item.sourceDocument}
             onChange={(e) => onUpdate(item.id, 'sourceDocument', e.target.value)}
             placeholder="Source Document"
           />
-        ) : (
-          item.sourceDocument
         )}
       </td>
-      {isAdmin && (
-        <td className={styles.a4Td}>
-          <div className={styles.a4RowActions}>
-            <button
-              type="button"
-              className={`${styles.a4RowBtn} ${item.isNA ? styles.a4RowBtnActive : ''}`}
-              title={item.isNA ? 'Mark applicable' : 'Mark N/A'}
-              onClick={() => onUpdate(item.id, 'isNA', !item.isNA)}
-            >
-              NA
-            </button>
-            <button
-              type="button"
-              className={styles.a4RowBtnDelete}
-              onClick={() => onRemove(item.id)}
-              title="Delete row"
-            >
-              ×
-            </button>
-          </div>
-        </td>
-      )}
+      <td className={styles.a4Td}>
+        <div className={styles.a4RowActions}>
+          <button
+            type="button"
+            className={`${styles.a4RowBtn} ${item.isNA ? styles.a4RowBtnActive : ''}`}
+            title={item.isNA ? 'Mark applicable' : 'Mark N/A'}
+            onClick={() => onUpdate(item.id, 'isNA', !item.isNA)}
+          >
+            NA
+          </button>
+          <button
+            type="button"
+            className={styles.a4RowBtnDelete}
+            onClick={() => onRemove(item.id)}
+            title="Delete row"
+          >
+            ×
+          </button>
+        </div>
+      </td>
     </tr>
   );
 }
@@ -341,9 +312,9 @@ function AddSectionModal({
   const [name, setName] = useState('');
   const [title, setTitle] = useState('');
   const [sectionRef, setSectionRef] = useState('');
-  const [items, setItems] = useState<
-    { refNum: string; description: string; initials: string; sourceDocument: string; isNA: boolean }[]
-  >([{ refNum: '1', description: '', initials: '', sourceDocument: '', isNA: false }]);
+  const [items, setItems] = useState([
+    { refNum: '1', description: '', initials: '', sourceDocument: '', isNA: false },
+  ]);
 
   function addRow() {
     setItems((prev) => [
@@ -352,11 +323,7 @@ function AddSectionModal({
     ]);
   }
 
-  function updateRow(
-    idx: number,
-    field: 'description' | 'initials' | 'sourceDocument' | 'isNA',
-    value: string | boolean,
-  ) {
+  function updateRow(idx: number, field: string, value: string | boolean) {
     setItems((prev) => prev.map((it, i) => (i !== idx ? it : { ...it, [field]: value })));
   }
 
@@ -374,7 +341,6 @@ function AddSectionModal({
       <div className={styles.addSecModal} onClick={(e) => e.stopPropagation()}>
         <button type="button" className={styles.addSecClose} onClick={onClose}>×</button>
 
-        {/* A4-style header */}
         <div className={styles.addSecA4Header}>
           <div className={styles.addSecA4Title}>ANNUAL FILE INDEX</div>
           <div className={styles.addSecA4Meta}>
@@ -385,7 +351,6 @@ function AddSectionModal({
           </div>
         </div>
 
-        {/* Section info inputs */}
         <div className={styles.addSecFields}>
           <div className={styles.addSecFieldRow}>
             <label className={styles.addSecFieldLabel}>Tab Name</label>
@@ -418,7 +383,6 @@ function AddSectionModal({
           </div>
         </div>
 
-        {/* Items table */}
         <table className={styles.a4Table} style={{ marginTop: 12 }}>
           <thead>
             <tr>

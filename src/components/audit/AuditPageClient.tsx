@@ -94,11 +94,9 @@ export default function AuditPageClient({
           <h1 className={styles.pageTitle}>Audit Monitoring</h1>
           <p className={styles.pageSubtitle}>Manage audit engagements and working papers</p>
         </div>
-        {isAdmin && (
-          <button type="button" className={styles.newBtn} onClick={openNew}>
-            + New Working Paper Index
-          </button>
-        )}
+        <button type="button" className={styles.newBtn} onClick={openNew}>
+          + New Working Paper Index
+        </button>
       </div>
 
       {/* Feature tabs */}
@@ -115,7 +113,7 @@ export default function AuditPageClient({
             <div className={styles.emptyIcon}>📋</div>
             <p className={styles.emptyTitle}>No working paper indices yet</p>
             <p className={styles.emptyDesc}>
-              {isAdmin ? 'Click "New Working Paper Index" to create one.' : 'No audit engagements have been created yet.'}
+              Click "New Working Paper Index" to create one.
             </p>
           </div>
         )}
@@ -216,7 +214,6 @@ export default function AuditPageClient({
       {openIndex && (
         <WorkingPaperModal
           indexData={openIndex}
-          isAdmin={isAdmin}
           onClose={() => setOpenIndex(null)}
           onUpdate={(updated) => {
             setIndices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));

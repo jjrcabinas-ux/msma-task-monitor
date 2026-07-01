@@ -149,6 +149,8 @@ export default function WorkingPaperModal({
               <PermanentFileTab
                 section={currentSection}
                 clientName={data.clientName}
+                cluster={data.cluster}
+                year={data.year}
                 onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
               />
             ) : (
@@ -177,13 +179,23 @@ export default function WorkingPaperModal({
 
 /* ── Permanent / Systems File Index Tab ─────────────────── */
 
+const CLUSTER_PARTNERS: Record<string, string> = {
+  ads: 'Atty. Antonio Sanchez Jr., CPA',
+  rpm: 'Atty. Rhenier Mora, CPA',
+  vcm: 'Victorio Meñoza, CPA',
+};
+
 function PermanentFileTab({
   section,
   clientName,
+  cluster,
+  year,
   onUpdateItem,
 }: {
   section: Section;
   clientName: string;
+  cluster: string;
+  year: number;
   onUpdateItem: (itemId: string, field: keyof Item, value: string | boolean) => void;
 }) {
   function getItem(key: string) {
@@ -202,7 +214,11 @@ function PermanentFileTab({
           <div className={styles.permFields}>
             {PERM_FIELDS.map((field) => {
               const item = getItem(field.key);
-              const displayValue = item?.description || (field.key === 'CLIENT_REF' ? clientName : '');
+              const fallback =
+                field.key === 'CLIENT_REF' ? clientName :
+                field.key === 'PARTNER' ? (CLUSTER_PARTNERS[cluster] ?? '') :
+                field.key === 'ACCT_DATE' ? `December 31, ${year}` : '';
+              const displayValue = item?.description || fallback;
               return (
                 <div key={field.key} className={styles.permField}>
                   <div className={styles.permFieldLabel}>{field.label}</div>
@@ -210,7 +226,7 @@ function PermanentFileTab({
                     className={styles.permFieldInput}
                     value={displayValue}
                     onChange={(e) => item && onUpdateItem(item.id, 'description', e.target.value)}
-                    placeholder={field.key === 'CLIENT_REF' ? clientName : ''}
+                    placeholder={fallback}
                   />
                 </div>
               );

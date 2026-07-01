@@ -28,6 +28,7 @@ type AuditSectionData = {
 
 export type AuditIndexData = {
   id: string;
+  cluster: string;
   clientName: string;
   year: number;
   pfrsType: string;

@@ -84,6 +84,12 @@ type DefaultItem = {
   isNA: boolean;
 };
 
+const CLUSTER_PARTNERS: Record<ClusterSlug, string> = {
+  ads: 'Atty. Antonio Sanchez Jr., CPA',
+  rpm: 'Atty. Rhenier Mora, CPA',
+  vcm: 'Victorio Meñoza, CPA',
+};
+
 export async function createAuditIndexAction(
   cluster: ClusterSlug,
   pfrsType: 'Full' | 'NotFull',
@@ -91,6 +97,8 @@ export async function createAuditIndexAction(
   year: number,
 ) {
   const templates = pfrsType === 'Full' ? FULL_PFRS_SECTIONS : NOT_FULL_PFRS_SECTIONS;
+  const partner = CLUSTER_PARTNERS[cluster] ?? '';
+  const acctDate = `December 31, ${year}`;
 
   const index = await prisma.auditIndex.create({
     data: {
@@ -108,7 +116,11 @@ export async function createAuditIndexAction(
           items: {
             create: sec.items.map((item, ii) => ({
               refNum: item.refNum,
-              description: item.refNum === 'CLIENT_REF' ? clientName : item.description,
+              description:
+                item.refNum === 'CLIENT_REF' ? clientName :
+                item.refNum === 'PARTNER' ? partner :
+                item.refNum === 'ACCT_DATE' ? acctDate :
+                item.description,
               initials: item.initials,
               sourceDocument: item.sourceDocument,
               isNA: item.isNA,

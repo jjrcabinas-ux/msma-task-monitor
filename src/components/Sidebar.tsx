@@ -40,7 +40,6 @@ export default function Sidebar({
   const [clientTodayLabel, setClientTodayLabel] = useState(todayLabel);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(() => employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`));
-  const [auditOpen, setAuditOpen] = useState(false);
   const [taxOpen, setTaxOpen] = useState(false);
 
   useEffect(() => {
@@ -225,30 +224,14 @@ export default function Sidebar({
             </>
           )}
 
-          <button
-            type="button"
-            className={`${styles.navItem} ${styles.navItemToggle}`}
-            onClick={() => setAuditOpen((v) => !v)}
-            aria-expanded={auditOpen}
+          <Link
+            href={`/${cluster}/audit`}
+            className={`${styles.navItem} ${pathname.startsWith(`/${cluster}/audit`) ? styles.navItemActive : ''}`}
+            onClick={() => setMobileOpen(false)}
           >
             <div className={styles.navIcon}>🛡</div>
             <span className={styles.navLabel}>Audit Monitoring</span>
-            <span className={styles.soonBadge}>Soon</span>
-            <span className={`${styles.navChevron} ${auditOpen ? styles.navChevronOpen : ''}`}>▶</span>
-          </button>
-
-          {auditOpen && (
-            <div className={styles.comingSoonBox}>
-              <p className={styles.comingSoonLead}>
-                Track audit engagements end-to-end alongside regular deliverables.
-              </p>
-              <ul className={styles.comingSoonList}>
-                <li>See audit assignments, deadlines, and review status per member</li>
-                <li>Flag open PBC items and follow-up requests</li>
-                <li>Surface engagements nearing their deadline cluster-wide</li>
-              </ul>
-            </div>
-          )}
+          </Link>
 
           <button
             type="button"

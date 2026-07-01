@@ -41,3 +41,39 @@ model Task {
 
   @@index([employeeId])
 }
+
+model AuditIndex {
+  id         String         @id @default(cuid())
+  cluster    String
+  clientName String         @default("")
+  year       Int            @default(2025)
+  pfrsType   String
+  createdAt  DateTime       @default(now())
+  sections   AuditSection[]
+
+  @@index([cluster])
+}
+
+model AuditSection {
+  id         String      @id @default(cuid())
+  indexId    String
+  index      AuditIndex  @relation(fields: [indexId], references: [id], onDelete: Cascade)
+  name       String
+  title      String      @default("")
+  sectionRef String      @default("")
+  sortOrder  Int         @default(0)
+  isCustom   Boolean     @default(false)
+  items      AuditItem[]
+}
+
+model AuditItem {
+  id             String       @id @default(cuid())
+  sectionId      String
+  section        AuditSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  refNum         String
+  description    String       @default("")
+  initials       String       @default("")
+  sourceDocument String       @default("")
+  isNA           Boolean      @default(false)
+  sortOrder      Int          @default(0)
+}

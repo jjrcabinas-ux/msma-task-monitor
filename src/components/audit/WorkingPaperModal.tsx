@@ -10,6 +10,7 @@ import {
   addAuditSectionAction,
 } from '@/lib/auditActions';
 import type { AuditIndexData } from './AuditPageClient';
+import { NamingConventionModal, PdfPreviewModal } from './ExportModals';
 import styles from './audit.module.css';
 
 type Item = AuditIndexData['sections'][number]['items'][number];
@@ -37,6 +38,9 @@ export default function WorkingPaperModal({
   const [data, setData] = useState<AuditIndexData>(indexData);
   const [activeTab, setActiveTab] = useState(0);
   const [showAddSection, setShowAddSection] = useState(false);
+  const [showNaming, setShowNaming] = useState<null | 'excel' | 'pdf'>(null);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [, startTransition] = useTransition();
 
   const currentSection = data.sections[activeTab];
@@ -98,6 +102,154 @@ export default function WorkingPaperModal({
     });
   }
 
+  /* ── Export helpers ───────────────────────────────────── */
+
+  function sectionNumericItems(sec: (typeof data.sections)[number]) {
+    return sec.items.filter((it) => /^\d+$/.test(it.refNum));
+  }
+
+  function sectionItemDesc(sec: (typeof data.sections)[number], key: string) {
+    return sec.items.find((it) => it.refNum === key)?.description || '';
+  }
+
+  async function doExcelExport(filename: string) {
+    setIsExporting(true);
+    try {
+      const XLSX = (await import('xlsx')).default;
+      const wb = XLSX.utils.book_new();
+
+      for (const sec of data.sections) {
+        const rows: (string | number | boolean)[][] = [];
+
+        if (sec.name === 'Permanent') {
+          rows.push(['PERMANENT / SYSTEMS FILE INDEX']);
+          rows.push([]);
+          rows.push(['CLIENT / REFERENCE:', sectionItemDesc(sec, 'CLIENT_REF')]);
+          rows.push(['ACCOUNTING REFERENCE DATE:', sectionItemDesc(sec, 'ACCT_DATE')]);
+          rows.push(['PARTNER:', sectionItemDesc(sec, 'PARTNER')]);
+          rows.push(['SENIOR ASSOCIATE IN-CHARGE:', sectionItemDesc(sec, 'SR_ASSOCIATE')]);
+          rows.push(['JUNIOR ASSOCIATE IN-CHARGE:', sectionItemDesc(sec, 'JR_ASSOCIATE')]);
+          rows.push([]);
+          rows.push(['Section A — Permanent']);
+          rows.push([]);
+          rows.push(['Ref No.', 'Description', 'Initials', 'Source Document', 'N/A']);
+          for (const it of sectionNumericItems(sec)) {
+            rows.push([it.refNum, it.description, it.initials, it.sourceDocument, it.isNA ? 'N/A' : '']);
+          }
+        } else {
+          rows.push([sec.title || sec.name]);
+          rows.push([]);
+          rows.push(['Ref No.', 'Description', 'Initials', 'Source Document', 'N/A']);
+          for (const it of sectionNumericItems(sec)) {
+            rows.push([it.refNum, it.description, it.initials, it.sourceDocument, it.isNA ? 'N/A' : '']);
+          }
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols'] = [{ wch: 30 }, { wch: 48 }, { wch: 14 }, { wch: 28 }, { wch: 5 }];
+        ws['!pageSetup'] = { paperSize: 9, orientation: 'portrait' } as object;
+
+        const sheetName = sec.name.replace(/[:\\\/\?\*\[\]]/g, '').substring(0, 31);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      }
+
+      XLSX.writeFile(wb, `${filename}.xlsx`);
+    } finally {
+      setIsExporting(false);
+      setShowNaming(null);
+    }
+  }
+
+  async function doPdfExport(filename: string) {
+    setIsExporting(true);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const { default: autoTable } = await import('jspdf-autotable');
+
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      let firstPage = true;
+
+      for (const sec of data.sections) {
+        if (!firstPage) doc.addPage();
+        firstPage = false;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+
+        if (sec.name === 'Permanent') {
+          doc.text('PERMANENT / SYSTEMS FILE INDEX', 105, 18, { align: 'center' });
+          let y = 30;
+          const metaFields = [
+            ['CLIENT / REFERENCE:', sectionItemDesc(sec, 'CLIENT_REF')],
+            ['ACCOUNTING REFERENCE DATE:', sectionItemDesc(sec, 'ACCT_DATE')],
+            ['PARTNER:', sectionItemDesc(sec, 'PARTNER')],
+            ['SENIOR ASSOCIATE IN-CHARGE:', sectionItemDesc(sec, 'SR_ASSOCIATE')],
+            ['JUNIOR ASSOCIATE IN-CHARGE:', sectionItemDesc(sec, 'JR_ASSOCIATE')],
+          ];
+          doc.setFontSize(9);
+          for (const [label, value] of metaFields) {
+            doc.setFont('helvetica', 'bold');
+            doc.text(label, 14, y);
+            doc.setFont('helvetica', 'normal');
+            doc.text(value, 80, y);
+            doc.setDrawColor(180);
+            doc.line(80, y + 1.2, 196, y + 1.2);
+            y += 9;
+          }
+          y += 4;
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.text('Section A — Permanent', 14, y);
+          y += 4;
+          const items = sectionNumericItems(sec);
+          if (items.length > 0) {
+            autoTable(doc, {
+              startY: y,
+              head: [['Ref No.', 'Description', 'Initials', 'Source Document', 'N/A']],
+              body: items.map((it) => [it.refNum, it.description, it.initials, it.sourceDocument, it.isNA ? 'N/A' : '']),
+              styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2 },
+              headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
+              columnStyles: { 0: { cellWidth: 14 }, 2: { cellWidth: 18 }, 3: { cellWidth: 32 }, 4: { cellWidth: 10 } },
+            });
+          }
+        } else {
+          doc.text(sec.title || sec.name, 105, 18, { align: 'center' });
+          const items = sectionNumericItems(sec);
+          if (items.length > 0) {
+            autoTable(doc, {
+              startY: 28,
+              head: [['Ref No.', 'Description', 'Initials', 'Source Document', 'N/A']],
+              body: items.map((it) => [it.refNum, it.description, it.initials, it.sourceDocument, it.isNA ? 'N/A' : '']),
+              styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2 },
+              headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
+              columnStyles: { 0: { cellWidth: 14 }, 2: { cellWidth: 18 }, 3: { cellWidth: 32 }, 4: { cellWidth: 10 } },
+            });
+          } else {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            doc.setTextColor(150);
+            doc.text('No items recorded.', 14, 32);
+            doc.setTextColor(0);
+          }
+        }
+
+        // Page footer
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(120);
+        doc.text(sec.name, 14, 285);
+        doc.text(`${data.clientName} · ${data.year}`, 105, 285, { align: 'center' });
+        doc.setTextColor(0);
+      }
+
+      doc.save(`${filename}.pdf`);
+    } finally {
+      setIsExporting(false);
+      setShowNaming(null);
+      setShowPdfPreview(false);
+    }
+  }
+
   function handleAddSection(sectionData: {
     name: string;
     title: string;
@@ -126,7 +278,27 @@ export default function WorkingPaperModal({
               {data.pfrsType === 'Full' ? 'Full PFRS' : 'Not Full PFRS'}
             </div>
           </div>
-          <button type="button" className={styles.wpiCloseBtn} onClick={onClose}>×</button>
+          <div className={styles.wpiHeaderRight}>
+            <button
+              type="button"
+              className={styles.exportBtn}
+              onClick={() => setShowNaming('excel')}
+              disabled={isExporting}
+              title="Export all tabs to Excel"
+            >
+              📊 Excel
+            </button>
+            <button
+              type="button"
+              className={styles.exportBtn}
+              onClick={() => setShowPdfPreview(true)}
+              disabled={isExporting}
+              title="Preview and download PDF"
+            >
+              📄 PDF
+            </button>
+            <button type="button" className={styles.wpiCloseBtn} onClick={onClose}>×</button>
+          </div>
         </div>
 
         <div className={styles.wpiTabs}>
@@ -177,7 +349,38 @@ export default function WorkingPaperModal({
     </div>
   );
 
-  return createPortal(portal, document.body);
+  return (
+    <>
+      {createPortal(portal, document.body)}
+
+      {/* Naming convention modal — Excel */}
+      {showNaming === 'excel' && (
+        <NamingConventionModal
+          exportType="excel"
+          onClose={() => setShowNaming(null)}
+          onConfirm={(filename) => doExcelExport(filename)}
+        />
+      )}
+
+      {/* Naming convention modal — PDF (triggered from preview) */}
+      {showNaming === 'pdf' && (
+        <NamingConventionModal
+          exportType="pdf"
+          onClose={() => setShowNaming(null)}
+          onConfirm={(filename) => doPdfExport(filename)}
+        />
+      )}
+
+      {/* PDF Preview modal */}
+      {showPdfPreview && !showNaming && (
+        <PdfPreviewModal
+          data={data}
+          onClose={() => setShowPdfPreview(false)}
+          onDownload={() => setShowNaming('pdf')}
+        />
+      )}
+    </>
+  );
 }
 
 /* ── Permanent / Systems File Index Tab ─────────────────── */

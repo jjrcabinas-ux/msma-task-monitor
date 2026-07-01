@@ -97,9 +97,6 @@ export default function AuditPageClient({
           <h1 className={styles.pageTitle}>Audit Monitoring</h1>
           <p className={styles.pageSubtitle}>Manage audit engagements and working papers</p>
         </div>
-        <button type="button" className={styles.newBtn} onClick={openNew}>
-          + New Working Paper Index
-        </button>
       </div>
 
       {/* Feature tabs */}
@@ -109,37 +106,53 @@ export default function AuditPageClient({
         </button>
       </div>
 
-      {/* Index list */}
-      <div className={styles.indexGrid}>
-        {indices.length === 0 && (
-          <div className={styles.emptyState}>
-            <div className={styles.emptyIcon}>📋</div>
-            <p className={styles.emptyTitle}>No working paper indices yet</p>
-            <p className={styles.emptyDesc}>
-              Click "New Working Paper Index" to create one.
-            </p>
-          </div>
-        )}
-        {indices.map((idx) => (
-          <div key={idx.id} className={styles.indexCard} onClick={() => setOpenIndex(idx)}>
-            <div className={styles.indexCardBadge}>{idx.pfrsType === 'Full' ? 'Full PFRS' : 'Not Full PFRS'}</div>
-            <div className={styles.indexCardClient}>{idx.clientName || 'Unnamed Client'}</div>
-            <div className={styles.indexCardYear}>{idx.year}</div>
-            <div className={styles.indexCardMeta}>
-              {idx.sections.length} sections · created {new Date(idx.createdAt).toLocaleDateString()}
+      {/* Working Paper Index panel */}
+      <div className={styles.featurePanel}>
+        <div className={styles.featurePanelHeader}>
+          <span className={styles.featurePanelTitle}>Working Paper Index</span>
+          <button type="button" className={styles.newBtnSm} onClick={openNew}>
+            + New
+          </button>
+        </div>
+
+        {/* Index rows */}
+        <div className={styles.indexList}>
+          {indices.length === 0 && (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>📋</div>
+              <p className={styles.emptyTitle}>No working paper indices yet</p>
+              <p className={styles.emptyDesc}>Click "+ New" to create one.</p>
             </div>
-            {isAdmin && (
-              <button
-                type="button"
-                className={styles.indexCardDelete}
-                onClick={(e) => { e.stopPropagation(); handleDelete(idx.id); }}
-                aria-label="Delete"
-              >
-                ×
-              </button>
-            )}
-          </div>
-        ))}
+          )}
+          {indices.map((idx) => (
+            <div key={idx.id} className={styles.indexRow} onClick={() => setOpenIndex(idx)}>
+              <div className={styles.indexRowBadge}>
+                {idx.pfrsType === 'Full' ? 'Full PFRS' : 'Not Full PFRS'}
+              </div>
+              <div className={styles.indexRowClient}>{idx.clientName || 'Unnamed Client'}</div>
+              <div className={styles.indexRowYear}>{idx.year}</div>
+              <div className={styles.indexRowMeta}>
+                {idx.sections.length} sections
+              </div>
+              <div className={styles.indexRowDate}>
+                Created {new Date(idx.createdAt).toLocaleDateString()}
+              </div>
+              <div className={styles.indexRowActions}>
+                <span className={styles.indexRowOpen}>Open →</span>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className={styles.indexRowDelete}
+                    onClick={(e) => { e.stopPropagation(); handleDelete(idx.id); }}
+                    aria-label="Delete"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* PFRS type selector modal */}

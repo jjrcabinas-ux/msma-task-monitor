@@ -105,8 +105,6 @@ function AddEngagementModal({
     dueDate: '',
     seniorAssigned: '',
   });
-  const [juniors, setJuniors] = useState<string[]>(['']);
-
   function set(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
   }
@@ -119,7 +117,7 @@ function AddEngagementModal({
       proposalDate: new Date(form.proposalDate),
       dueDate: new Date(form.dueDate),
       seniorAssigned: form.seniorAssigned,
-      juniorAssigned: juniors.filter((j) => j.trim()),
+      juniorAssigned: [],
     });
   }
 
@@ -152,29 +150,6 @@ function AddEngagementModal({
             placeholder="Type to search..."
           />
 
-          <label className={styles.formLabel}>Junior(s) Assigned</label>
-          <div className={styles.juniorList}>
-            {juniors.map((j, i) => (
-              <div key={i} className={styles.juniorRow}>
-                <MemberAutocomplete
-                  value={j}
-                  employees={employees}
-                  onChange={(v) => {
-                    const next = [...juniors];
-                    next[i] = v;
-                    setJuniors(next);
-                  }}
-                  placeholder="Type to search..."
-                />
-                {juniors.length > 1 && (
-                  <button type="button" className={styles.removeJuniorBtn} onClick={() => setJuniors(juniors.filter((_, idx) => idx !== i))}>×</button>
-                )}
-              </div>
-            ))}
-            <button type="button" className={styles.addJuniorBtn} onClick={() => setJuniors([...juniors, ''])}>
-              + Add Junior
-            </button>
-          </div>
         </div>
 
         <div className={styles.modalActions}>

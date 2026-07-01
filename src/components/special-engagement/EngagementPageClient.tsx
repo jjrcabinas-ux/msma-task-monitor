@@ -373,6 +373,8 @@ function TaskRow({
 function EngagementRow({
   eng,
   employees,
+  expanded,
+  onToggle,
   onStatusChange,
   onDelete,
   onAddTask,
@@ -381,22 +383,28 @@ function EngagementRow({
 }: {
   eng: Engagement;
   employees: string[];
+  expanded: boolean;
+  onToggle: () => void;
   onStatusChange: (status: string) => void;
   onDelete: () => void;
   onAddTask: (data: { task: string; dueDate: Date | null; status: string; comments: string; assignedTo: string }) => void;
   onUpdateTask: (taskId: string, field: string, value: string) => void;
   onDeleteTask: (taskId: string) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const overdue = isOverdue(eng);
-
   const doneTasks = eng.tasks.filter((t) => t.status === 'Done').length;
 
   return (
     <>
       {/* Main row */}
-      <div className={`${styles.engRow} ${overdue ? styles.engRowOverdue : ''}`}>
+      <div
+        className={`${styles.engRow} ${overdue ? styles.engRowOverdue : ''} ${expanded ? styles.engRowExpanded : ''}`}
+        onClick={onToggle}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && onToggle()}
+      >
         <div className={styles.engRowMain}>
           <div className={styles.engTitle}>
             <strong>{eng.companyName}</strong> — {eng.engagement}
@@ -424,25 +432,18 @@ function EngagementRow({
             {doneTasks}/{eng.tasks.length} tasks
           </span>
 
-          <button
-            type="button"
-            className={styles.expandBtn}
-            onClick={() => setExpanded((v) => !v)}
-            title={expanded ? 'Collapse tasks' : 'View tasks'}
-          >
-            {expanded ? '▲' : '▼'}
-          </button>
+          <span className={`${styles.rowChevron} ${expanded ? styles.rowChevronOpen : ''}`}>▶</span>
 
-          <button type="button" className={styles.deleteEngBtn} onClick={onDelete} title="Delete engagement">×</button>
+          <button type="button" className={styles.deleteEngBtn} onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Delete engagement">×</button>
         </div>
       </div>
 
-      {/* Task panel */}
-      {expanded && (
+      {/* Task panel — always rendered, animated via max-height */}
+      <div className={expanded ? styles.taskPanelOpen : styles.taskPanelClosed}>
         <div className={styles.taskPanel}>
           <div className={styles.taskPanelHeader}>
             <span className={styles.taskPanelTitle}>Tasks</span>
-            <button type="button" className={styles.addTaskBtn} onClick={() => setShowAddTask(true)}>
+            <button type="button" className={styles.addTaskBtn} onClick={(e) => { e.stopPropagation(); setShowAddTask(true); }}>
               + Add Task
             </button>
           </div>
@@ -476,13 +477,13 @@ function EngagementRow({
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {showAddTask && (
         <AddTaskModal
           employees={employees}
           onClose={() => setShowAddTask(false)}
-          onSave={(data) => { onAddTask(data); setShowAddTask(false); setExpanded(true); }}
+          onSave={(data) => { onAddTask(data); setShowAddTask(false); }}
         />
       )}
     </>
@@ -502,7 +503,12 @@ export default function EngagementPageClient({
   const [engagements, setEngagements] = useState<Engagement[]>(initialEngagements);
   const [showAdd, setShowAdd] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+
+  function toggleExpanded(id: string) {
+    setExpandedId((prev) => (prev === id ? null : id));
+  }
 
   function mutateEng(id: string, updater: (e: Engagement) => Engagement) {
     setEngagements((prev) => prev.map((e) => (e.id === id ? updater(e) : e)));
@@ -606,6 +612,8 @@ export default function EngagementPageClient({
                 key={eng.id}
                 eng={eng}
                 employees={employees}
+                expanded={expandedId === eng.id}
+                onToggle={() => toggleExpanded(eng.id)}
                 onStatusChange={(status) => handleStatusChange(eng.id, status)}
                 onDelete={() => handleDelete(eng.id)}
                 onAddTask={(data) => handleAddTask(eng.id, data)}

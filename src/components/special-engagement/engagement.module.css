@@ -181,11 +181,17 @@
   gap: 16px;
   padding: 14px 20px;
   border-bottom: 1px solid #f1f5f9;
-  transition: background 0.1s;
+  transition: background 0.15s;
+  cursor: pointer;
+  user-select: none;
 }
 
 .engRow:hover {
-  background: #fafafa;
+  background: #f1f5f9;
+}
+
+.engRowExpanded {
+  background: #f1f5f9;
 }
 
 .engRowOverdue {
@@ -265,23 +271,15 @@
 .engStatusCompleted { border-color: #16a34a; color: #16a34a; background: #f0fdf4; }
 .engStatusOnHold { border-color: #d97706; color: #d97706; background: #fffbeb; }
 
-.expandBtn {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  color: #64748b;
-  font-size: 11px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.rowChevron {
+  font-size: 9px;
+  color: #94a3b8;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: none;
 }
 
-.expandBtn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
+.rowChevronOpen {
+  transform: rotate(90deg);
 }
 
 .deleteEngBtn {
@@ -306,6 +304,18 @@
 }
 
 /* ── Task Panel ──────────────────────────────────────────── */
+
+.taskPanelClosed {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.taskPanelOpen {
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 .taskPanel {
   background: #f8fafc;

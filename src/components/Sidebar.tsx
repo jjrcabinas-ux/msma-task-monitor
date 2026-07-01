@@ -40,6 +40,7 @@ export default function Sidebar({
   const [clientTodayLabel, setClientTodayLabel] = useState(todayLabel);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(() => employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`));
+  const [auditOpen, setAuditOpen] = useState(() => pathname.startsWith(`/${cluster}/audit`));
   const [taxOpen, setTaxOpen] = useState(false);
 
   useEffect(() => {
@@ -224,13 +225,27 @@ export default function Sidebar({
             </>
           )}
 
-          <Link
-            href={`/${cluster}/audit`}
-            className={`${styles.navItem} ${pathname.startsWith(`/${cluster}/audit`) ? styles.navItemActive : ''}`}
-            onClick={() => setMobileOpen(false)}
+          <button
+            type="button"
+            className={`${styles.navItem} ${styles.navItemToggle} ${auditOpen || pathname.startsWith(`/${cluster}/audit`) ? styles.navItemActive : ''}`}
+            onClick={() => setAuditOpen((v) => !v)}
+            aria-expanded={auditOpen}
           >
             <span className={styles.navLabel}>Audit Monitoring</span>
-          </Link>
+            <span className={`${styles.navChevron} ${auditOpen ? styles.navChevronOpen : ''}`}>▶</span>
+          </button>
+
+          {auditOpen && (
+            <div className={styles.subNav}>
+              <Link
+                href={`/${cluster}/audit`}
+                className={`${styles.subNavItem} ${pathname === `/${cluster}/audit` ? styles.subNavItemActive : ''}`}
+                onClick={() => setMobileOpen(false)}
+              >
+                Working Paper Index
+              </Link>
+            </div>
+          )}
 
           <button
             type="button"

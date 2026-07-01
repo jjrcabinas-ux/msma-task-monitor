@@ -1,6 +1,7 @@
 .page {
   padding: 30px 34px 56px;
-  max-width: 1180px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .headerRow {

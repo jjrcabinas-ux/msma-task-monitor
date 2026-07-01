@@ -77,6 +77,12 @@ textarea {
   resize: none;
 }
 
+/* Every page container fills its parent — no fixed max-width */
+.page {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 a {
   color: inherit;
   text-decoration: none;

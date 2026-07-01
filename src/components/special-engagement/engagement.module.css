@@ -540,7 +540,8 @@
   align-items: center;
 }
 
-.juniorRow .formInput {
+.juniorRow .formInput,
+.juniorRow .acWrap {
   flex: 1;
 }
 

@@ -145,27 +145,27 @@ function AddEngagementModal({
           <input className={styles.formInput} type="date" value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
 
           <label className={styles.formLabel}>Senior Assigned</label>
-          <select className={styles.formInput} value={form.seniorAssigned} onChange={(e) => set('seniorAssigned', e.target.value)}>
-            <option value="">— Select —</option>
-            {employees.map((e) => <option key={e} value={e}>{e}</option>)}
-          </select>
+          <MemberAutocomplete
+            value={form.seniorAssigned}
+            employees={employees}
+            onChange={(v) => set('seniorAssigned', v)}
+            placeholder="Type to search..."
+          />
 
           <label className={styles.formLabel}>Junior(s) Assigned</label>
           <div className={styles.juniorList}>
             {juniors.map((j, i) => (
               <div key={i} className={styles.juniorRow}>
-                <select
-                  className={styles.formInput}
+                <MemberAutocomplete
                   value={j}
-                  onChange={(e) => {
+                  employees={employees}
+                  onChange={(v) => {
                     const next = [...juniors];
-                    next[i] = e.target.value;
+                    next[i] = v;
                     setJuniors(next);
                   }}
-                >
-                  <option value="">— Select —</option>
-                  {employees.map((e) => <option key={e} value={e}>{e}</option>)}
-                </select>
+                  placeholder="Type to search..."
+                />
                 {juniors.length > 1 && (
                   <button type="button" className={styles.removeJuniorBtn} onClick={() => setJuniors(juniors.filter((_, idx) => idx !== i))}>×</button>
                 )}

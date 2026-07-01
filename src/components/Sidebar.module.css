@@ -218,6 +218,17 @@
   transform: rotate(90deg);
 }
 
+.dropdownPanel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdownPanelOpen {
+  max-height: 600px;
+  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .subNav {
   display: flex;
   flex-direction: column;

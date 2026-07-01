@@ -136,8 +136,7 @@ export default function Sidebar({
             <span className={`${styles.navChevron} ${membersOpen ? styles.navChevronOpen : ''}`}>▶</span>
           </button>
 
-          {membersOpen && (
-            <>
+          <div className={membersOpen ? styles.dropdownPanelOpen : styles.dropdownPanel}>
               <div className={styles.memberListScroll}>
                 {employees.map((emp, idx) => {
                   const active = pathname === `/${cluster}/employee/${emp.id}`;
@@ -223,8 +222,7 @@ export default function Sidebar({
                     <span className={styles.navLabel}>Add member</span>
                   </div>
                 ))}
-            </>
-          )}
+          </div>
 
           <button
             type="button"
@@ -236,7 +234,7 @@ export default function Sidebar({
             <span className={`${styles.navChevron} ${auditOpen ? styles.navChevronOpen : ''}`}>▶</span>
           </button>
 
-          {auditOpen && (
+          <div className={auditOpen ? styles.dropdownPanelOpen : styles.dropdownPanel}>
             <div className={styles.subNav}>
               <Link
                 href={`/${cluster}/audit`}
@@ -246,7 +244,7 @@ export default function Sidebar({
                 Working Paper Index
               </Link>
             </div>
-          )}
+          </div>
 
           <button
             type="button"
@@ -259,7 +257,7 @@ export default function Sidebar({
             <span className={`${styles.navChevron} ${taxOpen ? styles.navChevronOpen : ''}`}>▶</span>
           </button>
 
-          {taxOpen && (
+          <div className={taxOpen ? styles.dropdownPanelOpen : styles.dropdownPanel}>
             <div className={styles.comingSoonBox}>
               <p className={styles.comingSoonLead}>
                 Keep tax filing deadlines and statutory compliance visible per client.
@@ -270,7 +268,7 @@ export default function Sidebar({
                 <li>Assign filings to team members and monitor completion</li>
               </ul>
             </div>
-          )}
+          </div>
 
           <Link
             href={`/${cluster}/special-engagement`}

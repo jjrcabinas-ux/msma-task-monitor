@@ -77,3 +77,31 @@ model AuditItem {
   isNA           Boolean      @default(false)
   sortOrder      Int          @default(0)
 }
+
+model SpecialEngagement {
+  id             String           @id @default(cuid())
+  cluster        String
+  companyName    String
+  engagement     String
+  proposalDate   DateTime
+  dueDate        DateTime
+  seniorAssigned String           @default("")
+  juniorAssigned String[]
+  status         String           @default("Ongoing")
+  createdAt      DateTime         @default(now())
+  tasks          EngagementTask[]
+
+  @@index([cluster])
+}
+
+model EngagementTask {
+  id           String            @id @default(cuid())
+  engagementId String
+  engagement   SpecialEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  task         String            @default("")
+  createdDate  DateTime          @default(now())
+  dueDate      DateTime?
+  status       String            @default("Pending")
+  comments     String            @default("")
+  sortOrder    Int               @default(0)
+}

@@ -1,11 +1,7 @@
 :root {
   --border: #e6e9ef;
   --border-soft: #f1f5f9;
-
-  /* Font roles */
-  --f-sans:  var(--font-sans),  'Helvetica Neue', Arial, sans-serif;
-  --f-serif: var(--font-serif), Georgia, serif;
-  --f-mono:  var(--font-mono),  'Courier New', monospace;
+  --font-base: var(--font-inter), 'Helvetica Neue', Arial, sans-serif;
 }
 
 * {
@@ -21,21 +17,19 @@ html {
 
 body {
   max-width: 100vw;
-  font-family: var(--f-sans);
+  font-family: var(--font-base);
   background: #eef1f5;
   color: #1e293b;
   -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-/* Headings use IBM Plex Serif */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--f-serif);
-}
-
-/* Numbers, tables, code use IBM Plex Mono */
-table, code, pre,
-.mono, [data-mono] {
-  font-family: var(--f-mono);
+  font-family: var(--font-base);
+  font-weight: 700;
+  line-height: 1.25;
+  color: #0f172a;
 }
 
 input,
@@ -43,6 +37,7 @@ textarea,
 select,
 button {
   font-family: inherit;
+  font-size: inherit;
 }
 
 button,
@@ -77,11 +72,6 @@ textarea {
   resize: none;
 }
 
-/* Every page container fills its parent — no fixed max-width */
-.page {
-  width: 100%;
-  box-sizing: border-box;
-}
 
 a {
   color: inherit;

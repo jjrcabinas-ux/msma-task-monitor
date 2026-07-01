@@ -40,7 +40,7 @@ type Engagement = {
 };
 
 /* ── Constants ──────────────────────────────────────────────── */
-const TASK_STATUSES = ['Pending', 'In Progress', 'Done', 'On Hold'];
+const TASK_STATUSES = ['Pending', 'Ongoing', 'Done'];
 const ENGAGEMENT_STATUSES = ['Ongoing', 'Completed', 'On Hold'];
 
 function fmt(date: Date | string | null | undefined) {

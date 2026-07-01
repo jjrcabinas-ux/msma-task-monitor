@@ -70,9 +70,9 @@ export default async function SummaryPage({
     avatarLabel: task.empName[0],
     name: task.taskGeneral || '(untitled)',
     details: task.taskDetails,
-    statusLabel: STATUS_META[task.status].label,
-    statusColor: STATUS_META[task.status].color,
-    statusBg: STATUS_META[task.status].bg,
+    statusLabel: (STATUS_META[task.status as keyof typeof STATUS_META] ?? STATUS_META.Pending).label,
+    statusColor: (STATUS_META[task.status as keyof typeof STATUS_META] ?? STATUS_META.Pending).color,
+    statusBg: (STATUS_META[task.status as keyof typeof STATUS_META] ?? STATUS_META.Pending).bg,
   }));
   const empCards = buildEmployeeCards(roster);
   const blockers = buildBlockers(roster, today);

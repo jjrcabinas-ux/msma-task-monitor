@@ -7,9 +7,16 @@ import type { ClusterSlug } from '@/lib/clusters';
 const NOT_FULL_PFRS_SECTIONS = [
   {
     name: 'Permanent',
-    title: 'Permanent File',
+    title: 'Permanent / Systems File Index',
     sectionRef: 'PF',
-    items: [] as DefaultItem[],
+    items: [
+      { refNum: 'CLIENT_REF', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'ACCT_DATE', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'PARTNER', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'SR_ASSOCIATE', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'JR_ASSOCIATE', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'LAST_UPDATED', description: 'June 2026', initials: '', sourceDocument: '', isNA: false },
+    ],
   },
   {
     name: 'A1',
@@ -40,7 +47,19 @@ const NOT_FULL_PFRS_SECTIONS = [
 ];
 
 const FULL_PFRS_SECTIONS = [
-  { name: 'Permanent', title: 'Permanent File', sectionRef: 'PF', items: [] as DefaultItem[] },
+  {
+    name: 'Permanent',
+    title: 'Permanent / Systems File Index',
+    sectionRef: 'PF',
+    items: [
+      { refNum: 'CLIENT_REF', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'ACCT_DATE', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'PARTNER', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'SR_ASSOCIATE', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'JR_ASSOCIATE', description: '', initials: '', sourceDocument: '', isNA: false },
+      { refNum: 'LAST_UPDATED', description: 'June 2026', initials: '', sourceDocument: '', isNA: false },
+    ],
+  },
   { name: 'Cover', title: 'Cover Page', sectionRef: 'CV', items: [] as DefaultItem[] },
   { name: 'PRA', title: 'Pre-engagement Risk Assessment', sectionRef: 'PRA', items: [] as DefaultItem[] },
   { name: 'A', title: 'Cash and Cash Equivalents', sectionRef: 'A', items: [] as DefaultItem[] },

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -13,6 +14,14 @@ import styles from './audit.module.css';
 
 type Item = AuditIndexData['sections'][number]['items'][number];
 type Section = AuditIndexData['sections'][number];
+
+const PERM_FIELDS: { key: string; label: string }[] = [
+  { key: 'CLIENT_REF', label: 'CLIENT / REFERENCE:' },
+  { key: 'ACCT_DATE', label: 'ACCOUNTING REFERENCE DATE:' },
+  { key: 'PARTNER', label: 'PARTNER:' },
+  { key: 'SR_ASSOCIATE', label: 'SENIOR ASSOCIATE IN-CHARGE:' },
+  { key: 'JR_ASSOCIATE', label: 'JUNIOR ASSOCIATE IN-CHARGE:' },
+];
 
 export default function WorkingPaperModal({
   indexData,
@@ -55,7 +64,8 @@ export default function WorkingPaperModal({
   function addItemToSection(sectionId: string) {
     const sec = data.sections.find((s) => s.id === sectionId);
     if (!sec) return;
-    const nextRef = String(sec.items.length + 1);
+    const numericItems = sec.items.filter((it) => /^\d+$/.test(it.refNum));
+    const nextRef = String(numericItems.length + 1);
     startTransition(async () => {
       const newItem = await addAuditItemAction(sectionId, {
         refNum: nextRef,
@@ -135,12 +145,19 @@ export default function WorkingPaperModal({
 
         {currentSection && (
           <div className={styles.wpiContent}>
-            <AnnualFileIndexTable
-              section={currentSection}
-              onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
-              onAddItem={() => addItemToSection(currentSection.id)}
-              onRemoveItem={(itemId) => removeItem(currentSection.id, itemId)}
-            />
+            {currentSection.name === 'Permanent' ? (
+              <PermanentFileTab
+                section={currentSection}
+                onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
+              />
+            ) : (
+              <AnnualFileIndexTable
+                section={currentSection}
+                onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
+                onAddItem={() => addItemToSection(currentSection.id)}
+                onRemoveItem={(itemId) => removeItem(currentSection.id, itemId)}
+              />
+            )}
           </div>
         )}
       </div>
@@ -157,6 +174,92 @@ export default function WorkingPaperModal({
   return createPortal(portal, document.body);
 }
 
+/* ── Permanent / Systems File Index Tab ─────────────────── */
+
+function PermanentFileTab({
+  section,
+  onUpdateItem,
+}: {
+  section: Section;
+  onUpdateItem: (itemId: string, field: keyof Item, value: string | boolean) => void;
+}) {
+  function getItem(key: string) {
+    return section.items.find((it) => it.refNum === key);
+  }
+
+  const lastUpdatedItem = getItem('LAST_UPDATED');
+
+  return (
+    <div className={styles.permPaper}>
+      <div className={styles.permInner}>
+        {/* Left content column */}
+        <div className={styles.permLeft}>
+          <div className={styles.permTitle}>PERMANENT / SYSTEMS FILE INDEX</div>
+
+          <div className={styles.permFields}>
+            {PERM_FIELDS.map((field) => {
+              const item = getItem(field.key);
+              return (
+                <div key={field.key} className={styles.permField}>
+                  <div className={styles.permFieldLabel}>{field.label}</div>
+                  <input
+                    className={styles.permFieldInput}
+                    value={item?.description ?? ''}
+                    onChange={(e) => item && onUpdateItem(item.id, 'description', e.target.value)}
+                    placeholder=""
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <div className={styles.permSectionHeader}>Section A - Permanent</div>
+          <div className={styles.permSectionList}>
+            <div className={styles.permSectionItem}>
+              <span className={styles.permSectionRef}>A1</span>
+              <span className={styles.permSectionDesc}>General matters</span>
+            </div>
+            <div className={styles.permSectionItem}>
+              <span className={styles.permSectionRef}>A2</span>
+              <span className={styles.permSectionDesc}>Documents and correspondence of a permanent nature</span>
+            </div>
+            <div className={styles.permSectionItem}>
+              <span className={styles.permSectionRef}>A3</span>
+              <span className={styles.permSectionDesc}>Statutory matters</span>
+            </div>
+          </div>
+
+          <div className={styles.permFooter}>
+            <div className={styles.permLogoBlock}>
+              <Image src="/logo.png" alt="MSMA" width={120} height={66} className={styles.permLogo} />
+              <div className={styles.permCompanyName}>
+                MORA, SANCHEZ, MEÑOZA<br />AND ASSOCIATES
+              </div>
+            </div>
+            <div className={styles.permUpdated}>
+              <strong>Updated{' '}
+                {lastUpdatedItem ? (
+                  <input
+                    className={styles.permUpdatedInput}
+                    value={lastUpdatedItem.description}
+                    onChange={(e) => onUpdateItem(lastUpdatedItem.id, 'description', e.target.value)}
+                    placeholder="June 2026"
+                  />
+                ) : (
+                  'June 2026'
+                )}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        {/* Right divider column */}
+        <div className={styles.permRight} />
+      </div>
+    </div>
+  );
+}
+
 /* ── Annual File Index Table ─────────────────────────────── */
 
 function AnnualFileIndexTable({
@@ -170,6 +273,8 @@ function AnnualFileIndexTable({
   onAddItem: () => void;
   onRemoveItem: (itemId: string) => void;
 }) {
+  const visibleItems = section.items.filter((it) => /^\d+$/.test(it.refNum));
+
   return (
     <div className={styles.a4Paper}>
       <div className={styles.a4Header}>
@@ -197,7 +302,7 @@ function AnnualFileIndexTable({
           </tr>
         </thead>
         <tbody>
-          {section.items.map((item) => (
+          {visibleItems.map((item) => (
             <AuditItemRow
               key={item.id}
               item={item}
@@ -205,7 +310,7 @@ function AnnualFileIndexTable({
               onRemove={onRemoveItem}
             />
           ))}
-          {section.items.length === 0 && (
+          {visibleItems.length === 0 && (
             <tr>
               <td colSpan={5} className={styles.a4Empty}>
                 No items yet. Click &ldquo;+ Add Row&rdquo; to begin.
@@ -295,7 +400,7 @@ function AuditItemRow({
   );
 }
 
-/* ── Add Section Modal (A4 style, 50% size) ─────────────── */
+/* ── Add Section Modal ────────────────────────────────────── */
 
 function AddSectionModal({
   onClose,
@@ -434,7 +539,6 @@ function AddSectionModal({
                       type="button"
                       className={`${styles.a4RowBtn} ${item.isNA ? styles.a4RowBtnActive : ''}`}
                       onClick={() => updateRow(idx, 'isNA', !item.isNA)}
-                      title="Toggle N/A"
                     >
                       NA
                     </button>
@@ -442,7 +546,6 @@ function AddSectionModal({
                       type="button"
                       className={styles.a4RowBtnDelete}
                       onClick={() => removeRow(idx)}
-                      title="Remove row"
                     >
                       ×
                     </button>

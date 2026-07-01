@@ -193,17 +193,23 @@ function MemberAutocomplete({
   employees: string[];
   onChange: (val: string) => void;
 }) {
+  const [inputVal, setInputVal] = useState(value);
   const [open, setOpen] = useState(false);
-  const suggestions = value
-    ? employees.filter((e) => e.toLowerCase().includes(value.toLowerCase()) && e !== value)
+
+  const suggestions = inputVal
+    ? employees.filter((e) => e.toLowerCase().includes(inputVal.toLowerCase()) && e !== inputVal)
     : employees;
 
   return (
     <div className={styles.acWrap}>
       <input
         className={styles.permFieldInput}
-        value={value}
-        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        value={inputVal}
+        onChange={(e) => {
+          setInputVal(e.target.value);
+          onChange(e.target.value);
+          setOpen(true);
+        }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="Type to search member..."
@@ -215,7 +221,7 @@ function MemberAutocomplete({
             <div
               key={name}
               className={styles.acOption}
-              onMouseDown={() => { onChange(name); setOpen(false); }}
+              onMouseDown={() => { setInputVal(name); onChange(name); setOpen(false); }}
             >
               {name}
             </div>

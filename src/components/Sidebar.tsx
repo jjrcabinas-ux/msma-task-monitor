@@ -40,7 +40,7 @@ export default function Sidebar({
   const [clientTodayLabel, setClientTodayLabel] = useState(todayLabel);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(() => employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`));
-  const [auditOpen, setAuditOpen] = useState(() => pathname.startsWith(`/${cluster}/audit`));
+  const [auditOpen, setAuditOpen] = useState(() => !!pathname?.startsWith(`/${cluster}/audit`));
   const [taxOpen, setTaxOpen] = useState(false);
 
   useEffect(() => {

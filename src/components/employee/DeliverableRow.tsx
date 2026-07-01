@@ -35,6 +35,7 @@ export default function DeliverableRow({
   const [pickerYear, setPickerYear] = useState(initialParts.y);
   const [pickerMonth, setPickerMonth] = useState(initialParts.m - 1);
   const [status, setStatus] = useState<Status>(task.status);
+  const [helpNeededKey, setHelpNeededKey] = useState(0);
   const [clientToday, setClientToday] = useState(todayIso);
 
   useEffect(() => {
@@ -130,7 +131,12 @@ export default function DeliverableRow({
       if (!confirmed) return;
     }
     setStatus(value);
-    updateTaskAction(task.id, { status: value });
+    if (value === 'Done') {
+      updateTaskAction(task.id, { status: value, helpNeeded: '' });
+      setHelpNeededKey((k) => k + 1);
+    } else {
+      updateTaskAction(task.id, { status: value });
+    }
   }
 
   const aged = isTaskLocked(task.date, clientToday);
@@ -257,7 +263,7 @@ export default function DeliverableRow({
         )}
       </td>
       <td className={styles.tdText}>
-        <HelpNeededCell key={`h-${task.id}`} taskId={task.id} initialValue={task.helpNeeded} readOnly={statusAndHelpLocked} />
+        <HelpNeededCell key={`h-${task.id}-${helpNeededKey}`} taskId={task.id} initialValue={helpNeededKey > 0 ? '' : task.helpNeeded} readOnly={statusAndHelpLocked} />
       </td>
       <td className={styles.tdCenter}>
         {!canEdit ? (

@@ -148,6 +148,7 @@ export default function WorkingPaperModal({
             {currentSection.name === 'Permanent' ? (
               <PermanentFileTab
                 section={currentSection}
+                clientName={data.clientName}
                 onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
               />
             ) : (
@@ -178,9 +179,11 @@ export default function WorkingPaperModal({
 
 function PermanentFileTab({
   section,
+  clientName,
   onUpdateItem,
 }: {
   section: Section;
+  clientName: string;
   onUpdateItem: (itemId: string, field: keyof Item, value: string | boolean) => void;
 }) {
   function getItem(key: string) {
@@ -199,14 +202,15 @@ function PermanentFileTab({
           <div className={styles.permFields}>
             {PERM_FIELDS.map((field) => {
               const item = getItem(field.key);
+              const displayValue = item?.description || (field.key === 'CLIENT_REF' ? clientName : '');
               return (
                 <div key={field.key} className={styles.permField}>
                   <div className={styles.permFieldLabel}>{field.label}</div>
                   <input
                     className={styles.permFieldInput}
-                    value={item?.description ?? ''}
+                    value={displayValue}
                     onChange={(e) => item && onUpdateItem(item.id, 'description', e.target.value)}
-                    placeholder=""
+                    placeholder={field.key === 'CLIENT_REF' ? clientName : ''}
                   />
                 </div>
               );

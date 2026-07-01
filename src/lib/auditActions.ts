@@ -108,7 +108,7 @@ export async function createAuditIndexAction(
           items: {
             create: sec.items.map((item, ii) => ({
               refNum: item.refNum,
-              description: item.description,
+              description: item.refNum === 'CLIENT_REF' ? clientName : item.description,
               initials: item.initials,
               sourceDocument: item.sourceDocument,
               isNA: item.isNA,

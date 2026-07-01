@@ -143,7 +143,7 @@ export default function DeliverableRow({
   // Permission-locked rows are fully view-only; aged-but-permitted rows still allow status/help-needed.
   const lockedForFields = !canEdit || aged;
   const statusAndHelpLocked = !canEdit;
-  const sm = STATUS_META[status];
+  const sm = STATUS_META[status as keyof typeof STATUS_META] ?? STATUS_META.Pending;
   const dim = daysInMonth(pickerYear, pickerMonth);
   const first = firstWeekdayOfMonth(pickerYear, pickerMonth);
   const days: { label: string; iso: string }[] = [];

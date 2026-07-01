@@ -141,7 +141,7 @@ export default function AddDeliverableButton({
                     value={form.status}
                     onChange={(e) => updateField('status', e.target.value as Status)}
                     className={styles.addModalSelect}
-                    style={{ background: STATUS_META[form.status].bg, color: STATUS_META[form.status].color }}
+                    style={{ background: (STATUS_META[form.status as keyof typeof STATUS_META] ?? STATUS_META.Pending).bg, color: (STATUS_META[form.status as keyof typeof STATUS_META] ?? STATUS_META.Pending).color }}
                     disabled={pending}
                   >
                     <option value="Pending">Pending</option>

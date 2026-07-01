@@ -7,6 +7,7 @@ import {
   createEngagementAction,
   deleteEngagementAction,
   updateEngagementStatusAction,
+  updateEngagementAction,
   addEngagementTaskAction,
   updateEngagementTaskAction,
   deleteEngagementTaskAction,
@@ -174,6 +175,90 @@ function AddEngagementModal({
         <div className={styles.modalActions}>
           <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
           <button type="button" className={styles.saveBtn} onClick={submit} disabled={!valid}>Save Engagement</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Edit Engagement Modal ──────────────────────────────────── */
+function EditEngagementModal({
+  eng,
+  employees,
+  onClose,
+  onSave,
+}: {
+  eng: Engagement;
+  employees: string[];
+  onClose: () => void;
+  onSave: (data: { companyName: string; engagement: string; proposalDate: Date; dueDate: Date; seniorAssigned: string }) => void;
+}) {
+  const toDateInput = (d: Date | string) => new Date(d).toISOString().split('T')[0];
+
+  const [form, setForm] = useState({
+    companyName: eng.companyName,
+    engagement: eng.engagement,
+    proposalDate: toDateInput(eng.proposalDate),
+    dueDate: toDateInput(eng.dueDate),
+    seniorAssigned: eng.seniorAssigned,
+  });
+
+  function set(field: string, value: string) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const valid = form.companyName && form.engagement && form.proposalDate && form.dueDate && form.seniorAssigned;
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <button type="button" className={styles.modalClose} onClick={onClose}>×</button>
+        <h2 className={styles.modalTitle}>Edit Engagement</h2>
+
+        <div className={styles.formGrid}>
+          <label className={styles.formLabel}>Company Name <span className={styles.req}>*</span></label>
+          <input className={styles.formInput} value={form.companyName} onChange={(e) => set('companyName', e.target.value)} autoFocus />
+
+          <label className={styles.formLabel}>Engagement <span className={styles.req}>*</span></label>
+          <input className={styles.formInput} value={form.engagement} onChange={(e) => set('engagement', e.target.value)} />
+
+          <label className={styles.formLabel}>Date Proposal Signed <span className={styles.req}>*</span></label>
+          <input className={styles.formInput} type="date" value={form.proposalDate} onChange={(e) => set('proposalDate', e.target.value)} />
+
+          <label className={styles.formLabel}>Due Date <span className={styles.req}>*</span></label>
+          <input className={styles.formInput} type="date" value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
+
+          <label className={styles.formLabel}>Senior Assigned <span className={styles.req}>*</span></label>
+          <MemberAutocomplete
+            value={form.seniorAssigned}
+            employees={employees}
+            onChange={(v) => set('seniorAssigned', v)}
+            placeholder="Type to search..."
+          />
+        </div>
+
+        <div className={styles.modalActions}>
+          <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+          <button
+            type="button"
+            className={styles.saveBtn}
+            disabled={!valid}
+            onClick={() => onSave({
+              companyName: form.companyName,
+              engagement: form.engagement,
+              proposalDate: new Date(form.proposalDate),
+              dueDate: new Date(form.dueDate),
+              seniorAssigned: form.seniorAssigned,
+            })}
+          >
+            Save Changes
+          </button>
         </div>
       </div>
     </div>
@@ -376,6 +461,7 @@ function EngagementRow({
   expanded,
   onToggle,
   onStatusChange,
+  onEdit,
   onDelete,
   onAddTask,
   onUpdateTask,
@@ -386,6 +472,7 @@ function EngagementRow({
   expanded: boolean;
   onToggle: () => void;
   onStatusChange: (status: string) => void;
+  onEdit: () => void;
   onDelete: () => void;
   onAddTask: (data: { task: string; dueDate: Date | null; status: string; comments: string; assignedTo: string }) => void;
   onUpdateTask: (taskId: string, field: string, value: string) => void;
@@ -434,6 +521,7 @@ function EngagementRow({
 
           <span className={`${styles.rowChevron} ${expanded ? styles.rowChevronOpen : ''}`}>▶</span>
 
+          <button type="button" className={styles.editEngBtn} onClick={(e) => { e.stopPropagation(); onEdit(); }} title="Edit engagement">✎</button>
           <button type="button" className={styles.deleteEngBtn} onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Delete engagement">×</button>
         </div>
       </div>
@@ -502,6 +590,7 @@ export default function EngagementPageClient({
 }) {
   const [engagements, setEngagements] = useState<Engagement[]>(initialEngagements);
   const [showAdd, setShowAdd] = useState(false);
+  const [editingEng, setEditingEng] = useState<Engagement | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [, startTransition] = useTransition();
@@ -527,6 +616,12 @@ export default function EngagementPageClient({
       setEngagements((prev) => [result as unknown as Engagement, ...prev]);
       setShowAdd(false);
     });
+  }
+
+  function handleEdit(id: string, data: { companyName: string; engagement: string; proposalDate: Date; dueDate: Date; seniorAssigned: string }) {
+    mutateEng(id, (e) => ({ ...e, ...data }));
+    setEditingEng(null);
+    startTransition(async () => { await updateEngagementAction(id, data); });
   }
 
   function handleStatusChange(id: string, status: string) {
@@ -615,6 +710,7 @@ export default function EngagementPageClient({
                 expanded={expandedId === eng.id}
                 onToggle={() => toggleExpanded(eng.id)}
                 onStatusChange={(status) => handleStatusChange(eng.id, status)}
+                onEdit={() => setEditingEng(eng)}
                 onDelete={() => handleDelete(eng.id)}
                 onAddTask={(data) => handleAddTask(eng.id, data)}
                 onUpdateTask={(taskId, field, value) => handleUpdateTask(eng.id, taskId, field, value)}
@@ -632,6 +728,15 @@ export default function EngagementPageClient({
           employees={employees}
           onClose={() => setShowAdd(false)}
           onSave={handleCreate}
+        />
+      )}
+
+      {editingEng && (
+        <EditEngagementModal
+          eng={editingEng}
+          employees={employees}
+          onClose={() => setEditingEng(null)}
+          onSave={(data) => handleEdit(editingEng.id, data)}
         />
       )}
     </div>

@@ -32,6 +32,19 @@ export async function updateEngagementStatusAction(id: string, status: string) {
   return prisma.specialEngagement.update({ where: { id }, data: { status } });
 }
 
+export async function updateEngagementAction(
+  id: string,
+  data: {
+    companyName: string;
+    engagement: string;
+    proposalDate: Date;
+    dueDate: Date;
+    seniorAssigned: string;
+  },
+) {
+  return prisma.specialEngagement.update({ where: { id }, data });
+}
+
 export async function deleteEngagementAction(id: string) {
   await prisma.specialEngagement.delete({ where: { id } });
 }

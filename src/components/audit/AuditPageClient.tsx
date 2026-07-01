@@ -40,10 +40,12 @@ export default function AuditPageClient({
   cluster,
   isAdmin,
   indices: initialIndices,
+  employees,
 }: {
   cluster: ClusterSlug;
   isAdmin: boolean;
   indices: AuditIndexData[];
+  employees: string[];
 }) {
   const [indices, setIndices] = useState<AuditIndexData[]>(initialIndices);
   const [showPfrsModal, setShowPfrsModal] = useState(false);
@@ -215,6 +217,7 @@ export default function AuditPageClient({
       {openIndex && (
         <WorkingPaperModal
           indexData={openIndex}
+          employees={employees}
           onClose={() => setOpenIndex(null)}
           onUpdate={(updated) => {
             setIndices((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));

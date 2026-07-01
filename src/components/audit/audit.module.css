@@ -655,6 +655,45 @@
   background: #fffbeb;
 }
 
+/* ── Member Autocomplete ──────────────────────────────────── */
+
+.acWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.acWrap .permFieldInput {
+  width: 100%;
+}
+
+.acDropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #2563eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 50;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.acOption {
+  padding: 7px 12px;
+  font-size: 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.acOption:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
 .a4Header {
   display: flex;
   align-items: flex-start;

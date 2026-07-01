@@ -25,10 +25,12 @@ const PERM_FIELDS: { key: string; label: string }[] = [
 
 export default function WorkingPaperModal({
   indexData,
+  employees,
   onClose,
   onUpdate,
 }: {
   indexData: AuditIndexData;
+  employees: string[];
   onClose: () => void;
   onUpdate: (updated: AuditIndexData) => void;
 }) {
@@ -151,6 +153,7 @@ export default function WorkingPaperModal({
                 clientName={data.clientName}
                 cluster={data.cluster}
                 year={data.year}
+                employees={employees}
                 onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
               />
             ) : (
@@ -179,6 +182,50 @@ export default function WorkingPaperModal({
 
 /* ── Permanent / Systems File Index Tab ─────────────────── */
 
+/* ── Member Autocomplete Input ───────────────────────────── */
+
+function MemberAutocomplete({
+  value,
+  employees,
+  onChange,
+}: {
+  value: string;
+  employees: string[];
+  onChange: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const suggestions = value
+    ? employees.filter((e) => e.toLowerCase().includes(value.toLowerCase()) && e !== value)
+    : employees;
+
+  return (
+    <div className={styles.acWrap}>
+      <input
+        className={styles.permFieldInput}
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Type to search member..."
+        autoComplete="off"
+      />
+      {open && suggestions.length > 0 && (
+        <div className={styles.acDropdown}>
+          {suggestions.map((name) => (
+            <div
+              key={name}
+              className={styles.acOption}
+              onMouseDown={() => { onChange(name); setOpen(false); }}
+            >
+              {name}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const CLUSTER_PARTNERS: Record<string, string> = {
   ads: 'Atty. Antonio Sanchez Jr., CPA',
   rpm: 'Atty. Rhenier Mora, CPA',
@@ -190,12 +237,14 @@ function PermanentFileTab({
   clientName,
   cluster,
   year,
+  employees,
   onUpdateItem,
 }: {
   section: Section;
   clientName: string;
   cluster: string;
   year: number;
+  employees: string[];
   onUpdateItem: (itemId: string, field: keyof Item, value: string | boolean) => void;
 }) {
   function getItem(key: string) {
@@ -219,15 +268,24 @@ function PermanentFileTab({
                 field.key === 'PARTNER' ? (CLUSTER_PARTNERS[cluster] ?? '') :
                 field.key === 'ACCT_DATE' ? `December 31, ${year}` : '';
               const displayValue = item?.description || fallback;
+              const isAssociate = field.key === 'SR_ASSOCIATE' || field.key === 'JR_ASSOCIATE';
               return (
                 <div key={field.key} className={styles.permField}>
                   <div className={styles.permFieldLabel}>{field.label}</div>
-                  <input
-                    className={styles.permFieldInput}
-                    value={displayValue}
-                    onChange={(e) => item && onUpdateItem(item.id, 'description', e.target.value)}
-                    placeholder={fallback}
-                  />
+                  {isAssociate ? (
+                    <MemberAutocomplete
+                      value={displayValue}
+                      employees={employees}
+                      onChange={(val) => item && onUpdateItem(item.id, 'description', val)}
+                    />
+                  ) : (
+                    <input
+                      className={styles.permFieldInput}
+                      value={displayValue}
+                      onChange={(e) => item && onUpdateItem(item.id, 'description', e.target.value)}
+                      placeholder={fallback}
+                    />
+                  )}
                 </div>
               );
             })}

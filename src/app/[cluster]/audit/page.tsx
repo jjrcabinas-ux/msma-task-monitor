@@ -1,3 +1,4 @@
+import { prisma } from '@/lib/db';
 import { isAdminUnlocked } from '@/lib/memberAuth';
 import { getAuditIndicesAction } from '@/lib/auditActions';
 import type { ClusterSlug } from '@/lib/clusters';
@@ -7,6 +8,18 @@ export default async function AuditMonitoringPage({ params }: { params: Promise<
   const { cluster } = await params;
   const isAdmin = await isAdminUnlocked(cluster);
   const indices = await getAuditIndicesAction(cluster);
+  const employees = await prisma.employee.findMany({
+    where: { cluster },
+    select: { name: true, nickname: true },
+    orderBy: { name: 'asc' },
+  });
 
-  return <AuditPageClient cluster={cluster} isAdmin={isAdmin} indices={indices} />;
+  return (
+    <AuditPageClient
+      cluster={cluster}
+      isAdmin={isAdmin}
+      indices={indices}
+      employees={employees.map((e) => e.name)}
+    />
+  );
 }

@@ -41,6 +41,7 @@ export default function Sidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(() => employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`));
   const [taxOpen, setTaxOpen] = useState(false);
+  const [specialEngOpen, setSpecialEngOpen] = useState(false);
 
   useEffect(() => {
     function syncLabel() {
@@ -254,6 +255,31 @@ export default function Sidebar({
                 <li>Track BIR/SEC filing due dates and submission status</li>
                 <li>Alert on upcoming and missed compliance deadlines</li>
                 <li>Assign filings to team members and monitor completion</li>
+              </ul>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className={`${styles.navItem} ${styles.navItemToggle}`}
+            onClick={() => setSpecialEngOpen((v) => !v)}
+            aria-expanded={specialEngOpen}
+          >
+            <div className={styles.navIcon}>📋</div>
+            <span className={styles.navLabel}>Special Engagement Monitoring</span>
+            <span className={styles.soonBadge}>Soon</span>
+            <span className={`${styles.navChevron} ${specialEngOpen ? styles.navChevronOpen : ''}`}>▶</span>
+          </button>
+
+          {specialEngOpen && (
+            <div className={styles.comingSoonBox}>
+              <p className={styles.comingSoonLead}>
+                Track and manage special engagement projects assigned to the cluster.
+              </p>
+              <ul className={styles.comingSoonList}>
+                <li>Monitor progress and milestones per engagement</li>
+                <li>Assign tasks and responsibilities to team members</li>
+                <li>Track deliverables, deadlines, and completion status</li>
               </ul>
             </div>
           )}

@@ -54,12 +54,6 @@ export default function Sidebar({
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-collapse dropdowns when navigating away from their section
-  useEffect(() => {
-    if (!pathname?.startsWith(`/${cluster}/audit`)) setAuditOpen(false);
-    if (!employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`)) setMembersOpen(false);
-    setTaxOpen(false);
-  }, [pathname, cluster, employees]);
 
   const isSummaryActive = pathname === `/${cluster}`;
 
@@ -125,7 +119,7 @@ export default function Sidebar({
           <Link
             href={`/${cluster}`}
             className={`${styles.navItem} ${isSummaryActive ? styles.navItemActive : ''}`}
-            onClick={() => setMobileOpen(false)}
+            onClick={() => { setMobileOpen(false); setAuditOpen(false); }}
           >
             <div className={styles.navIcon}>▦</div>
             <span className={styles.navLabel}>Team Summary</span>
@@ -134,7 +128,7 @@ export default function Sidebar({
           <button
             type="button"
             className={`${styles.navItem} ${styles.navItemToggle}`}
-            onClick={() => setMembersOpen((v) => !v)}
+            onClick={() => { setMembersOpen((v) => !v); setAuditOpen(false); }}
             aria-expanded={membersOpen}
           >
             <div className={styles.navIcon}>☰</div>
@@ -152,7 +146,7 @@ export default function Sidebar({
                       key={emp.id}
                       href={`/${cluster}/employee/${emp.id}`}
                       className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                      onClick={() => setMobileOpen(false)}
+                      onClick={() => { setMobileOpen(false); setAuditOpen(false); }}
                     >
                       <div className={styles.navAvatar} style={{ background: employeeColor(idx) }}>
                         {emp.name[0]}
@@ -281,7 +275,7 @@ export default function Sidebar({
           <Link
             href={`/${cluster}/special-engagement`}
             className={`${styles.navItem} ${pathname.startsWith(`/${cluster}/special-engagement`) ? styles.navItemActive : ''}`}
-            onClick={() => setMobileOpen(false)}
+            onClick={() => { setMobileOpen(false); setAuditOpen(false); }}
           >
             <span className={styles.navLabel}>Special Engagement Monitoring</span>
           </Link>

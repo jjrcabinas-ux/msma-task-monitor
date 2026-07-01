@@ -305,7 +305,7 @@ export default function WorkingPaperModal({
               disabled={isExporting}
               title="Export all tabs to Excel"
             >
-              📊 Excel
+              Generate Excel File
             </button>
             <button
               type="button"
@@ -314,7 +314,7 @@ export default function WorkingPaperModal({
               disabled={isExporting}
               title="Preview and download PDF"
             >
-              📄 PDF
+              Generate PDF
             </button>
             <button type="button" className={styles.wpiCloseBtn} onClick={onClose}>×</button>
           </div>

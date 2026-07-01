@@ -52,31 +52,43 @@ function isOverdue(eng: Engagement) {
   return eng.status !== 'Completed' && new Date(eng.dueDate) < new Date();
 }
 
+type FilterKey = 'all' | 'ongoing' | 'overdue' | 'completed';
+
 /* ── Summary Cards ──────────────────────────────────────────── */
-function SummaryBar({ engagements }: { engagements: Engagement[] }) {
+function SummaryBar({
+  engagements,
+  activeFilter,
+  onFilter,
+}: {
+  engagements: Engagement[];
+  activeFilter: FilterKey;
+  onFilter: (f: FilterKey) => void;
+}) {
   const total = engagements.length;
   const ongoing = engagements.filter((e) => e.status === 'Ongoing').length;
   const overdue = engagements.filter(isOverdue).length;
   const completed = engagements.filter((e) => e.status === 'Completed').length;
 
+  function card(key: FilterKey, num: number, label: string, colorClass?: string) {
+    const active = activeFilter === key;
+    return (
+      <button
+        type="button"
+        onClick={() => onFilter(active ? 'all' : key)}
+        className={`${styles.summaryCard} ${colorClass ?? ''} ${active ? styles.summaryCardActive : ''}`}
+      >
+        <div className={styles.summaryNum}>{num}</div>
+        <div className={styles.summaryLabel}>{label}</div>
+      </button>
+    );
+  }
+
   return (
     <div className={styles.summaryBar}>
-      <div className={styles.summaryCard}>
-        <div className={styles.summaryNum}>{total}</div>
-        <div className={styles.summaryLabel}>Total Engagements</div>
-      </div>
-      <div className={`${styles.summaryCard} ${styles.summaryOngoing}`}>
-        <div className={styles.summaryNum}>{ongoing}</div>
-        <div className={styles.summaryLabel}>Ongoing</div>
-      </div>
-      <div className={`${styles.summaryCard} ${styles.summaryOverdue}`}>
-        <div className={styles.summaryNum}>{overdue}</div>
-        <div className={styles.summaryLabel}>Overdue</div>
-      </div>
-      <div className={`${styles.summaryCard} ${styles.summaryCompleted}`}>
-        <div className={styles.summaryNum}>{completed}</div>
-        <div className={styles.summaryLabel}>Completed</div>
-      </div>
+      {card('all', total, 'Total Engagements')}
+      {card('ongoing', ongoing, 'Ongoing', styles.summaryOngoing)}
+      {card('overdue', overdue, 'Overdue', styles.summaryOverdue)}
+      {card('completed', completed, 'Completed', styles.summaryCompleted)}
     </div>
   );
 }
@@ -459,6 +471,7 @@ export default function EngagementPageClient({
 }) {
   const [engagements, setEngagements] = useState<Engagement[]>(initialEngagements);
   const [showAdd, setShowAdd] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   const [, startTransition] = useTransition();
 
   function mutateEng(id: string, updater: (e: Engagement) => Engagement) {
@@ -527,24 +540,38 @@ export default function EngagementPageClient({
       </div>
 
       {/* Summary */}
-      <SummaryBar engagements={engagements} />
+      <SummaryBar engagements={engagements} activeFilter={activeFilter} onFilter={setActiveFilter} />
 
       {/* Engagement list */}
+      {(() => {
+        const filtered = engagements.filter((e) => {
+          if (activeFilter === 'ongoing') return e.status === 'Ongoing';
+          if (activeFilter === 'overdue') return isOverdue(e);
+          if (activeFilter === 'completed') return e.status === 'Completed';
+          return true;
+        });
+        const filterLabel: Record<FilterKey, string> = {
+          all: 'Engagements',
+          ongoing: 'Ongoing',
+          overdue: 'Overdue',
+          completed: 'Completed',
+        };
+        return (
       <div className={styles.panel}>
         <div className={styles.panelHeader}>
-          <span className={styles.panelTitle}>Engagements</span>
-          <span className={styles.panelCount}>{engagements.length}</span>
+          <span className={styles.panelTitle}>{filterLabel[activeFilter]}</span>
+          <span className={styles.panelCount}>{filtered.length}</span>
         </div>
 
-        {engagements.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className={styles.empty}>
             <div className={styles.emptyIcon}>📋</div>
-            <p className={styles.emptyTitle}>No engagements yet</p>
-            <p className={styles.emptyDesc}>Click "+ Add Engagement" to get started.</p>
+            <p className={styles.emptyTitle}>{activeFilter === 'all' ? 'No engagements yet' : `No ${filterLabel[activeFilter].toLowerCase()} engagements`}</p>
+            <p className={styles.emptyDesc}>{activeFilter === 'all' ? 'Click "+ Add Engagement" to get started.' : 'Click "Total Engagements" to show all.'}</p>
           </div>
         ) : (
           <div className={styles.engList}>
-            {engagements.map((eng) => (
+            {filtered.map((eng) => (
               <EngagementRow
                 key={eng.id}
                 eng={eng}
@@ -559,6 +586,8 @@ export default function EngagementPageClient({
           </div>
         )}
       </div>
+        );
+      })()}
 
       {showAdd && (
         <AddEngagementModal

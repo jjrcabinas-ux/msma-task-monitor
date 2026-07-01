@@ -61,6 +61,20 @@
   border-radius: 12px;
   padding: 18px 20px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.summaryCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.summaryCardActive {
+  border-width: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .summaryNum {

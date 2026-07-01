@@ -119,7 +119,7 @@ export default function Sidebar({
           <Link
             href={`/${cluster}`}
             className={`${styles.navItem} ${isSummaryActive ? styles.navItemActive : ''}`}
-            onClick={() => { setMobileOpen(false); setAuditOpen(false); }}
+            onClick={() => { setMobileOpen(false); setAuditOpen(false); setMembersOpen(false); }}
           >
             <div className={styles.navIcon}>▦</div>
             <span className={styles.navLabel}>Team Summary</span>
@@ -128,7 +128,7 @@ export default function Sidebar({
           <button
             type="button"
             className={`${styles.navItem} ${styles.navItemToggle}`}
-            onClick={() => { setMembersOpen((v) => !v); setAuditOpen(false); }}
+            onClick={() => setMembersOpen((v) => !v)}
             aria-expanded={membersOpen}
           >
             <div className={styles.navIcon}>☰</div>
@@ -227,7 +227,7 @@ export default function Sidebar({
           <button
             type="button"
             className={`${styles.navItem} ${styles.navItemToggle} ${auditOpen || pathname.startsWith(`/${cluster}/audit`) ? styles.navItemActive : ''}`}
-            onClick={() => setAuditOpen((v) => !v)}
+            onClick={() => { setAuditOpen((v) => !v); setMembersOpen(false); }}
             aria-expanded={auditOpen}
           >
             <span className={styles.navLabel}>Audit Monitoring</span>
@@ -273,7 +273,7 @@ export default function Sidebar({
           <Link
             href={`/${cluster}/special-engagement`}
             className={`${styles.navItem} ${pathname.startsWith(`/${cluster}/special-engagement`) ? styles.navItemActive : ''}`}
-            onClick={() => { setMobileOpen(false); setAuditOpen(false); }}
+            onClick={() => { setMobileOpen(false); setAuditOpen(false); setMembersOpen(false); }}
           >
             <span className={styles.navLabel}>Special Engagement Monitoring</span>
           </Link>

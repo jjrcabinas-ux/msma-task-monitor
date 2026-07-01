@@ -54,6 +54,13 @@ export default function Sidebar({
     return () => clearInterval(interval);
   }, []);
 
+  // Auto-collapse dropdowns when navigating away from their section
+  useEffect(() => {
+    if (!pathname?.startsWith(`/${cluster}/audit`)) setAuditOpen(false);
+    if (!employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`)) setMembersOpen(false);
+    setTaxOpen(false);
+  }, [pathname, cluster, employees]);
+
   const isSummaryActive = pathname === `/${cluster}`;
 
   function logout() {

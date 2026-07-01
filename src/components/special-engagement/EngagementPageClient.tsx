@@ -382,7 +382,7 @@ function EngagementRow({
       <div className={`${styles.engRow} ${overdue ? styles.engRowOverdue : ''}`}>
         <div className={styles.engRowMain}>
           <div className={styles.engTitle}>
-            {eng.companyName} — {eng.engagement}
+            <strong>{eng.companyName}</strong> — {eng.engagement}
           </div>
           <div className={styles.engMeta}>
             <span className={styles.engMetaItem}>👤 {eng.seniorAssigned || '—'}</span>

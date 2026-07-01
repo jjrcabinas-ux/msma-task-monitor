@@ -120,7 +120,7 @@ export default function WorkingPaperModal({
       period = `${mon}${day}${m[3]}`;
     }
     const company = (data.clientName || '').trim();
-    return `File Index_${company}_${period}_WPI_v1_`;
+    return `File Index_${company}_${period}_v1_`;
   }
 
   function sectionNumericItems(sec: (typeof data.sections)[number]) {

@@ -55,12 +55,12 @@ export function NamingConventionModal({
 
         <div className={styles.namingConventionBox}>
           <div className={styles.namingConventionText}>
-            File Index _ Company Name _ Period _ File Name _ version _ owner
+            File Index _ Company Name _ Period _ version _ owner
           </div>
         </div>
 
         <div className={styles.namingExample}>
-          <strong>Example:</strong>&nbsp; File Index_ABC Corp_Dec 2025_WPI_v1_JD
+          <strong>Example:</strong>&nbsp; File Index_ABC Corp_12312025_v1_JD
         </div>
 
         <label className={styles.namingLabel}>Enter your file name</label>

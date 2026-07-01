@@ -230,7 +230,6 @@ export default function Sidebar({
             className={`${styles.navItem} ${pathname.startsWith(`/${cluster}/audit`) ? styles.navItemActive : ''}`}
             onClick={() => setMobileOpen(false)}
           >
-            <div className={styles.navIcon}>🛡</div>
             <span className={styles.navLabel}>Audit Monitoring</span>
           </Link>
 
@@ -240,7 +239,6 @@ export default function Sidebar({
             onClick={() => setTaxOpen((v) => !v)}
             aria-expanded={taxOpen}
           >
-            <div className={styles.navIcon}>🧾</div>
             <span className={styles.navLabel}>Tax Compliance Monitoring</span>
             <span className={styles.soonBadge}>Soon</span>
             <span className={`${styles.navChevron} ${taxOpen ? styles.navChevronOpen : ''}`}>▶</span>
@@ -265,7 +263,6 @@ export default function Sidebar({
             onClick={() => setSpecialEngOpen((v) => !v)}
             aria-expanded={specialEngOpen}
           >
-            <div className={styles.navIcon}>📋</div>
             <span className={styles.navLabel}>Special Engagement Monitoring</span>
             <span className={styles.soonBadge}>Soon</span>
             <span className={`${styles.navChevron} ${specialEngOpen ? styles.navChevronOpen : ''}`}>▶</span>

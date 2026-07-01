@@ -381,21 +381,15 @@ function EngagementRow({
       {/* Main row */}
       <div className={`${styles.engRow} ${overdue ? styles.engRowOverdue : ''}`}>
         <div className={styles.engRowMain}>
-          <div className={styles.engCompany}>{eng.companyName}</div>
-          <div className={styles.engName}>{eng.engagement}</div>
+          <div className={styles.engTitle}>
+            {eng.companyName} — {eng.engagement}
+          </div>
           <div className={styles.engMeta}>
             <span className={styles.engMetaItem}>👤 {eng.seniorAssigned || '—'}</span>
-            {eng.juniorAssigned.length > 0 && (
-              <span className={styles.engMetaItem}>
-                {eng.juniorAssigned.filter(Boolean).join(', ')}
-              </span>
-            )}
           </div>
           <div className={styles.engDates}>
-            <span title="Proposal signed">📝 {fmt(eng.proposalDate)}</span>
-            <span title="Due date" className={overdue ? styles.overdueDue : ''}>
-              📅 {fmt(eng.dueDate)}
-            </span>
+            <span>Start: {fmt(eng.proposalDate)}</span>
+            <span className={overdue ? styles.overdueDue : ''}>Due: {fmt(eng.dueDate)}</span>
           </div>
         </div>
 

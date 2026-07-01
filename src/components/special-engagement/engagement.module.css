@@ -186,19 +186,12 @@
   gap: 3px;
 }
 
-.engCompany {
-  font-size: 14px;
+.engTitle {
+  font-size: 13.5px;
   font-weight: 800;
   color: #0f172a;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.engName {
-  font-size: 12.5px;
-  color: #2563eb;
-  font-weight: 600;
 }
 
 .engMeta {

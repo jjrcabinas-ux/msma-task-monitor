@@ -630,3 +630,57 @@
   opacity: 0.4;
   cursor: default;
 }
+
+/* ── Assignee badge in task row ──────────────────────────── */
+
+.taskAssignee {
+  font-size: 10.5px;
+  color: #2563eb;
+  margin-top: 2px;
+}
+
+/* ── Sync note in Add Task modal ─────────────────────────── */
+
+.assignNote {
+  font-size: 12px;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 7px;
+  padding: 8px 12px;
+  margin: 0 0 16px;
+  line-height: 1.4;
+}
+
+/* ── Member Autocomplete ─────────────────────────────────── */
+
+.acWrap {
+  position: relative;
+}
+
+.acDropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #2563eb;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 50;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.acOption {
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.acOption:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+}

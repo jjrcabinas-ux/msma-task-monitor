@@ -21,6 +21,8 @@ type EngagementTask = {
   status: string;
   comments: string;
   sortOrder: number;
+  assignedTo: string;
+  linkedTaskId: string | null;
 };
 
 type Engagement = {
@@ -184,15 +186,60 @@ function AddEngagementModal({
   );
 }
 
+/* ── Member Autocomplete ────────────────────────────────────── */
+function MemberAutocomplete({
+  value,
+  employees,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  employees: string[];
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const [inputVal, setInputVal] = useState(value);
+  const [open, setOpen] = useState(false);
+  const suggestions = inputVal
+    ? employees.filter((e) => e.toLowerCase().includes(inputVal.toLowerCase()) && e !== inputVal)
+    : employees;
+
+  return (
+    <div className={styles.acWrap}>
+      <input
+        className={styles.formInput}
+        value={inputVal}
+        onChange={(e) => { setInputVal(e.target.value); onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder={placeholder ?? 'Type to search member...'}
+        autoComplete="off"
+      />
+      {open && suggestions.length > 0 && (
+        <div className={styles.acDropdown}>
+          {suggestions.map((name) => (
+            <div key={name} className={styles.acOption}
+              onMouseDown={() => { setInputVal(name); onChange(name); setOpen(false); }}>
+              {name}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Add Task Modal ─────────────────────────────────────────── */
 function AddTaskModal({
+  employees,
   onClose,
   onSave,
 }: {
+  employees: string[];
   onClose: () => void;
-  onSave: (data: { task: string; dueDate: Date | null; status: string; comments: string }) => void;
+  onSave: (data: { task: string; dueDate: Date | null; status: string; comments: string; assignedTo: string }) => void;
 }) {
-  const [form, setForm] = useState({ task: '', dueDate: '', status: 'Pending', comments: '' });
+  const [form, setForm] = useState({ task: '', dueDate: '', status: 'Pending', comments: '', assignedTo: '' });
 
   function set(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -208,6 +255,14 @@ function AddTaskModal({
           <label className={styles.formLabel}>Task <span className={styles.req}>*</span></label>
           <input className={styles.formInput} value={form.task} onChange={(e) => set('task', e.target.value)} placeholder="Describe the task..." autoFocus />
 
+          <label className={styles.formLabel}>Assign Associate</label>
+          <MemberAutocomplete
+            value={form.assignedTo}
+            employees={employees}
+            onChange={(v) => set('assignedTo', v)}
+            placeholder="Type or select a member..."
+          />
+
           <label className={styles.formLabel}>Due Date</label>
           <input className={styles.formInput} type="date" value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
 
@@ -220,6 +275,12 @@ function AddTaskModal({
           <input className={styles.formInput} value={form.comments} onChange={(e) => set('comments', e.target.value)} placeholder="Optional notes..." />
         </div>
 
+        {form.assignedTo.trim() && (
+          <p className={styles.assignNote}>
+            🔗 This task will also appear in <strong>{form.assignedTo}</strong>&apos;s deliverables and status will stay in sync.
+          </p>
+        )}
+
         <div className={styles.modalActions}>
           <button type="button" className={styles.cancelBtn} onClick={onClose}>Cancel</button>
           <button
@@ -231,6 +292,7 @@ function AddTaskModal({
               dueDate: form.dueDate ? new Date(form.dueDate) : null,
               status: form.status,
               comments: form.comments,
+              assignedTo: form.assignedTo,
             })}
           >
             Add Task
@@ -255,7 +317,14 @@ function TaskRow({
 
   return (
     <tr className={styles.taskRow}>
-      <td className={styles.taskCell}>{task.task}</td>
+      <td className={styles.taskCell}>
+        <div>{task.task}</div>
+        {task.assignedTo && (
+          <div className={styles.taskAssignee}>
+            {task.linkedTaskId ? '🔗' : '👤'} {task.assignedTo}
+          </div>
+        )}
+      </td>
       <td className={styles.taskCell}>{fmt(task.createdDate)}</td>
       <td className={styles.taskCell}>{fmt(task.dueDate)}</td>
       <td className={styles.taskCell}>
@@ -286,6 +355,7 @@ function TaskRow({
 /* ── Engagement Row ─────────────────────────────────────────── */
 function EngagementRow({
   eng,
+  employees,
   onStatusChange,
   onDelete,
   onAddTask,
@@ -293,9 +363,10 @@ function EngagementRow({
   onDeleteTask,
 }: {
   eng: Engagement;
+  employees: string[];
   onStatusChange: (status: string) => void;
   onDelete: () => void;
-  onAddTask: (data: { task: string; dueDate: Date | null; status: string; comments: string }) => void;
+  onAddTask: (data: { task: string; dueDate: Date | null; status: string; comments: string; assignedTo: string }) => void;
   onUpdateTask: (taskId: string, field: string, value: string) => void;
   onDeleteTask: (taskId: string) => void;
 }) {
@@ -398,6 +469,7 @@ function EngagementRow({
 
       {showAddTask && (
         <AddTaskModal
+          employees={employees}
           onClose={() => setShowAddTask(false)}
           onSave={(data) => { onAddTask(data); setShowAddTask(false); setExpanded(true); }}
         />
@@ -450,7 +522,7 @@ export default function EngagementPageClient({
     startTransition(async () => { await deleteEngagementAction(id); });
   }
 
-  function handleAddTask(engId: string, data: { task: string; dueDate: Date | null; status: string; comments: string }) {
+  function handleAddTask(engId: string, data: { task: string; dueDate: Date | null; status: string; comments: string; assignedTo: string }) {
     startTransition(async () => {
       const newTask = await addEngagementTaskAction(engId, data);
       mutateEng(engId, (e) => ({ ...e, tasks: [...e.tasks, newTask as unknown as EngagementTask] }));
@@ -507,6 +579,7 @@ export default function EngagementPageClient({
               <EngagementRow
                 key={eng.id}
                 eng={eng}
+                employees={employees}
                 onStatusChange={(status) => handleStatusChange(eng.id, status)}
                 onDelete={() => handleDelete(eng.id)}
                 onAddTask={(data) => handleAddTask(eng.id, data)}

@@ -281,6 +281,15 @@ export async function updateTaskAction(
     }
   }
   await prisma.task.update({ where: { id: taskId }, data: patch });
+
+  // Sync status back to linked Special Engagement task if one exists
+  if (patch.status) {
+    await prisma.engagementTask.updateMany({
+      where: { linkedTaskId: taskId },
+      data: { status: patch.status },
+    });
+  }
+
   revalidateAll();
   return { ok: true };
 }

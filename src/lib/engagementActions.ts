@@ -43,11 +43,56 @@ export async function addEngagementTaskAction(
     dueDate: Date | null;
     status: string;
     comments: string;
+    assignedTo: string;
   },
 ) {
   const count = await prisma.engagementTask.count({ where: { engagementId } });
+  let linkedTaskId: string | undefined;
+
+  // If an associate is assigned, auto-create a matching deliverable for them
+  if (data.assignedTo.trim()) {
+    const engRec = await prisma.specialEngagement.findUnique({
+      where: { id: engagementId },
+      select: { cluster: true, companyName: true, engagement: true },
+    });
+
+    if (engRec) {
+      const employee = await prisma.employee.findFirst({
+        where: { cluster: engRec.cluster, name: data.assignedTo.trim() },
+        select: { id: true },
+      });
+
+      if (employee) {
+        const today = new Date().toISOString().split('T')[0];
+        const dueDateStr = data.dueDate ? data.dueDate.toISOString().split('T')[0] : null;
+
+        const linked = await prisma.task.create({
+          data: {
+            employeeId: employee.id,
+            taskGeneral: `[SE] ${engRec.companyName} — ${engRec.engagement}`,
+            taskDetails: data.task,
+            date: today,
+            dueDate: dueDateStr,
+            status: data.status,
+            helpNeeded: '',
+          },
+        });
+        linkedTaskId = linked.id;
+      }
+    }
+  }
+
   return prisma.engagementTask.create({
-    data: { engagementId, ...data, sortOrder: count },
+    data: {
+      engagementId,
+      task: data.task,
+      dueDate: data.dueDate,
+      status: data.status,
+      comments: data.comments,
+      sortOrder: count,
+      assignedTo: data.assignedTo,
+      ...(linkedTaskId ? { linkedTaskId } : {}),
+    },
   });
 }
 
@@ -55,9 +100,27 @@ export async function updateEngagementTaskAction(
   id: string,
   data: Partial<{ task: string; dueDate: Date | null; status: string; comments: string }>,
 ) {
-  return prisma.engagementTask.update({ where: { id }, data });
+  const updated = await prisma.engagementTask.update({ where: { id }, data });
+
+  // Sync status to linked deliverable
+  if (data.status && updated.linkedTaskId) {
+    await prisma.task.update({
+      where: { id: updated.linkedTaskId },
+      data: { status: data.status },
+    });
+  }
+
+  return updated;
 }
 
 export async function deleteEngagementTaskAction(id: string) {
   await prisma.engagementTask.delete({ where: { id } });
+}
+
+// Called from deliverable updateTaskAction to sync status back to SE
+export async function syncEngagementTaskStatusAction(linkedTaskId: string, status: string) {
+  await prisma.engagementTask.updateMany({
+    where: { linkedTaskId },
+    data: { status },
+  });
 }

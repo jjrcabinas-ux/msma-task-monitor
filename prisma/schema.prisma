@@ -28,16 +28,17 @@ model Employee {
 }
 
 model Task {
-  id          String   @id @default(cuid())
-  employeeId  String
-  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  date        String?
-  dueDate     String?
-  taskGeneral String   @default("")
-  taskDetails String   @default("")
-  status      String   @default("Pending")
-  helpNeeded  String   @default("")
-  createdAt   DateTime @default(now())
+  id             String          @id @default(cuid())
+  employeeId     String
+  employee       Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  date           String?
+  dueDate        String?
+  taskGeneral    String          @default("")
+  taskDetails    String          @default("")
+  status         String          @default("Pending")
+  helpNeeded     String          @default("")
+  createdAt      DateTime        @default(now())
+  engagementTask EngagementTask?
 
   @@index([employeeId])
 }
@@ -104,4 +105,7 @@ model EngagementTask {
   status       String            @default("Pending")
   comments     String            @default("")
   sortOrder    Int               @default(0)
+  assignedTo   String            @default("")
+  linkedTaskId String?           @unique
+  linkedTask   Task?             @relation(fields: [linkedTaskId], references: [id], onDelete: SetNull)
 }

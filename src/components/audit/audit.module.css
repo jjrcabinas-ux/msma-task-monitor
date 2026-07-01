@@ -537,7 +537,7 @@
 
 .permField {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 210px 1fr;
   align-items: baseline;
   gap: 10px;
 }

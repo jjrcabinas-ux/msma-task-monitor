@@ -122,8 +122,14 @@ function AddEngagementModal({
     setForm((f) => ({ ...f, [field]: value }));
   }
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   function submit() {
-    if (!form.companyName || !form.engagement || !form.proposalDate || !form.dueDate) return;
+    if (!form.companyName || !form.engagement || !form.proposalDate || !form.dueDate || !form.seniorAssigned) return;
     onSave({
       companyName: form.companyName,
       engagement: form.engagement,
@@ -134,7 +140,7 @@ function AddEngagementModal({
     });
   }
 
-  const valid = form.companyName && form.engagement && form.proposalDate && form.dueDate;
+  const valid = form.companyName && form.engagement && form.proposalDate && form.dueDate && form.seniorAssigned;
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -155,7 +161,7 @@ function AddEngagementModal({
           <label className={styles.formLabel}>Due Date <span className={styles.req}>*</span></label>
           <input className={styles.formInput} type="date" value={form.dueDate} onChange={(e) => set('dueDate', e.target.value)} />
 
-          <label className={styles.formLabel}>Senior Assigned</label>
+          <label className={styles.formLabel}>Senior Assigned <span className={styles.req}>*</span></label>
           <MemberAutocomplete
             value={form.seniorAssigned}
             employees={employees}
@@ -249,6 +255,12 @@ function AddTaskModal({
   function set(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
   }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
     <div className={styles.overlay} onClick={onClose}>

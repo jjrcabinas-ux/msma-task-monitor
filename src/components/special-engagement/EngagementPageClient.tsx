@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { ClusterSlug } from '@/lib/clusters';
 import {
   createEngagementAction,
@@ -187,12 +188,28 @@ function MemberAutocomplete({
 }) {
   const [inputVal, setInputVal] = useState(value);
   const [open, setOpen] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const wrapRef = useRef<HTMLDivElement>(null);
+
   const suggestions = inputVal
     ? employees.filter((e) => e.toLowerCase().includes(inputVal.toLowerCase()) && e !== inputVal)
     : employees;
 
+  useEffect(() => {
+    if (open && wrapRef.current) {
+      const rect = wrapRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 9999,
+      });
+    }
+  }, [open]);
+
   return (
-    <div className={styles.acWrap}>
+    <div className={styles.acWrap} ref={wrapRef}>
       <input
         className={styles.formInput}
         value={inputVal}
@@ -202,15 +219,16 @@ function MemberAutocomplete({
         placeholder={placeholder ?? 'Type to search member...'}
         autoComplete="off"
       />
-      {open && suggestions.length > 0 && (
-        <div className={styles.acDropdown}>
+      {open && suggestions.length > 0 && typeof document !== 'undefined' && createPortal(
+        <div className={styles.acDropdown} style={dropdownStyle}>
           {suggestions.map((name) => (
             <div key={name} className={styles.acOption}
               onMouseDown={() => { setInputVal(name); onChange(name); setOpen(false); }}>
               {name}
             </div>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -481,7 +481,7 @@
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
   padding: 54px 56px 56px;
   border-radius: 2px;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 /* ── Permanent File Index ─────────────────────────────────── */
@@ -805,7 +805,7 @@
   text-align: center;
   color: #94a3b8;
   font-size: 13px;
-  font-family: system-ui, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .a4RowActions {
@@ -824,7 +824,7 @@
   background: #f8fafc;
   color: #64748b;
   cursor: pointer;
-  font-family: system-ui, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .a4RowBtn:hover {
@@ -846,7 +846,7 @@
   background: none;
   color: #cbd5e1;
   cursor: pointer;
-  font-family: system-ui, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   line-height: 1;
 }
 
@@ -864,7 +864,7 @@
   padding: 5px 14px;
   border-radius: 5px;
   cursor: pointer;
-  font-family: system-ui, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .a4AddRowBtn:hover {
@@ -876,7 +876,7 @@
 .a4Notes {
   margin-top: 18px;
   font-size: 12px;
-  font-family: system-ui, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   border-top: 1px solid #ccc;
   padding-top: 10px;
 }
@@ -909,7 +909,7 @@
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
-  font-family: system-ui, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .addSecClose {
@@ -941,7 +941,7 @@
   font-weight: 700;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .addSecA4Meta {

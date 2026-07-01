@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { prisma } from '@/lib/db';
 import { getEngagementsAction } from '@/lib/engagementActions';
 import type { ClusterSlug } from '@/lib/clusters';

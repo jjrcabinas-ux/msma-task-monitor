@@ -104,6 +104,25 @@ export default function WorkingPaperModal({
 
   /* ── Export helpers ───────────────────────────────────── */
 
+  function buildFilenamePrefill() {
+    const MONTHS: Record<string, string> = {
+      january: '01', february: '02', march: '03', april: '04',
+      may: '05', june: '06', july: '07', august: '08',
+      september: '09', october: '10', november: '11', december: '12',
+    };
+    const permSec = data.sections.find((s) => s.name === 'Permanent');
+    const acctDate = permSec?.items.find((it) => it.refNum === 'ACCT_DATE')?.description ?? '';
+    let period = '';
+    const m = acctDate.match(/(\w+)\s+(\d+),\s*(\d{4})/);
+    if (m) {
+      const mon = MONTHS[m[1].toLowerCase()] ?? '';
+      const day = m[2].padStart(2, '0');
+      period = `${mon}${day}${m[3]}`;
+    }
+    const company = (data.clientName || '').trim();
+    return `File Index_${company}_${period}_WPI_v1_`;
+  }
+
   function sectionNumericItems(sec: (typeof data.sections)[number]) {
     return sec.items.filter((it) => /^\d+$/.test(it.refNum));
   }
@@ -357,6 +376,7 @@ export default function WorkingPaperModal({
       {showNaming === 'excel' && (
         <NamingConventionModal
           exportType="excel"
+          prefill={buildFilenamePrefill()}
           onClose={() => setShowNaming(null)}
           onConfirm={(filename) => doExcelExport(filename)}
         />
@@ -366,6 +386,7 @@ export default function WorkingPaperModal({
       {showNaming === 'pdf' && (
         <NamingConventionModal
           exportType="pdf"
+          prefill={buildFilenamePrefill()}
           onClose={() => setShowNaming(null)}
           onConfirm={(filename) => doPdfExport(filename)}
         />

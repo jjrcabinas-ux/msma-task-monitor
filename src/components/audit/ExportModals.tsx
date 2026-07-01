@@ -28,14 +28,16 @@ const PERM_META: { key: string; label: string }[] = [
 /* ── Naming Convention Modal ──────────────────────────────── */
 export function NamingConventionModal({
   exportType,
+  prefill,
   onConfirm,
   onClose,
 }: {
   exportType: 'excel' | 'pdf';
+  prefill?: string;
   onConfirm: (filename: string) => void;
   onClose: () => void;
 }) {
-  const [filename, setFilename] = useState('');
+  const [filename, setFilename] = useState(prefill ?? '');
 
   return createPortal(
     <div className={styles.namingOverlay} onClick={onClose}>

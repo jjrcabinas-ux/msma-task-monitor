@@ -39,7 +39,8 @@ export default async function SpecialEngagementPage({
     );
   }
 
-  const engagements = await getEngagementsAction(cluster);
+  const result = await getEngagementsAction(cluster);
+  const engagements = Array.isArray(result) ? result : [];
   const employees = await prisma.employee.findMany({
     where: { cluster },
     select: { name: true },

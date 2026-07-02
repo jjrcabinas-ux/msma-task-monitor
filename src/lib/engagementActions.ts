@@ -2,8 +2,31 @@
 
 import { prisma } from '@/lib/db';
 import type { ClusterSlug } from '@/lib/clusters';
+import { isAdminUnlocked } from '@/lib/memberAuth';
+
+const ADMIN_ERROR = { error: 'Admin access required.' } as const;
+
+async function isAdminForEngagement(engagementId: string): Promise<boolean> {
+  const eng = await prisma.specialEngagement.findUnique({
+    where: { id: engagementId },
+    select: { cluster: true },
+  });
+  if (!eng) return false;
+  return isAdminUnlocked(eng.cluster as ClusterSlug);
+}
+
+async function isAdminForEngagementTask(taskId: string): Promise<boolean> {
+  const task = await prisma.engagementTask.findUnique({
+    where: { id: taskId },
+    select: { engagement: { select: { cluster: true } } },
+  });
+  if (!task) return false;
+  return isAdminUnlocked(task.engagement.cluster as ClusterSlug);
+}
 
 export async function getEngagementsAction(cluster: ClusterSlug) {
+  if (!(await isAdminUnlocked(cluster))) return ADMIN_ERROR;
+
   return prisma.specialEngagement.findMany({
     where: { cluster },
     include: { tasks: { orderBy: { sortOrder: 'asc' } } },
@@ -24,6 +47,8 @@ export async function createEngagementAction(
     signedProposalName?: string | null;
   },
 ) {
+  if (!(await isAdminUnlocked(cluster))) return ADMIN_ERROR;
+
   return prisma.specialEngagement.create({
     data: { cluster, ...data },
     include: { tasks: { orderBy: { sortOrder: 'asc' } } },
@@ -31,6 +56,7 @@ export async function createEngagementAction(
 }
 
 export async function updateEngagementStatusAction(id: string, status: string) {
+  if (!(await isAdminForEngagement(id))) return ADMIN_ERROR;
   return prisma.specialEngagement.update({ where: { id }, data: { status } });
 }
 
@@ -44,6 +70,7 @@ export async function updateEngagementAction(
     seniorAssigned: string;
   },
 ) {
+  if (!(await isAdminForEngagement(id))) return ADMIN_ERROR;
   return prisma.specialEngagement.update({ where: { id }, data });
 }
 
@@ -52,6 +79,7 @@ export async function updateEngagementProposalAction(
   signedProposal: string | null,
   signedProposalName: string | null,
 ) {
+  if (!(await isAdminForEngagement(id))) return ADMIN_ERROR;
   return prisma.specialEngagement.update({
     where: { id },
     data: { signedProposal, signedProposalName },
@@ -59,6 +87,7 @@ export async function updateEngagementProposalAction(
 }
 
 export async function deleteEngagementAction(id: string) {
+  if (!(await isAdminForEngagement(id))) return ADMIN_ERROR;
   await prisma.specialEngagement.delete({ where: { id } });
 }
 
@@ -72,6 +101,8 @@ export async function addEngagementTaskAction(
     assignedTo: string;
   },
 ) {
+  if (!(await isAdminForEngagement(engagementId))) return ADMIN_ERROR;
+
   const count = await prisma.engagementTask.count({ where: { engagementId } });
   let linkedTaskId: string | undefined;
 
@@ -126,6 +157,8 @@ export async function updateEngagementTaskAction(
   id: string,
   data: Partial<{ task: string; dueDate: Date | null; status: string; comments: string }>,
 ) {
+  if (!(await isAdminForEngagementTask(id))) return ADMIN_ERROR;
+
   const updated = await prisma.engagementTask.update({ where: { id }, data });
 
   // Sync status to linked deliverable
@@ -140,10 +173,13 @@ export async function updateEngagementTaskAction(
 }
 
 export async function deleteEngagementTaskAction(id: string) {
+  if (!(await isAdminForEngagementTask(id))) return ADMIN_ERROR;
   await prisma.engagementTask.delete({ where: { id } });
 }
 
-// Called from deliverable updateTaskAction to sync status back to SE
+// Called from deliverable updateTaskAction to sync status back to SE.
+// Intentionally unguarded: members update their own linked deliverables,
+// and the status must flow back to the engagement task.
 export async function syncEngagementTaskStatusAction(linkedTaskId: string, status: string) {
   await prisma.engagementTask.updateMany({
     where: { linkedTaskId },

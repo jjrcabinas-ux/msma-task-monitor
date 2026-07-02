@@ -710,6 +710,10 @@ export default function EngagementPageClient({
   }) {
     startTransition(async () => {
       const result = await createEngagementAction(cluster, data);
+      if ('error' in result) {
+        alert(result.error);
+        return;
+      }
       setEngagements((prev) => [result as unknown as Engagement, ...prev]);
       setShowAdd(false);
     });
@@ -747,6 +751,10 @@ export default function EngagementPageClient({
   function handleAddTask(engId: string, data: { task: string; dueDate: Date | null; status: string; comments: string; assignedTo: string }) {
     startTransition(async () => {
       const newTask = await addEngagementTaskAction(engId, data);
+      if ('error' in newTask) {
+        alert(newTask.error);
+        return;
+      }
       mutateEng(engId, (e) => ({ ...e, tasks: [...e.tasks, newTask as unknown as EngagementTask] }));
     });
   }

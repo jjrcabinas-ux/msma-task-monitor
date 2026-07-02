@@ -231,8 +231,16 @@ export default async function SummaryPage({
           }
         >
           {blockers.length === 0 && <div className={modalStyles.modalEmpty}>No blockers reported.</div>}
-          {blockers.map(({ task, dateLabel }) => (
-            <Link key={task.id} href={`/${cluster}/employee/${task.employeeId}?highlight=${task.id}`} className={modalStyles.modalRow}>
+          {blockers.map(({ task, dateLabel }) => {
+            // Blockers that mention the firm's partner (Atty / Ton / ADS) get a light-red highlight
+            const forPartner = /\b(atty|ton|ads)\b/i.test(`${task.helpNeeded} ${task.taskGeneral}`);
+            return (
+            <Link
+              key={task.id}
+              href={`/${cluster}/employee/${task.employeeId}?highlight=${task.id}`}
+              className={modalStyles.modalRow}
+              style={forPartner ? { background: '#fef2f2' } : undefined}
+            >
               <PhotoAvatar photo={task.empPhoto} letter={task.empName[0]} className={styles.avatar} style={avatarStyle(28, employeeColor(task.empIndex))} />
               <div className={modalStyles.modalRowBody}>
                 <div className={modalStyles.modalRowTitle}>
@@ -242,7 +250,8 @@ export default async function SummaryPage({
               </div>
               <span className={modalStyles.modalRowSub}>{dateLabel}</span>
             </Link>
-          ))}
+            );
+          })}
         </KpiModalCard>
 
         <KpiModalCard

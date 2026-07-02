@@ -1,5 +1,5 @@
 .aside {
-  width: 340px;
+  width: 300px;
   flex: none;
   background: #0f172a;
   color: #e2e8f0;
@@ -8,6 +8,24 @@
   position: sticky;
   top: 0;
   height: 100vh;
+}
+
+@media (min-width: 861px) and (max-width: 1280px) {
+  .aside {
+    width: 240px;
+  }
+  .teamName {
+    font-size: 14px;
+  }
+  .subtitle {
+    font-size: 10px;
+  }
+  .logo {
+    width: 48px;
+  }
+  .navLabel {
+    font-size: 12.5px;
+  }
 }
 
 .mobileBar {

@@ -222,11 +222,11 @@ export default function DeliverablesTable({
       <div className={styles.tableScroll}>
         <table className={styles.table}>
           <colgroup>
-            <col style={{ width: '9%' }} />
-            <col style={{ width: '9%' }} />
-            <col style={{ width: '35%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '46%' }} />
             <col style={{ width: '10%' }} />
-            <col style={{ width: '34%' }} />
+            <col style={{ width: '25%' }} />
             <col style={{ width: '3%' }} />
           </colgroup>
           <thead>

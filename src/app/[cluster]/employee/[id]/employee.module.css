@@ -1,5 +1,5 @@
 .page {
-  padding: 30px 34px 56px;
+  padding: clamp(16px, 2vw, 30px) clamp(16px, 2.5vw, 34px) clamp(32px, 4vw, 56px);
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
@@ -723,18 +723,6 @@
   to {
     opacity: 1;
     transform: none;
-  }
-}
-
-@media (max-width: 1280px) {
-  .page {
-    padding: 24px 22px 48px;
-  }
-  .stickyHeader {
-    margin: -24px -22px 0;
-    padding-top: 24px;
-    padding-left: 22px;
-    padding-right: 22px;
   }
 }
 

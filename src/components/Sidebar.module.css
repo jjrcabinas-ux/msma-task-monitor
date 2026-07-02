@@ -198,10 +198,11 @@
 .navLabel {
   flex: 1;
   min-width: 0;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  white-space: normal;
-  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 .navItemToggle {

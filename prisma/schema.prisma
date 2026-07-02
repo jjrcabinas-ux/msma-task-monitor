@@ -41,6 +41,12 @@ model Task {
   createdAt      DateTime        @default(now())
   engagementTask EngagementTask?
 
+  // Partner-escalation link: a blocker mentioning the partner auto-creates a
+  // deliverable on the partner's sheet pointing back at the blocked task.
+  blockerForTaskId String? @unique
+  blockerForTask   Task?   @relation("BlockerLink", fields: [blockerForTaskId], references: [id], onDelete: Cascade)
+  blockerTask      Task?   @relation("BlockerLink")
+
   @@index([employeeId])
 }
 

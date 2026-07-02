@@ -226,6 +226,80 @@ export async function removeEmployeeAction(id: string, cluster: ClusterSlug): Pr
   return { ok: true };
 }
 
+/* ── Partner blocker escalation ──────────────────────────────
+   Blockers mentioning the partner (Atty / Ton / ADS) auto-create a Pending
+   deliverable on the partner's sheet. When the partner marks it Done, the
+   member's task is set to Done and its Help Needed is cleared. */
+const PARTNER_KEYWORDS = /\b(atty|ton|ads)\b/i;
+
+async function findPartnerEmployee(cluster: string) {
+  return prisma.employee.findFirst({
+    where: {
+      cluster,
+      OR: [
+        { nickname: { equals: 'ADS', mode: 'insensitive' } },
+        { name: { equals: 'ADS', mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true },
+  });
+}
+
+async function syncPartnerBlockerTask(taskId: string) {
+  const t = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: { blockerTask: true, employee: { select: { cluster: true, nickname: true, name: true } } },
+  });
+  if (!t) return;
+  // A partner's own escalation task never spawns another escalation
+  if (t.blockerForTaskId) return;
+
+  const isOpenPartnerBlocker = t.status !== 'Done' && !!t.helpNeeded.trim() && PARTNER_KEYWORDS.test(t.helpNeeded);
+
+  if (isOpenPartnerBlocker && !t.blockerTask) {
+    const partner = await findPartnerEmployee(t.employee.cluster);
+    if (!partner || partner.id === t.employeeId) return;
+    const memberName = t.employee.nickname.trim() || t.employee.name;
+    await prisma.task.create({
+      data: {
+        employeeId: partner.id,
+        date: todayISO(),
+        dueDate: t.dueDate,
+        taskGeneral: `[Blocker] ${memberName} — ${t.taskGeneral || '(untitled)'}`,
+        taskDetails: t.helpNeeded,
+        status: 'Pending',
+        helpNeeded: '',
+        blockerForTaskId: t.id,
+      },
+    });
+  } else if (isOpenPartnerBlocker && t.blockerTask && t.blockerTask.status !== 'Done') {
+    // Keep the escalation's details in sync with the latest blocker text
+    if (t.blockerTask.taskDetails !== t.helpNeeded) {
+      await prisma.task.update({ where: { id: t.blockerTask.id }, data: { taskDetails: t.helpNeeded } });
+    }
+  } else if (!isOpenPartnerBlocker && t.blockerTask && t.blockerTask.status !== 'Done') {
+    // Blocker resolved or reworded away from the partner — retract the escalation
+    await prisma.task.delete({ where: { id: t.blockerTask.id } });
+  }
+}
+
+async function resolveBlockerIfPartnerDone(partnerTaskId: string) {
+  const t = await prisma.task.findUnique({
+    where: { id: partnerTaskId },
+    select: { status: true, blockerForTaskId: true },
+  });
+  if (!t?.blockerForTaskId || t.status !== 'Done') return;
+  await prisma.task.update({
+    where: { id: t.blockerForTaskId },
+    data: { status: 'Done', helpNeeded: '' },
+  });
+  // Keep any linked Special Engagement task in step too
+  await prisma.engagementTask.updateMany({
+    where: { linkedTaskId: t.blockerForTaskId },
+    data: { status: 'Done' },
+  });
+}
+
 export async function addTaskAction(
   employeeId: string,
   date: string | null = null,
@@ -248,6 +322,7 @@ export async function addTaskAction(
       helpNeeded: extra?.helpNeeded ?? '',
     },
   });
+  if (extra?.helpNeeded) await syncPartnerBlockerTask(task.id);
   revalidateAll();
   return { id: task.id };
 }
@@ -288,6 +363,13 @@ export async function updateTaskAction(
       where: { linkedTaskId: taskId },
       data: { status: patch.status },
     });
+  }
+
+  // Partner escalation: create/update/retract the partner's blocker deliverable,
+  // and if the partner just finished theirs, resolve the member's task.
+  if (patch.helpNeeded !== undefined || patch.status !== undefined) {
+    await syncPartnerBlockerTask(taskId);
+    if (patch.status === 'Done') await resolveBlockerIfPartnerDone(taskId);
   }
 
   revalidateAll();

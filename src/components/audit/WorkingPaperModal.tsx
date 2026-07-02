@@ -350,9 +350,7 @@ export default function WorkingPaperModal({
             ) : (
               <div className={styles.wpiComingSoon}>
                 <div className={styles.wpiComingSoonTitle}>Coming soon</div>
-                <div className={styles.wpiComingSoonSub}>
-                  {currentSection.title || currentSection.name} — this section is under development.
-                </div>
+                <div className={styles.wpiComingSoonSub}>This section is under development.</div>
               </div>
             )}
           </div>

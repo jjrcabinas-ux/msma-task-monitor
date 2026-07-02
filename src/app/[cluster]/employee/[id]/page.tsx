@@ -42,7 +42,7 @@ export default async function EmployeePage({
   const isAdmin = await isAdminUnlocked(cluster);
   const session = await getMemberSession(cluster);
   const canEdit = isAdmin || session?.employeeId === employee.id;
-  const canRemove = isAdmin && roster.length > 1;
+  const canRemove = roster.length > 1;
 
   const counts = statusCounts(tasks);
   const total = tasks.length;
@@ -74,7 +74,7 @@ export default async function EmployeePage({
             </div>
           </div>
           <div className={styles.actions}>
-            {canRemove && <RemoveMemberControl employeeId={employee.id} cluster={cluster} name={name} />}
+            {canRemove && <RemoveMemberControl employeeId={employee.id} cluster={cluster} name={name} isAdmin={isAdmin} />}
             {canEdit && (
               <AddDeliverableButton employeeId={employee.id} className={styles.addBtn}>
                 + Add Deliverable

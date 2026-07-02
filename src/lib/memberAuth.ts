@@ -45,6 +45,8 @@ export async function setMemberSession(cluster: ClusterSlug, employeeId: string)
 export async function clearMemberSession(cluster: ClusterSlug): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(memberSessionCookieName(cluster));
+  // Log out resets the whole session, including any admin unlock
+  cookieStore.delete(clusterUnlockCookieName(cluster));
 }
 
 export async function getMemberSession(cluster: ClusterSlug): Promise<{ employeeId: string } | null> {

@@ -121,7 +121,7 @@ export default function Sidebar({
           <Link
             href={`/${cluster}`}
             className={`${styles.navItem} ${isSummaryActive ? styles.navItemActive : ''}`}
-            onClick={() => { setMobileOpen(false); setAuditOpen(false); setMembersOpen(false); }}
+            onClick={() => { setMobileOpen(false); setAuditOpen(false); setMembersOpen(false); setTaxOpen(false); }}
           >
             <div className={styles.navIcon}>▦</div>
             <span className={styles.navLabel}>Team Summary</span>
@@ -130,7 +130,7 @@ export default function Sidebar({
           <button
             type="button"
             className={`${styles.navItem} ${styles.navItemToggle}`}
-            onClick={() => setMembersOpen((v) => !v)}
+            onClick={() => { setMembersOpen((v) => !v); setAuditOpen(false); setTaxOpen(false); }}
             aria-expanded={membersOpen}
           >
             <div className={styles.navIcon}>☰</div>
@@ -147,7 +147,7 @@ export default function Sidebar({
                       key={emp.id}
                       href={`/${cluster}/employee/${emp.id}`}
                       className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                      onClick={() => { setMobileOpen(false); setAuditOpen(false); }}
+                      onClick={() => { setMobileOpen(false); setAuditOpen(false); setTaxOpen(false); }}
                     >
                       <PhotoAvatar
                         photo={emp.photo}
@@ -232,7 +232,7 @@ export default function Sidebar({
           <button
             type="button"
             className={`${styles.navItem} ${styles.navItemToggle} ${auditOpen || pathname.startsWith(`/${cluster}/audit`) ? styles.navItemActive : ''}`}
-            onClick={() => { setAuditOpen((v) => !v); setMembersOpen(false); }}
+            onClick={() => { setAuditOpen((v) => !v); setMembersOpen(false); setTaxOpen(false); }}
             aria-expanded={auditOpen}
           >
             <span className={styles.navLabel}>Audit Monitoring</span>
@@ -254,7 +254,7 @@ export default function Sidebar({
           <button
             type="button"
             className={`${styles.navItem} ${styles.navItemToggle}`}
-            onClick={() => setTaxOpen((v) => !v)}
+            onClick={() => { setTaxOpen((v) => !v); setMembersOpen(false); setAuditOpen(false); }}
             aria-expanded={taxOpen}
           >
             <span className={styles.navLabel}>Tax Compliance Monitoring</span>
@@ -278,7 +278,7 @@ export default function Sidebar({
           <Link
             href={`/${cluster}/special-engagement`}
             className={`${styles.navItem} ${pathname.startsWith(`/${cluster}/special-engagement`) ? styles.navItemActive : ''}`}
-            onClick={() => { setMobileOpen(false); setAuditOpen(false); setMembersOpen(false); }}
+            onClick={() => { setMobileOpen(false); setAuditOpen(false); setMembersOpen(false); setTaxOpen(false); }}
           >
             <span className={styles.navLabel}>Special Engagement Monitoring</span>
           </Link>

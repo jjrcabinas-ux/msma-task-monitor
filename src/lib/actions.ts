@@ -251,6 +251,8 @@ async function syncPartnerBlockerTask(taskId: string) {
     include: { blockerTask: true, employee: { select: { cluster: true, nickname: true, name: true } } },
   });
   if (!t) return;
+  // Partner escalation only applies to the ADS cluster
+  if (t.employee.cluster !== 'ads') return;
   // A partner's own escalation task never spawns another escalation
   if (t.blockerForTaskId) return;
 

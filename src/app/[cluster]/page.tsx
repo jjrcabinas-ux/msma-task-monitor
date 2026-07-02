@@ -232,8 +232,8 @@ export default async function SummaryPage({
         >
           {blockers.length === 0 && <div className={modalStyles.modalEmpty}>No blockers reported.</div>}
           {blockers.map(({ task, dateLabel }) => {
-            // Blockers that mention the firm's partner (Atty / Ton / ADS) get a light-red highlight
-            const forPartner = /\b(atty|ton|ads)\b/i.test(`${task.helpNeeded} ${task.taskGeneral}`);
+            // ADS cluster only: blockers that mention the partner (Atty / Ton / ADS) get a light-red highlight
+            const forPartner = cluster === 'ads' && /\b(atty|ton|ads)\b/i.test(`${task.helpNeeded} ${task.taskGeneral}`);
             return (
             <Link
               key={task.id}

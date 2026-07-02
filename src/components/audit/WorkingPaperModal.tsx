@@ -36,6 +36,8 @@ export default function WorkingPaperModal({
   const [showTabSelect, setShowTabSelect] = useState<null | 'excel' | 'pdf'>(null);
   const [exportTabIds, setExportTabIds] = useState<string[]>([]);
   const pdfPagesRef = useRef<HTMLDivElement>(null);
+  const pendingMetaCreates = useRef<Record<string, boolean>>({});
+  const latestMetaValue = useRef<Record<string, string>>({});
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [, startTransition] = useTransition();
@@ -203,6 +205,42 @@ export default function WorkingPaperModal({
     }
   }
 
+  /* Update a Permanent meta field (CLIENT_REF, SR_ASSOCIATE, ...) by key.
+     Older working papers may not have the item row yet — create it on first
+     type, then route later keystrokes through the normal update path. */
+  function updateMetaField(sectionId: string, key: string, value: string) {
+    const sec = data.sections.find((s) => s.id === sectionId);
+    if (!sec) return;
+    const item = sec.items.find((it) => it.refNum === key);
+    latestMetaValue.current[key] = value;
+    if (item) {
+      updateItem(sectionId, item.id, 'description', value);
+      return;
+    }
+    if (pendingMetaCreates.current[key]) return; // create already in flight; latest value applied after
+    pendingMetaCreates.current[key] = true;
+    startTransition(async () => {
+      const created = (await addAuditItemAction(sectionId, {
+        refNum: key,
+        description: latestMetaValue.current[key],
+        initials: '',
+        sourceDocument: '',
+        isNA: false,
+      })) as unknown as Item;
+      const latest = latestMetaValue.current[key];
+      if (latest !== created.description) {
+        await updateAuditItemAction(created.id, { description: latest });
+      }
+      mutate((d) => ({
+        ...d,
+        sections: d.sections.map((s) =>
+          s.id !== sectionId ? s : { ...s, items: [...s.items, { ...created, description: latest }] },
+        ),
+      }));
+      pendingMetaCreates.current[key] = false;
+    });
+  }
+
   /* Exactly what the tab shows on screen — used by the PDF preview and the export capture */
   function renderSectionContent(sec: Section) {
     return sec.name === 'Permanent' ? (
@@ -212,7 +250,7 @@ export default function WorkingPaperModal({
         cluster={data.cluster}
         year={data.year}
         employees={employees}
-        onUpdateItem={(itemId, field, value) => updateItem(sec.id, itemId, field, value)}
+        onUpdateMeta={(key, value) => updateMetaField(sec.id, key, value)}
       />
     ) : (
       <div className={styles.wpiComingSoon}>
@@ -290,23 +328,7 @@ export default function WorkingPaperModal({
         </div>
 
         {currentSection && (
-          <div className={styles.wpiContent}>
-            {currentSection.name === 'Permanent' ? (
-              <PermanentFileTab
-                section={currentSection}
-                clientName={data.clientName}
-                cluster={data.cluster}
-                year={data.year}
-                employees={employees}
-                onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
-              />
-            ) : (
-              <div className={styles.wpiComingSoon}>
-                <div className={styles.wpiComingSoonTitle}>Coming soon</div>
-                <div className={styles.wpiComingSoonSub}>This section is under development.</div>
-              </div>
-            )}
-          </div>
+          <div className={styles.wpiContent}>{renderSectionContent(currentSection)}</div>
         )}
       </div>
 
@@ -444,14 +466,14 @@ function PermanentFileTab({
   cluster,
   year,
   employees,
-  onUpdateItem,
+  onUpdateMeta,
 }: {
   section: Section;
   clientName: string;
   cluster: string;
   year: number;
   employees: string[];
-  onUpdateItem: (itemId: string, field: keyof Item, value: string | boolean) => void;
+  onUpdateMeta: (key: string, value: string) => void;
 }) {
   function getItem(key: string) {
     return section.items.find((it) => it.refNum === key);
@@ -482,13 +504,13 @@ function PermanentFileTab({
                     <MemberAutocomplete
                       value={displayValue}
                       employees={employees}
-                      onChange={(val) => item && onUpdateItem(item.id, 'description', val)}
+                      onChange={(val) => onUpdateMeta(field.key, val)}
                     />
                   ) : (
                     <input
                       className={styles.permFieldInput}
                       value={displayValue}
-                      onChange={(e) => item && onUpdateItem(item.id, 'description', e.target.value)}
+                      onChange={(e) => onUpdateMeta(field.key, e.target.value)}
                       placeholder={fallback}
                     />
                   )}
@@ -522,23 +544,16 @@ function PermanentFileTab({
             </div>
             <div className={styles.permUpdated}>
               <strong>Updated{' '}
-                {lastUpdatedItem ? (
-                  <input
-                    className={styles.permUpdatedInput}
-                    value={lastUpdatedItem.description}
-                    onChange={(e) => onUpdateItem(lastUpdatedItem.id, 'description', e.target.value)}
-                    placeholder="June 2026"
-                  />
-                ) : (
-                  'June 2026'
-                )}
+                <input
+                  className={styles.permUpdatedInput}
+                  value={lastUpdatedItem?.description ?? ''}
+                  onChange={(e) => onUpdateMeta('LAST_UPDATED', e.target.value)}
+                  placeholder="June 2026"
+                />
               </strong>
             </div>
           </div>
         </div>
-
-        {/* Right divider column */}
-        <div className={styles.permRight} />
       </div>
     </div>
   );

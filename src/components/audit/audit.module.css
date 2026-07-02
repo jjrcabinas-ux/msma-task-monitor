@@ -904,7 +904,8 @@
   min-height: 1123px;
   flex: none;
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
-  padding: 54px 56px 56px;
+  /* A4 margins: 1in top/right/bottom, 1.5in left */
+  padding: 96px 96px 96px 144px;
   border-radius: 2px;
   font-family: var(--font-base);
 }
@@ -917,7 +918,8 @@
   min-height: 1123px;
   flex: none;
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
-  padding: 60px 60px 56px;
+  /* A4 margins: 1in top/right/bottom, 1.5in left */
+  padding: 96px 96px 96px 144px;
   border-radius: 2px;
   font-family: var(--font-base);
 }
@@ -932,14 +934,6 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding-right: 32px;
-}
-
-.permRight {
-  width: 1px;
-  border-left: 1.5px dashed #aaa;
-  flex: none;
-  margin-left: 0;
 }
 
 .permTitle {

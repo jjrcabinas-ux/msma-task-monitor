@@ -722,3 +722,56 @@
   background: #eff6ff;
   color: #1d4ed8;
 }
+
+/* Signed proposal upload/view */
+.proposalBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #dbe1ea;
+  background: #fff;
+  color: #475569;
+  border-radius: 7px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.proposalBtn:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.proposalBtnHas {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.proposalBtnHas:hover {
+  border-color: #15803d;
+  color: #15803d;
+}
+
+.proposalReplaceBtn {
+  border: none;
+  background: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+.proposalReplaceBtn:hover {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.optional {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}

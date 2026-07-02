@@ -90,6 +90,8 @@ model SpecialEngagement {
   seniorAssigned String           @default("")
   juniorAssigned String[]
   status         String           @default("Ongoing")
+  signedProposal     String?
+  signedProposalName String?
   createdAt      DateTime         @default(now())
   tasks          EngagementTask[]
 

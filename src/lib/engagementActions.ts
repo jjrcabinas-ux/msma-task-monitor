@@ -20,6 +20,8 @@ export async function createEngagementAction(
     dueDate: Date;
     seniorAssigned: string;
     juniorAssigned: string[];
+    signedProposal?: string | null;
+    signedProposalName?: string | null;
   },
 ) {
   return prisma.specialEngagement.create({
@@ -43,6 +45,17 @@ export async function updateEngagementAction(
   },
 ) {
   return prisma.specialEngagement.update({ where: { id }, data });
+}
+
+export async function updateEngagementProposalAction(
+  id: string,
+  signedProposal: string | null,
+  signedProposalName: string | null,
+) {
+  return prisma.specialEngagement.update({
+    where: { id },
+    data: { signedProposal, signedProposalName },
+  });
 }
 
 export async function deleteEngagementAction(id: string) {

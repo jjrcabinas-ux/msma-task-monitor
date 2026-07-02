@@ -8,6 +8,7 @@ import {
   deleteEngagementAction,
   updateEngagementStatusAction,
   updateEngagementAction,
+  updateEngagementProposalAction,
   addEngagementTaskAction,
   updateEngagementTaskAction,
   deleteEngagementTaskAction,
@@ -37,9 +38,32 @@ type Engagement = {
   seniorAssigned: string;
   juniorAssigned: string[];
   status: string;
+  signedProposal: string | null;
+  signedProposalName: string | null;
   createdAt: Date;
   tasks: EngagementTask[];
 };
+
+const MAX_PROPOSAL_BYTES = 10 * 1024 * 1024; // 10 MB
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Opens a stored data-URL file in a new tab (via Blob so browsers allow it). */
+function openDataUrl(dataUrl: string) {
+  const [meta, b64] = dataUrl.split(',');
+  const mime = meta.match(/data:(.*?);/)?.[1] || 'application/octet-stream';
+  const bytes = atob(b64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  window.open(URL.createObjectURL(new Blob([arr], { type: mime })), '_blank');
+}
 
 /* ── Constants ──────────────────────────────────────────────── */
 const TASK_STATUSES = ['Pending', 'Ongoing', 'Done'];
@@ -110,6 +134,8 @@ function AddEngagementModal({
     dueDate: Date;
     seniorAssigned: string;
     juniorAssigned: string[];
+    signedProposal: string | null;
+    signedProposalName: string | null;
   }) => void;
 }) {
   const [form, setForm] = useState({
@@ -119,6 +145,7 @@ function AddEngagementModal({
     dueDate: '',
     seniorAssigned: '',
   });
+  const [proposalFile, setProposalFile] = useState<File | null>(null);
   function set(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
   }
@@ -129,8 +156,14 @@ function AddEngagementModal({
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  function submit() {
+  async function submit() {
     if (!form.companyName || !form.engagement || !form.proposalDate || !form.dueDate || !form.seniorAssigned) return;
+    let signedProposal: string | null = null;
+    let signedProposalName: string | null = null;
+    if (proposalFile) {
+      signedProposal = await fileToDataUrl(proposalFile);
+      signedProposalName = proposalFile.name;
+    }
     onSave({
       companyName: form.companyName,
       engagement: form.engagement,
@@ -138,6 +171,8 @@ function AddEngagementModal({
       dueDate: new Date(form.dueDate),
       seniorAssigned: form.seniorAssigned,
       juniorAssigned: [],
+      signedProposal,
+      signedProposalName,
     });
   }
 
@@ -170,6 +205,21 @@ function AddEngagementModal({
             placeholder="Type to search..."
           />
 
+          <label className={styles.formLabel}>Signed Proposal <span className={styles.optional}>(optional)</span></label>
+          <input
+            className={styles.formInput}
+            type="file"
+            accept=".pdf,.doc,.docx,image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              if (file && file.size > MAX_PROPOSAL_BYTES) {
+                alert('File is too large — maximum 10 MB.');
+                e.target.value = '';
+                return;
+              }
+              setProposalFile(file);
+            }}
+          />
         </div>
 
         <div className={styles.modalActions}>
@@ -461,6 +511,7 @@ function EngagementRow({
   expanded,
   onToggle,
   onStatusChange,
+  onProposalUpload,
   onEdit,
   onDelete,
   onAddTask,
@@ -472,6 +523,7 @@ function EngagementRow({
   expanded: boolean;
   onToggle: () => void;
   onStatusChange: (status: string) => void;
+  onProposalUpload: (file: File) => void;
   onEdit: () => void;
   onDelete: () => void;
   onAddTask: (data: { task: string; dueDate: Date | null; status: string; comments: string; assignedTo: string }) => void;
@@ -479,6 +531,7 @@ function EngagementRow({
   onDeleteTask: (taskId: string) => void;
 }) {
   const [showAddTask, setShowAddTask] = useState(false);
+  const proposalInputRef = useRef<HTMLInputElement>(null);
   const overdue = isOverdue(eng);
   const doneTasks = eng.tasks.filter((t) => t.status === 'Done').length;
 
@@ -514,6 +567,48 @@ function EngagementRow({
           >
             {ENGAGEMENT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
+
+          {eng.signedProposal ? (
+            <button
+              type="button"
+              className={`${styles.proposalBtn} ${styles.proposalBtnHas}`}
+              onClick={(e) => { e.stopPropagation(); openDataUrl(eng.signedProposal!); }}
+              title={`View signed proposal${eng.signedProposalName ? ` — ${eng.signedProposalName}` : ''} (right side ⇪ to replace)`}
+            >
+              📄 Proposal
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={styles.proposalBtn}
+              onClick={(e) => { e.stopPropagation(); proposalInputRef.current?.click(); }}
+              title="Upload signed proposal"
+            >
+              ⇪ Upload
+            </button>
+          )}
+          {eng.signedProposal && (
+            <button
+              type="button"
+              className={styles.proposalReplaceBtn}
+              onClick={(e) => { e.stopPropagation(); proposalInputRef.current?.click(); }}
+              title="Replace signed proposal"
+            >
+              ⇪
+            </button>
+          )}
+          <input
+            ref={proposalInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,image/*"
+            style={{ display: 'none' }}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) onProposalUpload(file);
+              e.target.value = '';
+            }}
+          />
 
           <span className={styles.taskCount}>
             {doneTasks}/{eng.tasks.length} tasks
@@ -610,6 +705,8 @@ export default function EngagementPageClient({
     dueDate: Date;
     seniorAssigned: string;
     juniorAssigned: string[];
+    signedProposal: string | null;
+    signedProposalName: string | null;
   }) {
     startTransition(async () => {
       const result = await createEngagementAction(cluster, data);
@@ -622,6 +719,18 @@ export default function EngagementPageClient({
     mutateEng(id, (e) => ({ ...e, ...data }));
     setEditingEng(null);
     startTransition(async () => { await updateEngagementAction(id, data); });
+  }
+
+  function handleProposalUpload(id: string, file: File) {
+    if (file.size > MAX_PROPOSAL_BYTES) {
+      alert('File is too large — maximum 10 MB.');
+      return;
+    }
+    startTransition(async () => {
+      const dataUrl = await fileToDataUrl(file);
+      mutateEng(id, (e) => ({ ...e, signedProposal: dataUrl, signedProposalName: file.name }));
+      await updateEngagementProposalAction(id, dataUrl, file.name);
+    });
   }
 
   function handleStatusChange(id: string, status: string) {
@@ -710,6 +819,7 @@ export default function EngagementPageClient({
                 expanded={expandedId === eng.id}
                 onToggle={() => toggleExpanded(eng.id)}
                 onStatusChange={(status) => handleStatusChange(eng.id, status)}
+                onProposalUpload={(file) => handleProposalUpload(eng.id, file)}
                 onEdit={() => setEditingEng(eng)}
                 onDelete={() => handleDelete(eng.id)}
                 onAddTask={(data) => handleAddTask(eng.id, data)}

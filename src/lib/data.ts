@@ -10,6 +10,7 @@ function toEmployeeDTO(e: {
   email: string;
   birthDate: string | null;
   contactNumber: string;
+  photo: string | null;
   createdAt: Date;
 }): EmployeeDTO {
   return {
@@ -21,6 +22,7 @@ function toEmployeeDTO(e: {
     birthDate: e.birthDate,
     contactNumber: e.contactNumber,
     createdAt: e.createdAt.toISOString(),
+    photo: e.photo,
   };
 }
 

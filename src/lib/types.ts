@@ -20,6 +20,7 @@ export type EmployeeDTO = {
   birthDate: string | null;
   contactNumber: string;
   createdAt: string;
+  photo: string | null;
 };
 
 export type Period = 'week' | 'month' | 'year' | 'custom';

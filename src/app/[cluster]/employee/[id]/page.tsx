@@ -9,6 +9,7 @@ import { getMemberSession, isAdminUnlocked } from '@/lib/memberAuth';
 import StickyOffsetMeasurer from '@/components/StickyOffsetMeasurer';
 import RemoveMemberControl from '@/components/employee/RemoveMemberControl';
 import AddDeliverableButton from '@/components/employee/AddDeliverableButton';
+import AvatarUpload from '@/components/employee/AvatarUpload';
 import DeliverablesTable from '@/components/employee/DeliverablesTable';
 import StatsSummaryBar from '@/components/employee/StatsSummaryBar';
 import styles from './employee.module.css';
@@ -51,9 +52,14 @@ export default async function EmployeePage({
 
         <div className={styles.headerRow}>
           <div className={styles.identity}>
-            <div className={styles.avatarBig} style={{ background: employeeColor(colorIndex) }}>
-              {name[0]}
-            </div>
+            <AvatarUpload
+              employeeId={employee.id}
+              initialPhoto={employee.photo ?? null}
+              fallbackLetter={name[0]}
+              fallbackColor={employeeColor(colorIndex)}
+              canEdit={canEdit}
+              size={52}
+            />
             <div>
               <h1 className={styles.h1}>{name}</h1>
               <div className={styles.subRow}>

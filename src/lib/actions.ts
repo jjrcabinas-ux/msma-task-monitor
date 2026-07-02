@@ -310,3 +310,13 @@ export async function deleteTaskAction(taskId: string): Promise<{ ok: true } | {
   revalidateAll();
   return { ok: true };
 }
+
+export async function updateEmployeePhotoAction(
+  employeeId: string,
+  photoDataUrl: string | null,
+): Promise<{ ok: true } | { error: string }> {
+  await prisma.employee.update({ where: { id: employeeId }, data: { photo: photoDataUrl } });
+  revalidateAll();
+  return { ok: true };
+}
+

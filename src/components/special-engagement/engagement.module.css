@@ -483,6 +483,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  animation: modalOverlayIn 0.3s ease forwards;
 }
 
 .modal {
@@ -496,6 +497,7 @@
   max-height: 90vh;
   overflow-y: auto;
   font-family: var(--font-base);
+  animation: modalCardIn 0.3s ease-out forwards;
 }
 
 .modalSm {
@@ -505,6 +507,7 @@
   padding: 32px;
   width: 100%;
   max-width: 440px;
+  animation: modalCardIn 0.3s ease-out forwards;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 

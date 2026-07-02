@@ -400,6 +400,7 @@
   z-index: 300;
   display: flex;
   align-items: stretch;
+  animation: modalOverlayIn 0.3s ease forwards;
 }
 
 .wpiModal {
@@ -408,6 +409,7 @@
   width: 100%;
   height: 100%;
   background: #f1f5f9;
+  animation: modalCardIn 0.3s ease-out forwards;
 }
 
 .wpiHeader {
@@ -478,6 +480,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  animation: modalOverlayIn 0.3s ease forwards;
 }
 
 .namingModal {
@@ -489,6 +492,7 @@
   max-width: 480px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   text-align: center;
+  animation: modalCardIn 0.3s ease-out forwards;
 }
 
 .namingIcon {
@@ -610,6 +614,7 @@
   z-index: 500;
   display: flex;
   align-items: stretch;
+  animation: modalOverlayIn 0.3s ease forwards;
 }
 
 .pdfPreviewModal {
@@ -618,6 +623,7 @@
   width: 100%;
   height: 100%;
   background: #e5e7eb;
+  animation: modalCardIn 0.3s ease-out forwards;
 }
 
 .pdfPreviewHeader {

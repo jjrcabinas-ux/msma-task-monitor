@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import Image from 'next/image';
 import { updateEmployeePhotoAction } from '@/lib/actions';
+import { PhotoLightbox } from '@/components/PhotoAvatar';
 import styles from './AvatarUpload.module.css';
 
 const MAX_SIZE = 200; // px — canvas output size
@@ -45,6 +46,7 @@ export default function AvatarUpload({
 }) {
   const [photo, setPhoto] = useState<string | null>(initialPhoto);
   const [saving, setSaving] = useState(false);
+  const [viewing, setViewing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -64,7 +66,14 @@ export default function AvatarUpload({
       {/* Avatar circle */}
       <div
         className={styles.avatar}
-        style={{ width: size, height: size, background: photo ? 'transparent' : fallbackColor }}
+        style={{
+          width: size,
+          height: size,
+          background: photo ? 'transparent' : fallbackColor,
+          cursor: photo ? 'zoom-in' : 'default',
+        }}
+        title={photo ? 'View photo' : undefined}
+        onClick={() => photo && setViewing(true)}
       >
         {photo ? (
           <Image src={photo} alt="Profile" width={size} height={size} className={styles.avatarImg} />
@@ -72,6 +81,8 @@ export default function AvatarUpload({
           <span className={styles.letter} style={{ fontSize: size * 0.4 }}>{fallbackLetter}</span>
         )}
       </div>
+
+      {viewing && photo && <PhotoLightbox photo={photo} onClose={() => setViewing(false)} />}
 
       {/* Camera badge */}
       {canEdit && (

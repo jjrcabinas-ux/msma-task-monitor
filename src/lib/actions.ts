@@ -256,7 +256,9 @@ async function syncPartnerBlockerTask(taskId: string) {
   // A partner's own escalation task never spawns another escalation
   if (t.blockerForTaskId) return;
 
-  const isOpenPartnerBlocker = t.status !== 'Done' && !!t.helpNeeded.trim() && PARTNER_KEYWORDS.test(t.helpNeeded);
+  // Same test as the summary-page highlight: keywords in the blocker text or the task title
+  const isOpenPartnerBlocker =
+    t.status !== 'Done' && !!t.helpNeeded.trim() && PARTNER_KEYWORDS.test(`${t.helpNeeded} ${t.taskGeneral}`);
 
   if (isOpenPartnerBlocker && !t.blockerTask) {
     const partner = await findPartnerEmployee(t.employee.cluster);

@@ -46,6 +46,7 @@ export default function Sidebar({
     () => !!pathname?.startsWith(`/${cluster}/audit`) || !!pathname?.startsWith(`/${cluster}/special-engagement`),
   );
   const [taxOpen, setTaxOpen] = useState(false);
+  const [showRestricted, setShowRestricted] = useState(false);
 
   useEffect(() => {
     function syncLabel() {
@@ -275,13 +276,23 @@ export default function Sidebar({
                 </div>
               </div>
 
-              <Link
-                href={`/${cluster}/special-engagement`}
-                className={`${styles.subNavItem} ${pathname.startsWith(`/${cluster}/special-engagement`) ? styles.subNavItemActive : ''}`}
-                onClick={() => { setMobileOpen(false); setTaxOpen(false); }}
-              >
-                Special Engagement Monitoring
-              </Link>
+              {isAdmin ? (
+                <Link
+                  href={`/${cluster}/special-engagement`}
+                  className={`${styles.subNavItem} ${pathname.startsWith(`/${cluster}/special-engagement`) ? styles.subNavItemActive : ''}`}
+                  onClick={() => { setMobileOpen(false); setTaxOpen(false); }}
+                >
+                  Special Engagement Monitoring
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.subNavItem}
+                  onClick={() => setShowRestricted(true)}
+                >
+                  Special Engagement Monitoring
+                </button>
+              )}
             </div>
           </div>
         </nav>
@@ -308,6 +319,60 @@ export default function Sidebar({
 
         <div className={styles.footer}>{clientTodayLabel}</div>
       </aside>
+
+      {showRestricted && (
+        <div
+          onClick={() => setShowRestricted(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 300,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            animation: 'modalOverlayIn 0.3s ease forwards',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              borderRadius: 14,
+              boxShadow: '0 24px 64px rgba(15,23,42,0.35)',
+              padding: '32px 36px',
+              maxWidth: 400,
+              textAlign: 'center',
+              animation: 'modalCardIn 0.3s ease-out forwards',
+            }}
+          >
+            <div style={{ fontSize: 30, marginBottom: 8 }}>🔒</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>
+              Access Restricted
+            </div>
+            <p style={{ fontSize: '0.88rem', color: '#64748b', lineHeight: 1.6, marginBottom: 18 }}>
+              Special Engagement Monitoring is only available with cluster access.
+              Please contact your direct supervisor if you need access.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowRestricted(false)}
+              style={{
+                background: '#0f172a',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 22px',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+              }}
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -21,6 +21,7 @@ import type { Period } from '@/lib/types';
 import PeriodFilter from '@/components/PeriodFilter';
 import KpiModalCard from '@/components/summary/KpiModalCard';
 import BlockerRow from '@/components/summary/BlockerRow';
+import BlockersList from '@/components/summary/BlockersList';
 import MemberRow from '@/components/summary/MemberRow';
 import PhotoAvatar from '@/components/PhotoAvatar';
 import TodayRow from '@/components/summary/TodayRow';
@@ -393,17 +394,19 @@ export default async function SummaryPage({
           <div className={styles.blockersHint}>Help jumps to the task</div>
         </div>
         {blockers.length === 0 && <div className={styles.blockersEmpty}>No blockers reported. 🎉</div>}
-        {blockers.map(({ task, dateLabel, daysLabel, aging }) => (
-          <BlockerRow
-            key={task.id}
-            task={task}
-            cluster={cluster}
-            dateLabel={dateLabel}
-            daysLabel={daysLabel}
-            aging={aging}
-            avatarStyle={avatarStyle(26, employeeColor(task.empIndex))}
-          />
-        ))}
+        <BlockersList>
+          {blockers.map(({ task, dateLabel, daysLabel, aging }) => (
+            <BlockerRow
+              key={task.id}
+              task={task}
+              cluster={cluster}
+              dateLabel={dateLabel}
+              daysLabel={daysLabel}
+              aging={aging}
+              avatarStyle={avatarStyle(26, employeeColor(task.empIndex))}
+            />
+          ))}
+        </BlockersList>
       </div>
     </div>
   );

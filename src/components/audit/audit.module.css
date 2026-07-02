@@ -1493,3 +1493,25 @@
   opacity: 0.4;
   cursor: default;
 }
+
+/* WPI coming-soon placeholder */
+.wpiComingSoon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.wpiComingSoonTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.wpiComingSoonSub {
+  font-size: 0.9rem;
+  color: #64748b;
+}

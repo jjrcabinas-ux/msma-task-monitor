@@ -348,12 +348,12 @@ export default function WorkingPaperModal({
                 onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
               />
             ) : (
-              <AnnualFileIndexTable
-                section={currentSection}
-                onUpdateItem={(itemId, field, value) => updateItem(currentSection.id, itemId, field, value)}
-                onAddItem={() => addItemToSection(currentSection.id)}
-                onRemoveItem={(itemId) => removeItem(currentSection.id, itemId)}
-              />
+              <div className={styles.wpiComingSoon}>
+                <div className={styles.wpiComingSoonTitle}>Coming soon</div>
+                <div className={styles.wpiComingSoonSub}>
+                  {currentSection.title || currentSection.name} — this section is under development.
+                </div>
+              </div>
             )}
           </div>
         )}

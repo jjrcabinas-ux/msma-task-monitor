@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 import {
   updateAuditItemAction,
@@ -35,6 +35,7 @@ export default function WorkingPaperModal({
   const [showNaming, setShowNaming] = useState<null | 'excel' | 'pdf'>(null);
   const [showTabSelect, setShowTabSelect] = useState<null | 'excel' | 'pdf'>(null);
   const [exportTabIds, setExportTabIds] = useState<string[]>([]);
+  const pdfPagesRef = useRef<HTMLDivElement>(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [, startTransition] = useTransition();
@@ -171,77 +172,27 @@ export default function WorkingPaperModal({
     }
   }
 
+  /* Captures the actual rendered tab content (hidden A4 pages) into the PDF,
+     so the file is pixel-identical to what each tab shows on screen. */
   async function doPdfExport(filename: string) {
     setIsExporting(true);
     try {
       const { jsPDF } = await import('jspdf');
-      const { default: autoTable } = await import('jspdf-autotable');
+      const { default: html2canvas } = await import('html2canvas-pro');
+
+      const container = pdfPagesRef.current;
+      if (!container) return;
+      const pages = Array.from(container.querySelectorAll<HTMLElement>('[data-pdf-page]'));
 
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       let firstPage = true;
 
-      for (const sec of exportSections) {
+      for (const page of pages) {
+        const canvas = await html2canvas(page, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
         if (!firstPage) doc.addPage();
         firstPage = false;
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
-
-        if (sec.name === 'Permanent') {
-          const metaCtx = { clientName: data.clientName, cluster: data.cluster, year: data.year };
-          doc.text('PERMANENT / SYSTEMS FILE INDEX', 105, 18, { align: 'center' });
-          let y = 30;
-          doc.setFontSize(9);
-          for (const f of PERM_FIELDS) {
-            doc.setFont('helvetica', 'bold');
-            doc.text(f.label, 14, y);
-            doc.setFont('helvetica', 'normal');
-            doc.text(permMetaValue(sec, f.key, metaCtx), 80, y);
-            doc.setDrawColor(180);
-            doc.line(80, y + 1.2, 196, y + 1.2);
-            y += 9;
-          }
-          y += 4;
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.text('Section A — Permanent', 14, y);
-          y += 4;
-          autoTable(doc, {
-            startY: y,
-            head: [['Ref No.', 'Description']],
-            body: PERM_SECTION_LIST.map((it) => [it.ref, it.description]),
-            styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2 },
-            headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
-            columnStyles: { 0: { cellWidth: 18 } },
-          });
-        } else {
-          doc.text(sec.title || sec.name, 105, 18, { align: 'center' });
-          const items = sectionNumericItems(sec);
-          if (items.length > 0) {
-            autoTable(doc, {
-              startY: 28,
-              head: [['Ref No.', 'Description', 'Initials', 'Source Document', 'N/A']],
-              body: items.map((it) => [it.refNum, it.description, it.initials, it.sourceDocument, it.isNA ? 'N/A' : '']),
-              styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2 },
-              headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
-              columnStyles: { 0: { cellWidth: 14 }, 2: { cellWidth: 18 }, 3: { cellWidth: 32 }, 4: { cellWidth: 10 } },
-            });
-          } else {
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(9);
-            doc.setTextColor(150);
-            doc.text('No items recorded.', 14, 32);
-            doc.setTextColor(0);
-          }
-        }
-
-        // Page footer
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(120);
-        doc.text(sec.name, 14, 285);
-        doc.text(`${data.clientName} · ${data.year}`, 105, 285, { align: 'center' });
-        doc.setTextColor(0);
+        const imgH = Math.min(297, (canvas.height * 210) / canvas.width);
+        doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, imgH);
       }
 
       doc.save(`${filename}.pdf`);
@@ -250,6 +201,25 @@ export default function WorkingPaperModal({
       setShowNaming(null);
       setShowPdfPreview(false);
     }
+  }
+
+  /* Exactly what the tab shows on screen — used by the PDF preview and the export capture */
+  function renderSectionContent(sec: Section) {
+    return sec.name === 'Permanent' ? (
+      <PermanentFileTab
+        section={sec}
+        clientName={data.clientName}
+        cluster={data.cluster}
+        year={data.year}
+        employees={employees}
+        onUpdateItem={(itemId, field, value) => updateItem(sec.id, itemId, field, value)}
+      />
+    ) : (
+      <div className={styles.wpiComingSoon}>
+        <div className={styles.wpiComingSoonTitle}>Coming soon</div>
+        <div className={styles.wpiComingSoonSub}>This section is under development.</div>
+      </div>
+    );
   }
 
   function handleAddSection(sectionData: {
@@ -349,9 +319,25 @@ export default function WorkingPaperModal({
     </div>
   );
 
+  /* Off-screen A4 pages holding the real tab content — html2canvas captures these */
+  const hiddenPdfPages = (showPdfPreview || showNaming === 'pdf') && (
+    <div
+      ref={pdfPagesRef}
+      aria-hidden
+      style={{ position: 'fixed', left: -20000, top: 0, width: 794, pointerEvents: 'none' }}
+    >
+      {exportSections.map((sec) => (
+        <div key={sec.id} data-pdf-page style={{ width: 794, minHeight: 1123, background: '#fff', overflow: 'hidden' }}>
+          {renderSectionContent(sec)}
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <>
       {createPortal(portal, document.body)}
+      {hiddenPdfPages && createPortal(hiddenPdfPages, document.body)}
 
       {/* Tab selection — choose which tabs to include in the export */}
       {showTabSelect && (
@@ -393,6 +379,7 @@ export default function WorkingPaperModal({
           data={{ ...data, sections: exportSections }}
           onClose={() => setShowPdfPreview(false)}
           onDownload={() => setShowNaming('pdf')}
+          renderSection={renderSectionContent}
         />
       )}
     </>

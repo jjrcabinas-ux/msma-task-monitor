@@ -240,10 +240,13 @@ export function PdfPreviewModal({
   data,
   onClose,
   onDownload,
+  renderSection,
 }: {
   data: AuditIndexData;
   onClose: () => void;
   onDownload: () => void;
+  /** When provided, pages render the live tab content instead of the built-in layout */
+  renderSection?: (section: Section) => React.ReactNode;
 }) {
   return createPortal(
     <div className={styles.pdfPreviewOverlay}>
@@ -274,10 +277,14 @@ export function PdfPreviewModal({
               <div className={styles.pdfPageLabel}>
                 Page {i + 1} — {sec.name}
               </div>
-              <PdfPageView
-                section={sec}
-                metaCtx={{ clientName: data.clientName, cluster: data.cluster, year: data.year }}
-              />
+              {renderSection ? (
+                renderSection(sec)
+              ) : (
+                <PdfPageView
+                  section={sec}
+                  metaCtx={{ clientName: data.clientName, cluster: data.cluster, year: data.year }}
+                />
+              )}
             </div>
           ))}
         </div>

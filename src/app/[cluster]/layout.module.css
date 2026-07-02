@@ -4,14 +4,16 @@
   min-height: 100dvh;
   width: 100%;
   background: #eef1f5;
-  overflow-x: hidden;
+  /* clip (not hidden): hidden creates a scroll container that breaks
+     position: sticky for the employee page header */
+  overflow-x: clip;
 }
 
 .main {
   flex: 1;
   min-width: 0;
   margin-left: clamp(200px, 18%, 280px);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 @media (max-width: 860px) {

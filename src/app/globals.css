@@ -14,7 +14,7 @@
 html {
   font-size: clamp(13px, 1vw, 15px);
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {

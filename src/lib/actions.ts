@@ -315,6 +315,11 @@ export async function updateEmployeePhotoAction(
   employeeId: string,
   photoDataUrl: string | null,
 ): Promise<{ ok: true } | { error: string }> {
+  const employee = await prisma.employee.findUnique({ where: { id: employeeId }, select: { cluster: true } });
+  if (!employee) return { error: 'Team member not found.' };
+  if (!(await canEditEmployee(employee.cluster as ClusterSlug, employeeId))) {
+    return { error: 'You can only change your own photo.' };
+  }
   await prisma.employee.update({ where: { id: employeeId }, data: { photo: photoDataUrl } });
   revalidateAll();
   return { ok: true };

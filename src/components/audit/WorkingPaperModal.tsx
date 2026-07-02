@@ -16,13 +16,7 @@ import styles from './audit.module.css';
 type Item = AuditIndexData['sections'][number]['items'][number];
 type Section = AuditIndexData['sections'][number];
 
-const PERM_FIELDS: { key: string; label: string }[] = [
-  { key: 'CLIENT_REF', label: 'CLIENT / REFERENCE:' },
-  { key: 'ACCT_DATE', label: 'ACCOUNTING REFERENCE DATE:' },
-  { key: 'PARTNER', label: 'PARTNER:' },
-  { key: 'SR_ASSOCIATE', label: 'SENIOR ASSOCIATE IN-CHARGE:' },
-  { key: 'JR_ASSOCIATE', label: 'JUNIOR ASSOCIATE IN-CHARGE:' },
-];
+import { CLUSTER_PARTNERS, PERM_FIELDS, PERM_SECTION_LIST, permMetaValue } from './permanentMeta';
 
 export default function WorkingPaperModal({
   indexData,
@@ -130,10 +124,6 @@ export default function WorkingPaperModal({
     return sec.items.filter((it) => /^\d+$/.test(it.refNum));
   }
 
-  function sectionItemDesc(sec: (typeof data.sections)[number], key: string) {
-    return sec.items.find((it) => it.refNum === key)?.description || '';
-  }
-
   async function doExcelExport(filename: string) {
     setIsExporting(true);
     try {
@@ -144,19 +134,18 @@ export default function WorkingPaperModal({
         const rows: (string | number | boolean)[][] = [];
 
         if (sec.name === 'Permanent') {
+          const metaCtx = { clientName: data.clientName, cluster: data.cluster, year: data.year };
           rows.push(['PERMANENT / SYSTEMS FILE INDEX']);
           rows.push([]);
-          rows.push(['CLIENT / REFERENCE:', sectionItemDesc(sec, 'CLIENT_REF')]);
-          rows.push(['ACCOUNTING REFERENCE DATE:', sectionItemDesc(sec, 'ACCT_DATE')]);
-          rows.push(['PARTNER:', sectionItemDesc(sec, 'PARTNER')]);
-          rows.push(['SENIOR ASSOCIATE IN-CHARGE:', sectionItemDesc(sec, 'SR_ASSOCIATE')]);
-          rows.push(['JUNIOR ASSOCIATE IN-CHARGE:', sectionItemDesc(sec, 'JR_ASSOCIATE')]);
+          for (const f of PERM_FIELDS) {
+            rows.push([f.label, permMetaValue(sec, f.key, metaCtx)]);
+          }
           rows.push([]);
           rows.push(['Section A — Permanent']);
           rows.push([]);
-          rows.push(['Ref No.', 'Description', 'Initials', 'Source Document', 'N/A']);
-          for (const it of sectionNumericItems(sec)) {
-            rows.push([it.refNum, it.description, it.initials, it.sourceDocument, it.isNA ? 'N/A' : '']);
+          rows.push(['Ref No.', 'Description']);
+          for (const it of PERM_SECTION_LIST) {
+            rows.push([it.ref, it.description]);
           }
         } else {
           rows.push([sec.title || sec.name]);
@@ -199,21 +188,15 @@ export default function WorkingPaperModal({
         doc.setFontSize(12);
 
         if (sec.name === 'Permanent') {
+          const metaCtx = { clientName: data.clientName, cluster: data.cluster, year: data.year };
           doc.text('PERMANENT / SYSTEMS FILE INDEX', 105, 18, { align: 'center' });
           let y = 30;
-          const metaFields = [
-            ['CLIENT / REFERENCE:', sectionItemDesc(sec, 'CLIENT_REF')],
-            ['ACCOUNTING REFERENCE DATE:', sectionItemDesc(sec, 'ACCT_DATE')],
-            ['PARTNER:', sectionItemDesc(sec, 'PARTNER')],
-            ['SENIOR ASSOCIATE IN-CHARGE:', sectionItemDesc(sec, 'SR_ASSOCIATE')],
-            ['JUNIOR ASSOCIATE IN-CHARGE:', sectionItemDesc(sec, 'JR_ASSOCIATE')],
-          ];
           doc.setFontSize(9);
-          for (const [label, value] of metaFields) {
+          for (const f of PERM_FIELDS) {
             doc.setFont('helvetica', 'bold');
-            doc.text(label, 14, y);
+            doc.text(f.label, 14, y);
             doc.setFont('helvetica', 'normal');
-            doc.text(value, 80, y);
+            doc.text(permMetaValue(sec, f.key, metaCtx), 80, y);
             doc.setDrawColor(180);
             doc.line(80, y + 1.2, 196, y + 1.2);
             y += 9;
@@ -223,17 +206,14 @@ export default function WorkingPaperModal({
           doc.setFontSize(10);
           doc.text('Section A — Permanent', 14, y);
           y += 4;
-          const items = sectionNumericItems(sec);
-          if (items.length > 0) {
-            autoTable(doc, {
-              startY: y,
-              head: [['Ref No.', 'Description', 'Initials', 'Source Document', 'N/A']],
-              body: items.map((it) => [it.refNum, it.description, it.initials, it.sourceDocument, it.isNA ? 'N/A' : '']),
-              styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2 },
-              headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
-              columnStyles: { 0: { cellWidth: 14 }, 2: { cellWidth: 18 }, 3: { cellWidth: 32 }, 4: { cellWidth: 10 } },
-            });
-          }
+          autoTable(doc, {
+            startY: y,
+            head: [['Ref No.', 'Description']],
+            body: PERM_SECTION_LIST.map((it) => [it.ref, it.description]),
+            styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 2 },
+            headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
+            columnStyles: { 0: { cellWidth: 18 } },
+          });
         } else {
           doc.text(sec.title || sec.name, 105, 18, { align: 'center' });
           const items = sectionNumericItems(sec);
@@ -470,12 +450,6 @@ function MemberAutocomplete({
     </div>
   );
 }
-
-const CLUSTER_PARTNERS: Record<string, string> = {
-  ads: 'Atty. Antonio Sanchez Jr., CPA',
-  rpm: 'Atty. Rhenier Mora, CPA',
-  vcm: 'Victorio Meñoza, CPA',
-};
 
 function PermanentFileTab({
   section,

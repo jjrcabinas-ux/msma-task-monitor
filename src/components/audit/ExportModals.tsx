@@ -4,26 +4,15 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './audit.module.css';
 import type { AuditIndexData } from './AuditPageClient';
+import { PERM_FIELDS, PERM_SECTION_LIST, permMetaValue } from './permanentMeta';
 
 /* ── Types ───────────────────────────────────────────────── */
 type Section = AuditIndexData['sections'][number];
 
 /* ── Helpers ──────────────────────────────────────────────── */
-function getDesc(section: Section, key: string, fallback = '') {
-  return section.items.find((it) => it.refNum === key)?.description || fallback;
-}
-
 function numericItems(section: Section) {
   return section.items.filter((it) => /^\d+$/.test(it.refNum));
 }
-
-const PERM_META: { key: string; label: string }[] = [
-  { key: 'CLIENT_REF', label: 'CLIENT / REFERENCE' },
-  { key: 'ACCT_DATE', label: 'ACCOUNTING REFERENCE DATE' },
-  { key: 'PARTNER', label: 'PARTNER' },
-  { key: 'SR_ASSOCIATE', label: 'SENIOR ASSOCIATE IN-CHARGE' },
-  { key: 'JR_ASSOCIATE', label: 'JUNIOR ASSOCIATE IN-CHARGE' },
-];
 
 /* ── Tab Select Modal — pick which tabs go into the export ── */
 export function TabSelectModal({
@@ -160,7 +149,13 @@ export function NamingConventionModal({
 }
 
 /* ── PDF Page Preview ─────────────────────────────────────── */
-function PdfPageView({ section }: { section: Section }) {
+function PdfPageView({
+  section,
+  metaCtx,
+}: {
+  section: Section;
+  metaCtx: { clientName: string; cluster: string; year: number };
+}) {
   const rows = numericItems(section);
 
   return (
@@ -169,19 +164,30 @@ function PdfPageView({ section }: { section: Section }) {
         <>
           <div className={styles.pdfPageTitle}>PERMANENT / SYSTEMS FILE INDEX</div>
           <div className={styles.pdfMetaFields}>
-            {PERM_META.map((f) => (
+            {PERM_FIELDS.map((f) => (
               <div key={f.key} className={styles.pdfMetaRow}>
-                <span className={styles.pdfMetaLabel}>{f.label}:</span>
-                <span className={styles.pdfMetaValue}>{getDesc(section, f.key)}</span>
+                <span className={styles.pdfMetaLabel}>{f.label}</span>
+                <span className={styles.pdfMetaValue}>{permMetaValue(section, f.key, metaCtx)}</span>
               </div>
             ))}
           </div>
-          {rows.length > 0 && (
-            <>
-              <div className={styles.pdfSectionHeader}>Section A — Permanent</div>
-              <PdfTable rows={rows} />
-            </>
-          )}
+          <div className={styles.pdfSectionHeader}>Section A — Permanent</div>
+          <table className={styles.pdfTable}>
+            <thead>
+              <tr>
+                <th className={styles.pdfThRef}>Ref No.</th>
+                <th className={styles.pdfThDesc}>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {PERM_SECTION_LIST.map((it) => (
+                <tr key={it.ref}>
+                  <td className={styles.pdfTdRef}>{it.ref}</td>
+                  <td>{it.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </>
       ) : (
         <>
@@ -268,7 +274,10 @@ export function PdfPreviewModal({
               <div className={styles.pdfPageLabel}>
                 Page {i + 1} — {sec.name}
               </div>
-              <PdfPageView section={sec} />
+              <PdfPageView
+                section={sec}
+                metaCtx={{ clientName: data.clientName, cluster: data.cluster, year: data.year }}
+              />
             </div>
           ))}
         </div>

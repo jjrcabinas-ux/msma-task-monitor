@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import PhotoAvatar from '@/components/PhotoAvatar';
 import styles from '@/app/[cluster]/summary.module.css';
 
 export type SnapshotRow = {
@@ -9,6 +10,7 @@ export type SnapshotRow = {
   href: string;
   avatarColor: string;
   avatarLabel: string;
+  avatarPhoto: string | null;
   name: string;
   details: string;
   statusLabel: string;
@@ -37,9 +39,12 @@ export default function TodaySnapshotCard({
   function renderRow(row: SnapshotRow) {
     return (
       <Link key={row.id} href={row.href} className={styles.snapshotRow}>
-        <span className={styles.avatar} style={{ width: 28, height: 28, fontSize: 28 * 0.42, background: row.avatarColor }}>
-          {row.avatarLabel}
-        </span>
+        <PhotoAvatar
+          photo={row.avatarPhoto}
+          letter={row.avatarLabel}
+          className={styles.avatar}
+          style={{ width: 28, height: 28, fontSize: 28 * 0.42, background: row.avatarColor }}
+        />
         <div className={styles.snapshotTask}>
           <span className={styles.taskName}>{row.name}</span>
           <span className={styles.taskDetails}> — {row.details}</span>

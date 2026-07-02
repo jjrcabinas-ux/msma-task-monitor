@@ -4,7 +4,7 @@ import type { PeriodRange } from './period';
 import type { EmployeeDTO, Status, TaskDTO } from './types';
 
 export type RosterEntry = { employee: EmployeeDTO; tasks: TaskDTO[] };
-export type FlatTask = TaskDTO & { empName: string; empIndex: number };
+export type FlatTask = TaskDTO & { empName: string; empIndex: number; empPhoto: string | null };
 
 export function displayName(e: { name: string; nickname: string }): string {
   return e.nickname.trim() || e.name;
@@ -17,7 +17,7 @@ function inRange(date: string | null, range: PeriodRange): boolean {
 export function flattenTasks(roster: RosterEntry[]): FlatTask[] {
   const out: FlatTask[] = [];
   roster.forEach((r, idx) => {
-    r.tasks.forEach((t) => out.push({ ...t, empName: displayName(r.employee), empIndex: idx }));
+    r.tasks.forEach((t) => out.push({ ...t, empName: displayName(r.employee), empIndex: idx, empPhoto: r.employee.photo }));
   });
   return out;
 }

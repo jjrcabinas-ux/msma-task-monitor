@@ -38,7 +38,7 @@ export default async function ClusterLayout({
     roster.map(async (e) => {
       const total = await prisma.task.count({ where: { employeeId: e.id } });
       const done = await prisma.task.count({ where: { employeeId: e.id, status: 'Done' } });
-      return { id: e.id, name: displayName(e), completionPct: total ? Math.round((done / total) * 100) : 0 };
+      return { id: e.id, name: displayName(e), photo: e.photo, completionPct: total ? Math.round((done / total) * 100) : 0 };
     })
   );
 

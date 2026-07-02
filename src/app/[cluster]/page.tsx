@@ -22,6 +22,7 @@ import PeriodFilter from '@/components/PeriodFilter';
 import KpiModalCard from '@/components/summary/KpiModalCard';
 import BlockerRow from '@/components/summary/BlockerRow';
 import MemberRow from '@/components/summary/MemberRow';
+import PhotoAvatar from '@/components/PhotoAvatar';
 import TodayRow from '@/components/summary/TodayRow';
 import modalStyles from '@/components/summary/KpiModalCard.module.css';
 import styles from './summary.module.css';
@@ -68,6 +69,7 @@ export default async function SummaryPage({
     href: `/${cluster}/employee/${task.employeeId}?highlight=${task.id}`,
     avatarColor: employeeColor(task.empIndex),
     avatarLabel: task.empName[0],
+    avatarPhoto: task.empPhoto,
     name: task.taskGeneral || '(untitled)',
     details: task.taskDetails,
     statusLabel: (STATUS_META[task.status as keyof typeof STATUS_META] ?? STATUS_META.Pending).label,
@@ -135,9 +137,7 @@ export default async function SummaryPage({
             .sort((a, b) => (a.date || '9999-99-99').localeCompare(b.date || '9999-99-99'))
             .map((t) => (
               <Link key={t.id} href={`/${cluster}/employee/${t.employeeId}?highlight=${t.id}`} className={modalStyles.modalRow}>
-                <span className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))}>
-                  {t.empName[0]}
-                </span>
+                <PhotoAvatar photo={t.empPhoto} letter={t.empName[0]} className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))} />
                 <div className={modalStyles.modalRowBody}>
                   <div className={modalStyles.modalRowTitle}>{t.taskGeneral || '(untitled)'}</div>
                   <div className={modalStyles.modalRowSub}>
@@ -170,9 +170,7 @@ export default async function SummaryPage({
             .filter((t) => t.status === 'Ongoing')
             .map((t) => (
               <Link key={t.id} href={`/${cluster}/employee/${t.employeeId}?highlight=${t.id}`} className={modalStyles.modalRow}>
-                <span className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))}>
-                  {t.empName[0]}
-                </span>
+                <PhotoAvatar photo={t.empPhoto} letter={t.empName[0]} className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))} />
                 <div className={modalStyles.modalRowBody}>
                   <div className={modalStyles.modalRowTitle}>{t.taskGeneral || '(untitled)'}</div>
                   <div className={modalStyles.modalRowSub}>
@@ -205,9 +203,7 @@ export default async function SummaryPage({
             .filter((t) => t.status === 'Done')
             .map((t) => (
               <Link key={t.id} href={`/${cluster}/employee/${t.employeeId}?highlight=${t.id}`} className={modalStyles.modalRow}>
-                <span className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))}>
-                  {t.empName[0]}
-                </span>
+                <PhotoAvatar photo={t.empPhoto} letter={t.empName[0]} className={styles.avatar} style={avatarStyle(28, employeeColor(t.empIndex))} />
                 <div className={modalStyles.modalRowBody}>
                   <div className={modalStyles.modalRowTitle}>{t.taskGeneral || '(untitled)'}</div>
                   <div className={modalStyles.modalRowSub}>
@@ -236,9 +232,7 @@ export default async function SummaryPage({
           {blockers.length === 0 && <div className={modalStyles.modalEmpty}>No blockers reported.</div>}
           {blockers.map(({ task, dateLabel }) => (
             <Link key={task.id} href={`/${cluster}/employee/${task.employeeId}?highlight=${task.id}`} className={modalStyles.modalRow}>
-              <span className={styles.avatar} style={avatarStyle(28, employeeColor(task.empIndex))}>
-                {task.empName[0]}
-              </span>
+              <PhotoAvatar photo={task.empPhoto} letter={task.empName[0]} className={styles.avatar} style={avatarStyle(28, employeeColor(task.empIndex))} />
               <div className={modalStyles.modalRowBody}>
                 <div className={modalStyles.modalRowTitle}>
                   {task.empName} · {task.taskGeneral || '(untitled)'}

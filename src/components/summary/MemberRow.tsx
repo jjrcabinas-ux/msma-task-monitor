@@ -6,6 +6,7 @@ import { displayName } from '@/lib/analytics';
 import { fmtLongDate } from '@/lib/dates';
 import type { ClusterSlug } from '@/lib/clusters';
 import type { EmployeeDTO } from '@/lib/types';
+import PhotoAvatar from '@/components/PhotoAvatar';
 import styles from './KpiModalCard.module.css';
 import summaryStyles from '@/app/[cluster]/summary.module.css';
 
@@ -129,9 +130,7 @@ export default function MemberRow({
   return (
     <div className={styles.memberRow}>
       <div className={styles.memberRowTop}>
-        <span className={summaryStyles.avatar} style={avatarStyle}>
-          {name[0]}
-        </span>
+        <PhotoAvatar photo={employee.photo} letter={name[0]} className={summaryStyles.avatar} style={avatarStyle} />
         <div className={styles.memberRowTopBody}>
           <div className={styles.memberName}>{name}</div>
           <div className={styles.memberPosition}>{employee.position || '—'}</div>

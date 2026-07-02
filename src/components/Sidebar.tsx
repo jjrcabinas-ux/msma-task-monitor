@@ -8,11 +8,13 @@ import { addEmployeeAction, memberLogoutAction } from '@/lib/actions';
 import type { ClusterSlug } from '@/lib/clusters';
 import { employeeColor } from '@/lib/colors';
 import { fmtShort, isoToParts, todayISO } from '@/lib/dates';
+import PhotoAvatar from './PhotoAvatar';
 import styles from './Sidebar.module.css';
 
 type NavEmployee = {
   id: string;
   name: string;
+  photo: string | null;
   completionPct: number;
 };
 
@@ -147,9 +149,12 @@ export default function Sidebar({
                       className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
                       onClick={() => { setMobileOpen(false); setAuditOpen(false); }}
                     >
-                      <div className={styles.navAvatar} style={{ background: employeeColor(idx) }}>
-                        {emp.name[0]}
-                      </div>
+                      <PhotoAvatar
+                        photo={emp.photo}
+                        letter={emp.name[0]}
+                        className={styles.navAvatar}
+                        style={{ background: employeeColor(idx) }}
+                      />
                       <span className={styles.navName}>{emp.name}</span>
                       <span className={styles.navPct}>{emp.completionPct}%</span>
                     </Link>

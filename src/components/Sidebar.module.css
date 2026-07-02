@@ -7,10 +7,12 @@
   color: #e2e8f0;
   display: flex;
   flex-direction: column;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   height: 100vh;
-  height: 100dvh; /* dynamic viewport height — covers full screen on all devices */
+  height: 100dvh;
+  z-index: 50;
 }
 
 .mobileBar {

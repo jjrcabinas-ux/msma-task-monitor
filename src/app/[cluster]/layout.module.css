@@ -10,12 +10,15 @@
 .main {
   flex: 1;
   min-width: 0;
-  width: 0; /* forces flex shrink to work correctly */
+  margin-left: clamp(200px, 18%, 280px);
   overflow-x: hidden;
 }
 
 @media (max-width: 860px) {
   .shell {
     flex-direction: column;
+  }
+  .main {
+    margin-left: 0;
   }
 }

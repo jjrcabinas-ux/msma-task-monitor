@@ -42,7 +42,9 @@ export default function Sidebar({
   const [clientTodayLabel, setClientTodayLabel] = useState(todayLabel);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(() => employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`));
-  const [auditOpen, setAuditOpen] = useState(() => !!pathname?.startsWith(`/${cluster}/audit`));
+  const [engOpen, setEngOpen] = useState(
+    () => !!pathname?.startsWith(`/${cluster}/audit`) || !!pathname?.startsWith(`/${cluster}/special-engagement`),
+  );
   const [taxOpen, setTaxOpen] = useState(false);
 
   useEffect(() => {
@@ -121,7 +123,7 @@ export default function Sidebar({
           <Link
             href={`/${cluster}`}
             className={`${styles.navItem} ${isSummaryActive ? styles.navItemActive : ''}`}
-            onClick={() => { setMobileOpen(false); setAuditOpen(false); setMembersOpen(false); setTaxOpen(false); }}
+            onClick={() => { setMobileOpen(false); setEngOpen(false); setMembersOpen(false); setTaxOpen(false); }}
           >
             <div className={styles.navIcon}>▦</div>
             <span className={styles.navLabel}>Team Summary</span>
@@ -130,7 +132,7 @@ export default function Sidebar({
           <button
             type="button"
             className={`${styles.navItem} ${styles.navItemToggle}`}
-            onClick={() => { setMembersOpen((v) => !v); setAuditOpen(false); setTaxOpen(false); }}
+            onClick={() => { setMembersOpen((v) => !v); setEngOpen(false); setTaxOpen(false); }}
             aria-expanded={membersOpen}
           >
             <div className={styles.navIcon}>☰</div>
@@ -147,7 +149,7 @@ export default function Sidebar({
                       key={emp.id}
                       href={`/${cluster}/employee/${emp.id}`}
                       className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                      onClick={() => { setMobileOpen(false); setAuditOpen(false); setTaxOpen(false); }}
+                      onClick={() => { setMobileOpen(false); setEngOpen(false); setTaxOpen(false); }}
                     >
                       <PhotoAvatar
                         photo={emp.photo}
@@ -231,57 +233,57 @@ export default function Sidebar({
 
           <button
             type="button"
-            className={`${styles.navItem} ${styles.navItemToggle} ${auditOpen || pathname.startsWith(`/${cluster}/audit`) ? styles.navItemActive : ''}`}
-            onClick={() => { setAuditOpen((v) => !v); setMembersOpen(false); setTaxOpen(false); }}
-            aria-expanded={auditOpen}
+            className={`${styles.navItem} ${styles.navItemToggle} ${pathname.startsWith(`/${cluster}/audit`) || pathname.startsWith(`/${cluster}/special-engagement`) ? styles.navItemActive : ''}`}
+            onClick={() => { setEngOpen((v) => !v); setMembersOpen(false); setTaxOpen(false); }}
+            aria-expanded={engOpen}
           >
-            <span className={styles.navLabel}>Audit Monitoring</span>
-            <span className={`${styles.navChevron} ${auditOpen ? styles.navChevronOpen : ''}`}>▶</span>
+            <div className={styles.navIcon}>◉</div>
+            <span className={styles.navLabel}>Engagement Monitoring</span>
+            <span className={`${styles.navChevron} ${engOpen ? styles.navChevronOpen : ''}`}>▶</span>
           </button>
 
-          <div className={auditOpen ? styles.dropdownPanelOpen : styles.dropdownPanel}>
+          <div className={engOpen ? styles.dropdownPanelOpen : styles.dropdownPanel}>
             <div className={styles.subNav}>
               <Link
                 href={`/${cluster}/audit`}
-                className={`${styles.subNavItem} ${pathname === `/${cluster}/audit` ? styles.subNavItemActive : ''}`}
-                onClick={() => setMobileOpen(false)}
+                className={`${styles.subNavItem} ${pathname.startsWith(`/${cluster}/audit`) ? styles.subNavItemActive : ''}`}
+                onClick={() => { setMobileOpen(false); setTaxOpen(false); }}
               >
-                Working Paper Index
+                Audit Monitoring
+              </Link>
+
+              <button
+                type="button"
+                className={styles.subNavItem}
+                onClick={() => setTaxOpen((v) => !v)}
+                aria-expanded={taxOpen}
+              >
+                Tax Compliance Monitoring
+                <span className={styles.soonBadge}>Soon</span>
+              </button>
+
+              <div className={taxOpen ? styles.dropdownPanelOpen : styles.dropdownPanel}>
+                <div className={styles.comingSoonBox}>
+                  <p className={styles.comingSoonLead}>
+                    Keep tax filing deadlines and statutory compliance visible per client.
+                  </p>
+                  <ul className={styles.comingSoonList}>
+                    <li>Track BIR/SEC filing due dates and submission status</li>
+                    <li>Alert on upcoming and missed compliance deadlines</li>
+                    <li>Assign filings to team members and monitor completion</li>
+                  </ul>
+                </div>
+              </div>
+
+              <Link
+                href={`/${cluster}/special-engagement`}
+                className={`${styles.subNavItem} ${pathname.startsWith(`/${cluster}/special-engagement`) ? styles.subNavItemActive : ''}`}
+                onClick={() => { setMobileOpen(false); setTaxOpen(false); }}
+              >
+                Special Engagement Monitoring
               </Link>
             </div>
           </div>
-
-          <button
-            type="button"
-            className={`${styles.navItem} ${styles.navItemToggle}`}
-            onClick={() => { setTaxOpen((v) => !v); setMembersOpen(false); setAuditOpen(false); }}
-            aria-expanded={taxOpen}
-          >
-            <span className={styles.navLabel}>Tax Compliance Monitoring</span>
-            <span className={styles.soonBadge}>Soon</span>
-            <span className={`${styles.navChevron} ${taxOpen ? styles.navChevronOpen : ''}`}>▶</span>
-          </button>
-
-          <div className={taxOpen ? styles.dropdownPanelOpen : styles.dropdownPanel}>
-            <div className={styles.comingSoonBox}>
-              <p className={styles.comingSoonLead}>
-                Keep tax filing deadlines and statutory compliance visible per client.
-              </p>
-              <ul className={styles.comingSoonList}>
-                <li>Track BIR/SEC filing due dates and submission status</li>
-                <li>Alert on upcoming and missed compliance deadlines</li>
-                <li>Assign filings to team members and monitor completion</li>
-              </ul>
-            </div>
-          </div>
-
-          <Link
-            href={`/${cluster}/special-engagement`}
-            className={`${styles.navItem} ${pathname.startsWith(`/${cluster}/special-engagement`) ? styles.navItemActive : ''}`}
-            onClick={() => { setMobileOpen(false); setAuditOpen(false); setMembersOpen(false); setTaxOpen(false); }}
-          >
-            <span className={styles.navLabel}>Special Engagement Monitoring</span>
-          </Link>
         </nav>
 
         <div className={styles.bottomLinks}>

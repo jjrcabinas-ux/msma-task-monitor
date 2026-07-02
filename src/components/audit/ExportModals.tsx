@@ -25,6 +25,71 @@ const PERM_META: { key: string; label: string }[] = [
   { key: 'JR_ASSOCIATE', label: 'JUNIOR ASSOCIATE IN-CHARGE' },
 ];
 
+/* ── Tab Select Modal — pick which tabs go into the export ── */
+export function TabSelectModal({
+  sections,
+  onConfirm,
+  onClose,
+}: {
+  sections: Section[];
+  onConfirm: (ids: string[]) => void;
+  onClose: () => void;
+}) {
+  const [selected, setSelected] = useState<string[]>(sections.map((s) => s.id));
+  const allSelected = selected.length === sections.length;
+
+  function toggle(id: string) {
+    setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+  }
+
+  return createPortal(
+    <div className={styles.namingOverlay} onClick={onClose}>
+      <div className={styles.namingModal} onClick={(e) => e.stopPropagation()}>
+        <button type="button" className={styles.modalCloseBtn} onClick={onClose}>×</button>
+
+        <h2 className={styles.namingTitle}>Select Tabs to Include</h2>
+        <p className={styles.namingSubtitle}>Choose which tabs will be included in the exported file.</p>
+
+        <label className={`${styles.tabSelectRow} ${styles.tabSelectAllRow}`}>
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={() => setSelected(allSelected ? [] : sections.map((s) => s.id))}
+          />
+          <span>Select all</span>
+        </label>
+
+        <div className={styles.tabSelectList}>
+          {sections.map((sec) => (
+            <label key={sec.id} className={styles.tabSelectRow}>
+              <input type="checkbox" checked={selected.includes(sec.id)} onChange={() => toggle(sec.id)} />
+              <span>
+                {sec.name}
+                {sec.title && sec.title !== sec.name ? ` — ${sec.title}` : ''}
+              </span>
+            </label>
+          ))}
+        </div>
+
+        <div className={styles.namingActions}>
+          <button type="button" className={styles.namingCancel} onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className={styles.namingProceed}
+            disabled={selected.length === 0}
+            onClick={() => onConfirm(selected)}
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 /* ── Naming Convention Modal ──────────────────────────────── */
 export function NamingConventionModal({
   exportType,

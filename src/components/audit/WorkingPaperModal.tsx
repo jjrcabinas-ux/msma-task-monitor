@@ -10,7 +10,7 @@ import {
   addAuditSectionAction,
 } from '@/lib/auditActions';
 import type { AuditIndexData } from './AuditPageClient';
-import { NamingConventionModal, PdfPreviewModal } from './ExportModals';
+import { NamingConventionModal, PdfPreviewModal, TabSelectModal } from './ExportModals';
 import styles from './audit.module.css';
 
 type Item = AuditIndexData['sections'][number]['items'][number];
@@ -39,11 +39,14 @@ export default function WorkingPaperModal({
   const [activeTab, setActiveTab] = useState(0);
   const [showAddSection, setShowAddSection] = useState(false);
   const [showNaming, setShowNaming] = useState<null | 'excel' | 'pdf'>(null);
+  const [showTabSelect, setShowTabSelect] = useState<null | 'excel' | 'pdf'>(null);
+  const [exportTabIds, setExportTabIds] = useState<string[]>([]);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [, startTransition] = useTransition();
 
   const currentSection = data.sections[activeTab];
+  const exportSections = data.sections.filter((s) => exportTabIds.includes(s.id));
 
   function mutate(updater: (d: AuditIndexData) => AuditIndexData) {
     setData((d) => {
@@ -137,7 +140,7 @@ export default function WorkingPaperModal({
       const XLSX = (await import('xlsx')).default;
       const wb = XLSX.utils.book_new();
 
-      for (const sec of data.sections) {
+      for (const sec of exportSections) {
         const rows: (string | number | boolean)[][] = [];
 
         if (sec.name === 'Permanent') {
@@ -188,7 +191,7 @@ export default function WorkingPaperModal({
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       let firstPage = true;
 
-      for (const sec of data.sections) {
+      for (const sec of exportSections) {
         if (!firstPage) doc.addPage();
         firstPage = false;
 
@@ -301,16 +304,16 @@ export default function WorkingPaperModal({
             <button
               type="button"
               className={styles.exportBtn}
-              onClick={() => setShowNaming('excel')}
+              onClick={() => setShowTabSelect('excel')}
               disabled={isExporting}
-              title="Export all tabs to Excel"
+              title="Export selected tabs to Excel"
             >
               Generate Excel File
             </button>
             <button
               type="button"
               className={styles.exportBtn}
-              onClick={() => setShowPdfPreview(true)}
+              onClick={() => setShowTabSelect('pdf')}
               disabled={isExporting}
               title="Preview and download PDF"
             >
@@ -370,6 +373,20 @@ export default function WorkingPaperModal({
     <>
       {createPortal(portal, document.body)}
 
+      {/* Tab selection — choose which tabs to include in the export */}
+      {showTabSelect && (
+        <TabSelectModal
+          sections={data.sections}
+          onClose={() => setShowTabSelect(null)}
+          onConfirm={(ids) => {
+            setExportTabIds(ids);
+            if (showTabSelect === 'excel') setShowNaming('excel');
+            else setShowPdfPreview(true);
+            setShowTabSelect(null);
+          }}
+        />
+      )}
+
       {/* Naming convention modal — Excel */}
       {showNaming === 'excel' && (
         <NamingConventionModal
@@ -393,7 +410,7 @@ export default function WorkingPaperModal({
       {/* PDF Preview modal */}
       {showPdfPreview && !showNaming && (
         <PdfPreviewModal
-          data={data}
+          data={{ ...data, sections: exportSections }}
           onClose={() => setShowPdfPreview(false)}
           onDownload={() => setShowNaming('pdf')}
         />

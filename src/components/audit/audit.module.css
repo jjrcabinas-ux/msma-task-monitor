@@ -1515,3 +1515,46 @@
   font-size: 0.9rem;
   color: #64748b;
 }
+
+/* Tab-select export modal */
+.tabSelectList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  border: 1px solid #e6e9ef;
+  border-radius: 10px;
+  padding: 6px;
+}
+
+.tabSelectRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.tabSelectRow:hover {
+  background: #f1f5f9;
+}
+
+.tabSelectRow input {
+  width: 15px;
+  height: 15px;
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+.tabSelectAllRow {
+  font-weight: 700;
+  margin-bottom: 8px;
+  border: 1px solid #e6e9ef;
+  border-radius: 10px;
+  background: #f8fafc;
+}

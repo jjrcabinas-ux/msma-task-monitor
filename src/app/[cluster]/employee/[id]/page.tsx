@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getEmployeeWithTasks, getRoster } from '@/lib/data';
+import { getEmployeeWithTasks, getRosterWithTasks } from '@/lib/data';
 import { isClusterSlug } from '@/lib/clusters';
 import { todayISO } from '@/lib/dates';
 import { statusCounts, displayName } from '@/lib/analytics';
@@ -30,8 +30,14 @@ export default async function EmployeePage({
   if (!data) notFound();
   const { employee, tasks } = data;
 
-  const roster = await getRoster(cluster);
-  const colorIndex = roster.findIndex((e) => e.id === id);
+  const roster = await getRosterWithTasks(cluster);
+  const colorIndex = roster.findIndex((r) => r.employee.id === id);
+
+  // Leaderboard rank: position by total completed tasks across the team
+  const doneCounts = roster
+    .map((r) => ({ id: r.employee.id, done: r.tasks.filter((t) => t.status === 'Done').length }))
+    .sort((a, b) => b.done - a.done);
+  const leaderboardRank = doneCounts.findIndex((r) => r.id === id) + 1;
 
   const isAdmin = await isAdminUnlocked(cluster);
   const session = await getMemberSession(cluster);
@@ -58,12 +64,12 @@ export default async function EmployeePage({
               fallbackLetter={name[0]}
               fallbackColor={employeeColor(colorIndex)}
               canEdit={canEdit}
-              size={52}
+              size={84}
             />
             <div>
               <h1 className={styles.h1}>{name}</h1>
               <div className={styles.subRow}>
-                {total} tasks · {completionPct}% complete
+                <b>{total}</b> tasks · <b>{completionPct}%</b> completion rate · <b>#{leaderboardRank}</b> leaderboard
               </div>
             </div>
           </div>

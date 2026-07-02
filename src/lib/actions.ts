@@ -287,21 +287,39 @@ async function syncPartnerBlockerTask(taskId: string) {
   }
 }
 
-async function resolveBlockerIfPartnerDone(partnerTaskId: string) {
-  const t = await prisma.task.findUnique({
+const ADS_ONGOING_MARKER = ' — ADS Ongoing';
+
+/* Mirrors Atty's escalation status onto the member's blocked task:
+   Done    → member task Done, blocker cleared.
+   Ongoing → blocker restored/kept with an "ADS Ongoing" note appended.
+   Pending → blocker restored/kept as originally written (reverts a Done). */
+async function syncBlockerFromEscalation(partnerTaskId: string) {
+  const esc = await prisma.task.findUnique({
     where: { id: partnerTaskId },
-    select: { status: true, blockerForTaskId: true },
+    select: { status: true, blockerForTaskId: true, taskDetails: true },
   });
-  if (!t?.blockerForTaskId || t.status !== 'Done') return;
-  await prisma.task.update({
-    where: { id: t.blockerForTaskId },
-    data: { status: 'Done', helpNeeded: '' },
-  });
-  // Keep any linked Special Engagement task in step too
-  await prisma.engagementTask.updateMany({
-    where: { linkedTaskId: t.blockerForTaskId },
-    data: { status: 'Done' },
-  });
+  if (!esc?.blockerForTaskId) return;
+  const src = await prisma.task.findUnique({ where: { id: esc.blockerForTaskId } });
+  if (!src) return;
+
+  async function syncSeStatus(status: string) {
+    await prisma.engagementTask.updateMany({ where: { linkedTaskId: src!.id }, data: { status } });
+  }
+
+  if (esc.status === 'Done') {
+    await prisma.task.update({ where: { id: src.id }, data: { status: 'Done', helpNeeded: '' } });
+    await syncSeStatus('Done');
+    return;
+  }
+
+  // Original blocker text lives in the escalation's details (marker stripped if present)
+  const baseHelp = (esc.taskDetails || src.helpNeeded).split(ADS_ONGOING_MARKER).join('').trim();
+  const helpNeeded = esc.status === 'Ongoing' ? `${baseHelp}${ADS_ONGOING_MARKER}` : baseHelp;
+  // Reverting a Done escalation re-opens the member's task
+  const status = src.status === 'Done' ? 'Pending' : src.status;
+
+  await prisma.task.update({ where: { id: src.id }, data: { status, helpNeeded } });
+  if (src.status === 'Done') await syncSeStatus('Pending');
 }
 
 export async function addTaskAction(
@@ -373,7 +391,7 @@ export async function updateTaskAction(
   // and if the partner just finished theirs, resolve the member's task.
   if (patch.helpNeeded !== undefined || patch.status !== undefined) {
     await syncPartnerBlockerTask(taskId);
-    if (patch.status === 'Done') await resolveBlockerIfPartnerDone(taskId);
+    if (patch.status !== undefined) await syncBlockerFromEscalation(taskId);
   }
 
   revalidateAll();

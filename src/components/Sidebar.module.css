@@ -225,14 +225,21 @@
 }
 
 .dropdownPanel {
-  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.25s ease-out, visibility 0.25s ease-out, transform 0.25s ease-out;
   overflow: hidden;
-  transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 0;
 }
 
 .dropdownPanelOpen {
-  max-height: 600px;
-  transition: max-height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 0.25s ease-out, visibility 0.25s ease-out, transform 0.25s ease-out;
+  overflow: visible;
+  max-height: none;
 }
 
 .subNav {

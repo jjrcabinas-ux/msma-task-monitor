@@ -3,6 +3,9 @@ import { CLUSTERS, isClusterSlug, clusterUnlockCookieName, type ClusterSlug } fr
 
 const SESSION_SECRET = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || 'msma-task-monitor-dev-secret';
 
+// Must match SESSION_VERSION in src/lib/memberAuth.ts.
+const SESSION_VERSION = 'v2';
+
 function memberSessionCookieName(cluster: string): string {
   return `member_session_${cluster}`;
 }
@@ -15,7 +18,7 @@ async function hmacHex(message: string): Promise<string> {
     false,
     ['sign']
   );
-  const sigBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message));
+  const sigBuffer = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${SESSION_VERSION}:${message}`));
   return Array.from(new Uint8Array(sigBuffer))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');

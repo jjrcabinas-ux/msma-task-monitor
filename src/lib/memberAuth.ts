@@ -20,8 +20,12 @@ export function verifyPassword(plain: string, stored: string): boolean {
   return timingSafeEqual(candidate, expected);
 }
 
+// Bump to force-invalidate ALL existing sessions (members and admin unlocks).
+// Must match SESSION_VERSION in src/proxy.ts.
+const SESSION_VERSION = 'v2';
+
 function sign(value: string): string {
-  return createHmac('sha256', SESSION_SECRET).update(value).digest('hex');
+  return createHmac('sha256', SESSION_SECRET).update(`${SESSION_VERSION}:${value}`).digest('hex');
 }
 
 function memberSessionCookieName(cluster: ClusterSlug): string {

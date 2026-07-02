@@ -37,6 +37,9 @@ export async function setMemberSession(cluster: ClusterSlug, employeeId: string)
     path: '/',
     maxAge: SESSION_MAX_AGE_SECONDS,
   });
+  // Logging in as a member drops any admin unlock — you are one or the other,
+  // otherwise a member login would silently keep cluster-admin privileges.
+  cookieStore.delete(clusterUnlockCookieName(cluster));
 }
 
 export async function clearMemberSession(cluster: ClusterSlug): Promise<void> {

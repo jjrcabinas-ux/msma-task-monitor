@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   description: 'Employee task monitoring dashboard',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

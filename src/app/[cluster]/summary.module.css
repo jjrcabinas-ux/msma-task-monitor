@@ -1,5 +1,5 @@
 .page {
-  padding: clamp(18px, 2.5vw, 34px) clamp(18px, 2.5vw, 34px) 56px;
+  padding: 2rem 2.2rem 4rem;
   width: 100%;
   box-sizing: border-box;
 }

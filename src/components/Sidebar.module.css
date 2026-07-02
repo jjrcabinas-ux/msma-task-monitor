@@ -1,5 +1,7 @@
 .aside {
-  width: clamp(200px, 18vw, 300px);
+  width: 18%;
+  min-width: 200px;
+  max-width: 280px;
   flex: none;
   background: #0f172a;
   color: #e2e8f0;
@@ -110,7 +112,7 @@
 }
 
 .brand {
-  padding: clamp(14px, 1.8vw, 28px) clamp(10px, 1.4vw, 20px) clamp(12px, 1.6vw, 24px);
+  padding: 1.6rem 1.2rem 1.4rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
@@ -121,7 +123,7 @@
 }
 
 .logo {
-  width: clamp(36px, 4.5vw, 68px);
+  width: 3.5rem;
   height: auto;
   flex: none;
 }
@@ -131,7 +133,7 @@
 }
 
 .teamName {
-  font-size: clamp(12px, 1.2vw, 17px);
+  font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.3px;
   color: #fff;
@@ -142,7 +144,7 @@
 }
 
 .subtitle {
-  font-size: clamp(9px, 0.8vw, 11.5px);
+  font-size: 0.72rem;
   color: #38bdf8;
   margin-top: 4px;
   letter-spacing: 1.2px;
@@ -151,7 +153,7 @@
 }
 
 .nav {
-  padding: clamp(6px, 0.8vw, 12px) clamp(4px, 0.6vw, 10px);
+  padding: 0.7rem 0.5rem;
   flex: 1;
   overflow-y: auto;
 }
@@ -193,7 +195,7 @@
 .navLabel {
   flex: 1;
   min-width: 0;
-  font-size: clamp(11px, 1vw, 13.5px);
+  font-size: 0.88rem;
   font-weight: 600;
   white-space: normal;
   line-height: 1.35;

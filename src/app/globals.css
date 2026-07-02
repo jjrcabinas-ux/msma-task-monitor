@@ -10,7 +10,9 @@
   padding: 0;
 }
 
+/* Fluid base font: 13px on small laptops → 14px on standard → 15px on large screens */
 html {
+  font-size: clamp(13px, 1vw, 15px);
   width: 100%;
   overflow-x: hidden;
 }
@@ -21,7 +23,7 @@ body {
   background: #eef1f5;
   color: #1e293b;
   -webkit-font-smoothing: antialiased;
-  font-size: 14px;
+  font-size: 1rem;
   line-height: 1.5;
 }
 

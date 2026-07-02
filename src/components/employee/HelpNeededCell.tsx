@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { updateTaskAction } from '@/lib/actions';
 import styles from '@/app/[cluster]/employee/[id]/employee.module.css';
 
+const TRUNCATE_LEN = 60;
+
 export default function HelpNeededCell({
   taskId,
   initialValue,
@@ -15,6 +17,7 @@ export default function HelpNeededCell({
 }) {
   const [value, setValue] = useState(initialValue);
   const [editing, setEditing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   function save(next: string) {
     setValue(next);
@@ -47,9 +50,27 @@ export default function HelpNeededCell({
     );
   }
 
+  const isLong = value.length > TRUNCATE_LEN;
+  const displayed = isLong && !expanded ? value.slice(0, TRUNCATE_LEN).trimEnd() + '…' : value;
+
   return (
-    <div className={styles.helpText} onClick={() => !readOnly && setEditing(true)} style={readOnly ? { cursor: 'default' } : undefined}>
-      {value}
+    <div>
+      <div
+        className={styles.helpText}
+        onClick={() => !readOnly && setEditing(true)}
+        style={readOnly ? { cursor: 'default' } : undefined}
+      >
+        {displayed}
+      </div>
+      {isLong && (
+        <button
+          type="button"
+          className={styles.seeMoreLink}
+          onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
+        >
+          {expanded ? 'see less' : 'see more'}
+        </button>
+      )}
     </div>
   );
 }

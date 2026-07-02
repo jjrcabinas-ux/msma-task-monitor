@@ -224,9 +224,9 @@ export default function DeliverablesTable({
           <colgroup>
             <col style={{ width: '8%' }} />
             <col style={{ width: '8%' }} />
-            <col style={{ width: '46%' }} />
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '25%' }} />
+            <col style={{ width: '44%' }} />
+            <col style={{ width: '13%', minWidth: '110px' }} />
+            <col style={{ width: '24%' }} />
             <col style={{ width: '3%' }} />
           </colgroup>
           <thead>

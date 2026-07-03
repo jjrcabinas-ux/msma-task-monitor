@@ -277,8 +277,10 @@
   text-overflow: ellipsis;
   letter-spacing: 0.4px;
   font-weight: 700;
-  line-height: 1.1;
+  line-height: 1;
   text-transform: uppercase;
+  margin: 0;
+  padding: 0;
 }
 
 .brandText {

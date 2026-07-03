@@ -252,6 +252,12 @@
 }
 
 /* ── ADS-cluster-only brand tweaks (pilot) ── */
+/* ADS: let the logo hug the frozen-column divider on the top row, Gmail-style */
+.asideAds .brand {
+  padding-left: 12px;
+  padding-top: 1.2rem;
+}
+
 .brandRowAds {
   gap: 6px; /* pull the MS logo closer to the collapse icon */
 }

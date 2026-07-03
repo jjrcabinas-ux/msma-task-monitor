@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import type { ClusterSlug } from '@/lib/clusters';
 import { getChatMessagesAction, sendChatMessageAction, type ChatMessageDTO } from '@/lib/chatActions';
 import styles from './ChatWidget.module.css';
 
-const POLL_MS = 4000;
+const POLL_OPEN_MS = 4000;
+const POLL_CLOSED_MS = 10000;
+const CHAT_TITLE = 'MSMA Official';
 
 function timeLabel(iso: string) {
   const d = new Date(iso);
@@ -28,49 +31,60 @@ export default function ChatWidget({
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [lastReadIso, setLastReadIso] = useState<string>('');
   const listRef = useRef<HTMLDivElement>(null);
-  const lastIsoRef = useRef<string | undefined>(undefined);
+  const openRef = useRef(open);
+  openRef.current = open;
+
+  const readKey = `chat_last_read_${cluster}_${viewerId ?? 'admin'}`;
 
   function isMine(m: ChatMessageDTO) {
     if (viewerId) return m.senderId === viewerId;
     return isAdmin && m.senderId === null;
   }
 
-  function appendNew(incoming: ChatMessageDTO[]) {
-    if (incoming.length === 0) return;
-    setMessages((prev) => {
-      const seen = new Set(prev.map((m) => m.id));
-      const fresh = incoming.filter((m) => !seen.has(m.id));
-      return fresh.length ? [...prev, ...fresh] : prev;
+  function markRead(msgs: ChatMessageDTO[]) {
+    const newest = msgs[msgs.length - 1]?.createdAt;
+    if (!newest) return;
+    setLastReadIso((prev) => {
+      const next = newest > prev ? newest : prev;
+      try { localStorage.setItem(readKey, next); } catch {}
+      return next;
     });
-    lastIsoRef.current = incoming[incoming.length - 1].createdAt;
   }
 
-  // Load + poll while the panel is open
+  // Load stored read marker once
   useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
+    try { setLastReadIso(localStorage.getItem(readKey) ?? ''); } catch {}
+  }, [readKey]);
 
-    async function fetchMessages(initial: boolean) {
-      const result = await getChatMessagesAction(cluster, initial ? undefined : lastIsoRef.current);
-      if (cancelled || !Array.isArray(result)) return;
-      if (initial) {
+  // Single polling loop; faster while open. Runs even when closed so the
+  // unread badge and preview stay current.
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+
+    async function tick() {
+      const result = await getChatMessagesAction(cluster);
+      if (cancelled) return;
+      if (Array.isArray(result)) {
         setMessages(result);
-        if (result.length) lastIsoRef.current = result[result.length - 1].createdAt;
-      } else {
-        appendNew(result);
+        if (openRef.current) markRead(result);
       }
+      timer = setTimeout(tick, openRef.current ? POLL_OPEN_MS : POLL_CLOSED_MS);
     }
 
-    fetchMessages(true);
-    const interval = setInterval(() => fetchMessages(false), POLL_MS);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [open, cluster]);
+    tick();
+    return () => { cancelled = true; clearTimeout(timer); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cluster, open]);
 
-  // Stick to the bottom when messages change
+  // Opening marks everything read; stick to the bottom on changes
   useEffect(() => {
+    if (open) markRead(messages);
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, open]);
 
   async function send() {
@@ -79,16 +93,28 @@ export default function ChatWidget({
     setSending(true);
     setDraft('');
     const result = await sendChatMessageAction(cluster, text);
-    if (result && 'id' in result) appendNew([result]);
+    if (result && 'id' in result) {
+      setMessages((prev) => (prev.some((m) => m.id === result.id) ? prev : [...prev, result]));
+      markRead([result]);
+    }
     setSending(false);
   }
 
+  const unread = messages.filter((m) => !isMine(m) && m.createdAt > lastReadIso).length;
+  const last = messages[messages.length - 1];
+  const preview = last
+    ? `${isMine(last) ? 'You' : last.senderName}: ${last.text}`
+    : 'No messages yet';
+
   return (
     <div className={styles.dock}>
-      {open && (
+      {open ? (
         <div className={styles.panel}>
           <div className={styles.header}>
-            <span className={styles.headerTitle}>Team Chat</span>
+            <span className={styles.headerLogo}>
+              <Image src="/logo.png" alt="MSMA" width={26} height={26} className={styles.headerLogoImg} />
+            </span>
+            <span className={styles.headerTitle}>{CHAT_TITLE}</span>
             <button type="button" className={styles.headerClose} onClick={() => setOpen(false)} aria-label="Close chat">
               ×
             </button>
@@ -137,11 +163,21 @@ export default function ChatWidget({
             </button>
           </div>
         </div>
+      ) : (
+        <button type="button" className={styles.convoCard} onClick={() => setOpen(true)} aria-label="Open team chat">
+          <span className={styles.convoAvatar}>
+            <Image src="/logo.png" alt="MSMA" width={40} height={40} className={styles.convoAvatarImg} />
+          </span>
+          <span className={styles.convoBody}>
+            <span className={`${styles.convoTitle} ${unread > 0 ? styles.convoUnread : ''}`}>{CHAT_TITLE}</span>
+            <span className={`${styles.convoPreview} ${unread > 0 ? styles.convoUnread : ''}`}>
+              {preview}
+              {last ? ` · ${timeLabel(last.createdAt)}` : ''}
+            </span>
+          </span>
+          {unread > 0 && <span className={styles.unreadBadge}>{unread > 99 ? '99+' : unread}</span>}
+        </button>
       )}
-
-      <button type="button" className={styles.fab} onClick={() => setOpen((v) => !v)} aria-label="Team chat">
-        {open ? '×' : '💬'}
-      </button>
     </div>
   );
 }

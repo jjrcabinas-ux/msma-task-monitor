@@ -198,3 +198,109 @@
     width: calc(100vw - 32px);
   }
 }
+
+/* Messenger-style collapsed conversation card */
+.convoCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 300px;
+  background: #fff;
+  border: 1px solid #e6e9ef;
+  border-radius: 999px;
+  padding: 8px 14px 8px 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
+  text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.convoCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.28);
+}
+
+.convoAvatar {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e6e9ef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.convoAvatarImg {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.convoBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.convoTitle {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.convoPreview {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Unread: everything bold, Messenger style */
+.convoUnread {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.unreadBadge {
+  flex: none;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+.headerLogo {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex: none;
+  margin-right: 8px;
+}
+
+.headerLogoImg {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}

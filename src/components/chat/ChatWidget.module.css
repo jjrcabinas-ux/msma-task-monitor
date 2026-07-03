@@ -265,7 +265,8 @@
   align-items: center;
   gap: 10px;
   width: fit-content;
-  max-width: 300px;
+  /* stays compact — long previews get ellipsized instead of widening the card */
+  max-width: 230px;
   background: #fff;
   border: 1px solid #e6e9ef;
   border-radius: 999px;

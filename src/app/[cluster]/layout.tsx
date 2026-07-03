@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
+import ChatWidget from '@/components/chat/ChatWidget';
 import { getRoster } from '@/lib/data';
 import { isClusterSlug, clusterName } from '@/lib/clusters';
 import { todayISO, fmtShort, isoToParts } from '@/lib/dates';
@@ -61,6 +62,10 @@ export default async function ClusterLayout({
         viewerName={viewer ? displayName(viewer) : null}
       />
       <main className={styles.main}>{children}</main>
+      {/* Team chat — piloting on ADS cluster only */}
+      {cluster === 'ads' && (
+        <ChatWidget cluster={cluster} viewerId={session?.employeeId ?? null} isAdmin={isAdmin} />
+      )}
     </div>
   );
 }

@@ -23,9 +23,22 @@ model Employee {
   photo         String?
   createdAt     DateTime @default(now())
   tasks         Task[]
+  chatMessages  ChatMessage[]
 
   @@unique([cluster, name], name: "cluster_name")
   @@index([cluster])
+}
+
+model ChatMessage {
+  id         String    @id @default(cuid())
+  cluster    String
+  senderId   String?
+  sender     Employee? @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  senderName String
+  text       String
+  createdAt  DateTime  @default(now())
+
+  @@index([cluster, createdAt])
 }
 
 model Task {

@@ -48,6 +48,8 @@ export default function Sidebar({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  // Cosmetic sidebar-brand tweaks are piloted on the ADS cluster only (see memory)
+  const isAds = cluster === 'ads';
   const [adding, setAdding] = useState(false);
   const [form, setForm] = useState({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
   const [error, setError] = useState('');
@@ -253,7 +255,7 @@ export default function Sidebar({
         <button className={styles.closeDrawerBtn} onClick={() => setMobileOpen(false)} aria-label="Close menu">✕</button>
 
         <div className={styles.brand}>
-          <div className={styles.brandRow}>
+          <div className={`${styles.brandRow} ${isAds ? styles.brandRowAds : ''}`}>
             <button
               type="button"
               className={styles.collapseBtn}
@@ -265,9 +267,9 @@ export default function Sidebar({
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={styles.logo} />
+            <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={`${styles.logo} ${isAds ? styles.logoAds : ''}`} />
             <div className={styles.brandText}>
-              <div className={styles.teamName}>{clusterLabel}</div>
+              <div className={`${styles.teamName} ${isAds ? styles.teamNameAds : ''}`}>{clusterLabel}</div>
               <div className={styles.subtitle}>Task Monitoring</div>
             </div>
           </div>

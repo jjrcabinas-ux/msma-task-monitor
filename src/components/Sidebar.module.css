@@ -200,6 +200,23 @@
   flex: none;
 }
 
+/* ── ADS-cluster-only brand tweaks (pilot) ── */
+.brandRowAds {
+  gap: 6px; /* pull the MS logo closer to the collapse icon */
+}
+.brandRowAds .brandText {
+  margin-left: 8px; /* keep breathing room between logo and title */
+}
+.logoAds {
+  width: 4.2rem; /* 20% larger than the default 3.5rem */
+}
+.teamNameAds {
+  font-size: 0.9rem; /* shrink so "MSMA ADS Cluster" fits without truncating */
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
 .brandText {
   min-width: 0;
 }

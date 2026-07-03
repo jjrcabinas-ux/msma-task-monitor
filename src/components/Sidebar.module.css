@@ -256,26 +256,34 @@
 .asideAds .brand {
   padding-left: 12px;
   padding-top: 1.2rem;
+  padding-bottom: 1rem;
 }
 
 .brandRowAds {
-  gap: 6px; /* pull the MS logo closer to the collapse icon */
+  gap: 2px; /* Much tighter gap - bring text closer to logo */
+  align-items: center;
 }
 .brandRowAds .brandText {
-  margin-left: 8px; /* keep breathing room between logo and title */
+  margin-left: 0; /* Remove margin to reduce space */
 }
 .logoAds {
-  width: 4.2rem; /* 20% larger than the default 3.5rem */
+  width: 3.8rem; /* Slightly smaller from 4.2rem for better proportion */
+  flex-shrink: 0;
 }
 .teamNameAds {
-  font-size: 0.9rem; /* shrink so "MSMA ADS Cluster" fits without truncating */
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
+  font-size: 0.85rem; /* Slightly smaller from 0.9rem */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.2px;
+  font-weight: 700;
 }
 
 .brandText {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .teamName {

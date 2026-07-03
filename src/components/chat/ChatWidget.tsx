@@ -59,6 +59,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
   const [groupName, setGroupName] = useState('');
   const [groupIds, setGroupIds] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
+  const [search, setSearch] = useState('');
 
   const listRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef({ open, view, activeId });
@@ -147,6 +148,9 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
   }
 
   const totalUnread = convos.reduce((sum, c) => sum + c.unread, 0);
+  const filteredConvos = search.trim()
+    ? convos.filter((c) => c.title.toLowerCase().includes(search.trim().toLowerCase()))
+    : convos;
   const latest = convos[0] ?? null;
   const cardPreview = latest?.lastText
     ? `${latest.lastSender}: ${latest.lastText}`
@@ -176,7 +180,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
   return (
     <div className={styles.dock}>
       <div className={styles.panel}>
-        {/* Header: banner click minimizes; back arrow inside views */}
+        {/* Messenger-style header: banner click minimizes; back arrow inside views */}
         <div
           className={styles.header}
           onClick={() => setOpen(false)}
@@ -188,23 +192,20 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
           {view !== 'list' && (
             <button
               type="button"
-              className={styles.headerBack}
+              className={styles.iconBtn}
               onClick={(e) => { e.stopPropagation(); setView('list'); setActiveId(null); refreshConvos(); }}
               aria-label="Back to conversations"
             >
               ‹
             </button>
           )}
-          <span className={styles.headerLogo}>
-            <Image src="/logo.png" alt="MSMA" width={26} height={26} className={styles.headerLogoImg} />
-          </span>
           <span className={styles.headerTitle}>
-            {view === 'convo' ? activeTitle || CHAT_TITLE : view === 'compose' ? 'New message' : CHAT_TITLE}
+            {view === 'convo' ? activeTitle || 'Chats' : view === 'compose' ? 'New message' : 'Chats'}
           </span>
           {view === 'list' && (
             <button
               type="button"
-              className={styles.headerCompose}
+              className={styles.iconBtn}
               onClick={(e) => { e.stopPropagation(); openCompose(); }}
               title="New message or group"
               aria-label="New message"
@@ -214,7 +215,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
           )}
           <button
             type="button"
-            className={styles.headerClose}
+            className={styles.iconBtn}
             onClick={(e) => { e.stopPropagation(); setOpen(false); }}
             aria-label="Close chat"
           >
@@ -222,16 +223,32 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
           </button>
         </div>
 
+        {/* Search bar (inbox only) */}
+        {view === 'list' && (
+          <div className={styles.searchWrap} onClick={(e) => e.stopPropagation()}>
+            <span className={styles.searchIcon}>🔍</span>
+            <input
+              className={styles.searchInput}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search Chats"
+            />
+          </div>
+        )}
+
         {/* ── Inbox ── */}
         {view === 'list' && (
           <div className={styles.inbox}>
+            {filteredConvos.length === 0 && convos.length > 0 && (
+              <div className={styles.empty}>No chats match “{search}”.</div>
+            )}
             {convos.length === 0 && (
               <div className={styles.empty}>
                 No conversations yet.
                 <button type="button" className={styles.emptyCta} onClick={openCompose}>Start one ✎</button>
               </div>
             )}
-            {convos.map((c) => (
+            {filteredConvos.map((c) => (
               <button key={c.id} type="button" className={styles.inboxRow} onClick={() => openConvo(c.id)}>
                 {c.isGroup ? (
                   <span className={styles.avatar} style={{ width: 38, height: 38, fontSize: 17 }}>👥</span>

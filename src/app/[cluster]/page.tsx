@@ -84,7 +84,7 @@ export default async function SummaryPage({
 
   return (
     <div className={styles.page}>
-      <div className={styles.headerRow}>
+      <div className={`${styles.headerRow} ${cluster === 'ads' ? styles.headerRowSticky : ''}`}>
         <div>
           <h1 className={styles.h1}>Team Summary</h1>
           <div className={styles.dateLabel}>{fmtLongFromIso(today)}</div>

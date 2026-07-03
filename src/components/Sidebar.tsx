@@ -254,11 +254,6 @@ export default function Sidebar({
 
         <div className={styles.brand}>
           <div className={styles.brandRow}>
-            <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={styles.logo} />
-            <div className={styles.brandText}>
-              <div className={styles.teamName}>{clusterLabel}</div>
-              <div className={styles.subtitle}>Task Monitoring</div>
-            </div>
             <button
               type="button"
               className={styles.collapseBtn}
@@ -266,8 +261,15 @@ export default function Sidebar({
               title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
-              {collapsed ? '»' : '«'}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" width="21" height="21" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
             </button>
+            <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={styles.logo} />
+            <div className={styles.brandText}>
+              <div className={styles.teamName}>{clusterLabel}</div>
+              <div className={styles.subtitle}>Task Monitoring</div>
+            </div>
           </div>
         </div>
 

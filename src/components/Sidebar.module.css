@@ -55,13 +55,12 @@
 
 .collapseBtn {
   flex: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.08);
+  background: transparent;
   color: #cbd5e1;
-  font-size: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -69,7 +68,7 @@
 }
 
 .collapseBtn:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
 }
 

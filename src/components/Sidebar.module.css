@@ -260,23 +260,24 @@
 }
 
 .brandRowAds {
-  gap: 2px; /* Much tighter gap - bring text closer to logo */
+  gap: 2px; /* Much tighter gap */
   align-items: center;
 }
 .brandRowAds .brandText {
-  margin-left: 0; /* Remove margin to reduce space */
+  margin-left: 0;
 }
 .logoAds {
-  width: 3.8rem; /* Slightly smaller from 4.2rem for better proportion */
+  width: 3.8rem;
   flex-shrink: 0;
 }
 .teamNameAds {
-  font-size: 0.85rem; /* Slightly smaller from 0.9rem */
+  font-size: 1.2rem; /* Larger to match logo "S" visual height */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: 0.2px;
   font-weight: 700;
+  line-height: 1;
 }
 
 .brandText {
@@ -284,6 +285,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: flex-start;
 }
 
 .teamName {

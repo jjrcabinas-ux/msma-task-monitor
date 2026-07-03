@@ -8,7 +8,7 @@ import styles from './ChatWidget.module.css';
 
 const POLL_OPEN_MS = 4000;
 const POLL_CLOSED_MS = 10000;
-const CHAT_TITLE = 'MSMA Official';
+const CHAT_TITLE = 'MSMA ADS Cluster';
 
 function timeLabel(iso: string) {
   const d = new Date(iso);

@@ -575,3 +575,80 @@
   font-weight: 700;
   color: #64748b;
 }
+
+/* Message requests */
+.requestRow {
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+}
+
+.requestActions {
+  display: flex;
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.acceptBtn {
+  flex: none;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 7px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.acceptBtn:hover {
+  background: #1d4ed8;
+}
+
+.declineBtn {
+  flex: none;
+  border: 1px solid #dbe1ea;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 7px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.declineBtn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.pendingBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid #fde68a;
+  background: #fffbeb;
+  flex: none;
+}
+
+.pendingText {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.clusterTag {
+  flex: none;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #2563eb;
+  background: #eff6ff;
+  border-radius: 5px;
+  padding: 2px 6px;
+}

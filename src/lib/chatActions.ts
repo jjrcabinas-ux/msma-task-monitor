@@ -28,9 +28,11 @@ export type ConversationSummary = {
   lastMine: boolean;
   lastAt: string | null;
   unread: number;
+  /** true = message request awaiting the viewer's accept/decline */
+  pending: boolean;
 };
 
-export type ChatContact = { id: string; name: string; nickname: string; photo: string | null };
+export type ChatContact = { id: string; name: string; nickname: string; photo: string | null; cluster: string };
 
 const MAX_TEXT = 2000;
 const PAGE = 100;
@@ -53,17 +55,20 @@ async function getMembership(conversationId: string, employeeId: string) {
   });
 }
 
-/* Roster of possible chat partners (everyone in the cluster except the viewer) */
+/* Roster of possible chat partners — all clusters (cross-cluster DMs start
+   as message requests on the recipient's side). Same-cluster people first. */
 export async function getChatContactsAction(cluster: ClusterSlug): Promise<ChatContact[] | { error: string }> {
   const viewer = await getViewer(cluster);
   if (!viewer) return { error: 'Chat unavailable.' };
   const employees = await prisma.employee.findMany({
-    where: { cluster, id: { not: viewer.id } },
-    orderBy: { name: 'asc' },
-    select: { id: true, name: true, nickname: true, photo: true },
+    where: { id: { not: viewer.id } },
+    orderBy: [{ cluster: 'asc' }, { name: 'asc' }],
+    select: { id: true, name: true, nickname: true, photo: true, cluster: true },
   });
   // Full name displayed; nickname kept for search matching
-  return employees.map((e) => ({ id: e.id, name: e.name, nickname: e.nickname, photo: e.photo }));
+  return employees
+    .sort((a, b) => Number(b.cluster === cluster) - Number(a.cluster === cluster))
+    .map((e) => ({ id: e.id, name: e.name, nickname: e.nickname, photo: e.photo, cluster: e.cluster }));
 }
 
 /* Inbox: all conversations the viewer belongs to, newest activity first */
@@ -72,7 +77,7 @@ export async function listConversationsAction(cluster: ClusterSlug): Promise<Con
   if (!viewer) return { error: 'Chat unavailable.' };
 
   const memberships = await prisma.conversationMember.findMany({
-    where: { employeeId: viewer.id, conversation: { cluster } },
+    where: { employeeId: viewer.id },
     include: {
       conversation: {
         include: {
@@ -112,6 +117,7 @@ export async function listConversationsAction(cluster: ClusterSlug): Promise<Con
         lastMine: last?.senderId === viewer.id,
         lastAt: (last?.createdAt ?? c.lastMessageAt).toISOString(),
         unread,
+        pending: !m.accepted,
         _sort: (last?.createdAt ?? c.lastMessageAt).getTime(),
       };
     }),
@@ -130,11 +136,10 @@ export async function openDirectConversationAction(
   const viewer = await getViewer(cluster);
   if (!viewer) return { error: 'Chat unavailable.' };
   const other = await prisma.employee.findUnique({ where: { id: otherEmployeeId }, select: { cluster: true } });
-  if (!other || other.cluster !== cluster || otherEmployeeId === viewer.id) return { error: 'Member not found.' };
+  if (!other || otherEmployeeId === viewer.id) return { error: 'Member not found.' };
 
   const existing = await prisma.conversation.findFirst({
     where: {
-      cluster,
       isGroup: false,
       AND: [
         { members: { some: { employeeId: viewer.id } } },
@@ -149,7 +154,13 @@ export async function openDirectConversationAction(
     data: {
       cluster,
       isGroup: false,
-      members: { create: [{ employeeId: viewer.id }, { employeeId: otherEmployeeId }] },
+      members: {
+        create: [
+          { employeeId: viewer.id },
+          // Cross-cluster DMs land as a message request on the recipient's side
+          { employeeId: otherEmployeeId, accepted: other.cluster === cluster },
+        ],
+      },
     },
     select: { id: true },
   });
@@ -169,30 +180,77 @@ export async function createGroupConversationAction(
 
   const uniqueIds = Array.from(new Set(memberIds.filter((id) => id !== viewer.id)));
   if (uniqueIds.length === 0) return { error: 'Select at least one member.' };
-  const valid = await prisma.employee.count({ where: { cluster, id: { in: uniqueIds } } });
-  if (valid !== uniqueIds.length) return { error: 'Some selected members were not found.' };
+  const selected = await prisma.employee.findMany({
+    where: { id: { in: uniqueIds } },
+    select: { id: true, cluster: true },
+  });
+  if (selected.length !== uniqueIds.length) return { error: 'Some selected members were not found.' };
 
   const created = await prisma.conversation.create({
     data: {
       cluster,
       isGroup: true,
       name: groupName,
-      members: { create: [viewer.id, ...uniqueIds].map((employeeId) => ({ employeeId })) },
+      members: {
+        create: [
+          { employeeId: viewer.id },
+          // Cross-cluster invitees get the group as a message request
+          ...selected.map((e) => ({ employeeId: e.id, accepted: e.cluster === cluster })),
+        ],
+      },
     },
     select: { id: true },
   });
   return { id: created.id };
 }
 
+/* Accept a message request */
+export async function acceptConversationAction(
+  cluster: ClusterSlug,
+  conversationId: string,
+): Promise<{ ok: true } | { error: string }> {
+  const viewer = await getViewer(cluster);
+  if (!viewer) return { error: 'Chat unavailable.' };
+  const membership = await getMembership(conversationId, viewer.id);
+  if (!membership) return { error: 'Conversation not found.' };
+  await prisma.conversationMember.update({
+    where: { conversationId_employeeId: { conversationId, employeeId: viewer.id } },
+    data: { accepted: true },
+  });
+  return { ok: true };
+}
+
+/* Decline a message request: DMs are deleted entirely; group invites just
+   remove the viewer's membership. */
+export async function declineConversationAction(
+  cluster: ClusterSlug,
+  conversationId: string,
+): Promise<{ ok: true } | { error: string }> {
+  const viewer = await getViewer(cluster);
+  if (!viewer) return { error: 'Chat unavailable.' };
+  const membership = await getMembership(conversationId, viewer.id);
+  if (!membership) return { error: 'Conversation not found.' };
+  if (membership.accepted) return { error: 'Conversation already accepted.' };
+
+  if (membership.conversation.isGroup) {
+    await prisma.conversationMember.delete({
+      where: { conversationId_employeeId: { conversationId, employeeId: viewer.id } },
+    });
+  } else {
+    await prisma.conversation.delete({ where: { id: conversationId } });
+  }
+  return { ok: true };
+}
+
 /* Messages of one conversation; also marks it read for the viewer */
 export async function getConversationMessagesAction(
   cluster: ClusterSlug,
   conversationId: string,
-): Promise<{ title: string; isGroup: boolean; messages: ChatMessageDTO[] } | { error: string }> {
+): Promise<{ title: string; isGroup: boolean; pending: boolean; messages: ChatMessageDTO[] } | { error: string }> {
   const viewer = await getViewer(cluster);
   if (!viewer) return { error: 'Chat unavailable.' };
   const membership = await getMembership(conversationId, viewer.id);
-  if (!membership || membership.conversation.cluster !== cluster) return { error: 'Conversation not found.' };
+  if (!membership) return { error: 'Conversation not found.' };
 
   const [conversation, messages] = await Promise.all([
     prisma.conversation.findUnique({
@@ -223,6 +281,7 @@ export async function getConversationMessagesAction(
   return {
     title,
     isGroup: conversation.isGroup,
+    pending: !membership.accepted,
     messages: messages.reverse().map((m) => ({
       id: m.id,
       senderId: m.senderId,
@@ -242,7 +301,8 @@ export async function sendMessageAction(
   const viewer = await getViewer(cluster);
   if (!viewer) return { error: 'Chat unavailable.' };
   const membership = await getMembership(conversationId, viewer.id);
-  if (!membership || membership.conversation.cluster !== cluster) return { error: 'Conversation not found.' };
+  if (!membership) return { error: 'Conversation not found.' };
+  if (!membership.accepted) return { error: 'Accept the message request first.' };
 
   const trimmed = text.trim().slice(0, MAX_TEXT);
   if (!trimmed) return { error: 'Message is empty.' };

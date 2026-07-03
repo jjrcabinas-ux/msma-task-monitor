@@ -10,6 +10,8 @@ import {
   createGroupConversationAction,
   getConversationMessagesAction,
   sendMessageAction,
+  acceptConversationAction,
+  declineConversationAction,
   type ChatMessageDTO,
   type ConversationSummary,
   type ChatContact,
@@ -51,6 +53,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
   const [contacts, setContacts] = useState<ChatContact[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeTitle, setActiveTitle] = useState('');
+  const [activePending, setActivePending] = useState(false);
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -77,6 +80,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
     if ('messages' in result) {
       setMessages(result.messages);
       setActiveTitle(result.title);
+      setActivePending(result.pending);
     }
   }, [cluster]);
 
@@ -143,6 +147,18 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
     if ('id' in result) await openConvo(result.id);
   }
 
+  async function acceptRequest(id: string) {
+    await acceptConversationAction(cluster, id);
+    if (activeId === id) setActivePending(false);
+    refreshConvos();
+  }
+
+  async function declineRequest(id: string) {
+    await declineConversationAction(cluster, id);
+    if (activeId === id) { setActiveId(null); setView('list'); }
+    refreshConvos();
+  }
+
   async function send() {
     const text = draft.trim();
     if (!text || sending || !activeId) return;
@@ -155,9 +171,11 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
     setSending(false);
   }
 
-  const totalUnread = convos.reduce((sum, c) => sum + c.unread, 0);
+  const requests = convos.filter((c) => c.pending);
+  const acceptedConvos = convos.filter((c) => !c.pending);
+  const totalUnread = acceptedConvos.reduce((sum, c) => sum + c.unread, 0) + requests.length;
   const q = search.trim().toLowerCase();
-  const filteredConvos = q ? convos.filter((c) => c.title.toLowerCase().includes(q)) : convos;
+  const filteredConvos = q ? acceptedConvos.filter((c) => c.title.toLowerCase().includes(q)) : acceptedConvos;
   // Members matching by full name OR nickname, to start a new chat from search
   const matchingContacts = q
     ? contacts.filter((p) => p.name.toLowerCase().includes(q) || p.nickname.toLowerCase().includes(q))
@@ -278,6 +296,38 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
         {/* ── Inbox ── */}
         {view === 'list' && (
           <div className={styles.inbox}>
+            {/* Message requests from other clusters */}
+            {!q && requests.length > 0 && (
+              <>
+                <div className={styles.searchSection}>Message requests</div>
+                {requests.map((c) => (
+                  <div key={c.id} className={styles.requestRow}>
+                    <button type="button" className={styles.inboxRow} onClick={() => openConvo(c.id)}>
+                      {c.isGroup ? (
+                        <span className={styles.avatar} style={{ width: 38, height: 38, fontSize: 17 }}>👥</span>
+                      ) : (
+                        <Avatar photo={c.photo} letter={c.title[0] ?? '?'} />
+                      )}
+                      <span className={styles.inboxBody}>
+                        <span className={`${styles.inboxTitle} ${styles.convoUnreadText}`}>{c.title}</span>
+                        <span className={`${styles.inboxPreview} ${styles.convoUnreadText}`}>
+                          {c.lastText ? `${c.lastSender}: ${c.lastText}` : 'Wants to chat with you'}
+                        </span>
+                      </span>
+                    </button>
+                    <div className={styles.requestActions}>
+                      <button type="button" className={styles.acceptBtn} onClick={() => acceptRequest(c.id)}>
+                        Accept
+                      </button>
+                      <button type="button" className={styles.declineBtn} onClick={() => declineRequest(c.id)}>
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {filteredConvos.length > 0 && <div className={styles.searchSection}>Chats</div>}
+              </>
+            )}
             {q && filteredConvos.length === 0 && matchingContacts.length === 0 && (
               <div className={styles.empty}>No chats or members match “{search}”.</div>
             )}
@@ -316,6 +366,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
                       <span className={styles.inboxTitle}>{p.name}</span>
                       {p.nickname.trim() && <span className={styles.inboxPreview}>{p.nickname}</span>}
                     </span>
+                    {p.cluster !== cluster && <span className={styles.clusterTag}>{p.cluster.toUpperCase()}</span>}
                   </button>
                 ))}
               </>
@@ -366,11 +417,13 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
                   />
                   <Avatar photo={p.photo} letter={p.name[0]} size={32} />
                   <span className={styles.inboxTitle}>{p.name}</span>
+                  {p.cluster !== cluster && <span className={styles.clusterTag}>{p.cluster.toUpperCase()}</span>}
                 </label>
               ) : (
                 <button key={p.id} type="button" className={styles.inboxRow} onClick={() => startDm(p.id)}>
                   <Avatar photo={p.photo} letter={p.name[0]} size={32} />
                   <span className={styles.inboxTitle}>{p.name}</span>
+                  {p.cluster !== cluster && <span className={styles.clusterTag}>{p.cluster.toUpperCase()}</span>}
                 </button>
               ),
             )}
@@ -423,19 +476,31 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
               })}
             </div>
 
-            <div className={styles.inputRow}>
-              <input
-                className={styles.input}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
-                placeholder="Type a message…"
-                maxLength={2000}
-              />
-              <button type="button" className={styles.sendBtn} onClick={send} disabled={sending || !draft.trim()}>
-                ➤
-              </button>
-            </div>
+            {activePending ? (
+              <div className={styles.pendingBar}>
+                <span className={styles.pendingText}>Message request — accept to reply</span>
+                <button type="button" className={styles.acceptBtn} onClick={() => activeId && acceptRequest(activeId)}>
+                  Accept
+                </button>
+                <button type="button" className={styles.declineBtn} onClick={() => activeId && declineRequest(activeId)}>
+                  Decline
+                </button>
+              </div>
+            ) : (
+              <div className={styles.inputRow}>
+                <input
+                  className={styles.input}
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
+                  placeholder="Type a message…"
+                  maxLength={2000}
+                />
+                <button type="button" className={styles.sendBtn} onClick={send} disabled={sending || !draft.trim()}>
+                  ➤
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

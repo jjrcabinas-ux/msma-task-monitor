@@ -50,6 +50,8 @@ model ConversationMember {
   employeeId     String
   employee       Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   lastReadAt     DateTime     @default(now())
+  // false = message request from another cluster, awaiting accept/decline
+  accepted       Boolean      @default(true)
 
   @@unique([conversationId, employeeId])
   @@index([employeeId])

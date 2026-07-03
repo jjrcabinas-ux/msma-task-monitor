@@ -13,6 +13,64 @@
   height: 100vh;
   height: 100dvh;
   z-index: 50;
+  transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
+}
+
+/* ── Collapsed (Gmail-style icon rail) ── */
+.aside.collapsed {
+  width: 64px;
+  min-width: 64px;
+  max-width: 64px;
+}
+
+.collapsed .navLabel,
+.collapsed .navChevron,
+.collapsed .brandText,
+.collapsed .navName,
+.collapsed .navPct,
+.collapsed .accountLabel,
+.collapsed .accountLogoutBtn,
+.collapsed .footer {
+  display: none;
+}
+
+.collapsed .navItem,
+.collapsed .addTrigger {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.collapsed .brandRow {
+  justify-content: center;
+}
+
+.collapsed .logo {
+  width: 2.2rem;
+}
+
+.collapsed .navItemActive {
+  border-radius: 8px;
+}
+
+.collapseBtn {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collapseBtn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
 }
 
 .mobileBar {
@@ -71,16 +129,28 @@
     padding: 10px 14px;
   }
 
-  .aside {
+  .aside,
+  .aside.collapsed {
     position: fixed;
     top: 0;
     left: 0;
     width: 82vw;
+    min-width: 0;
     max-width: 280px;
     transform: translateX(-100%);
     transition: transform 0.22s ease;
     z-index: 120;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+  }
+
+  /* No icon-rail on mobile — the drawer always shows full labels */
+  .collapsed .navLabel,
+  .collapsed .brandText,
+  .collapsed .navName,
+  .collapsed .navPct,
+  .collapsed .accountLabel,
+  .collapsed .footer {
+    display: revert;
   }
 
   .asideOpen {
@@ -177,10 +247,12 @@
   color: #fff;
 }
 
+/* Active item: tinted, rounded-right pill (Gmail style) */
 .navItemActive,
 .navItemActive:hover {
   background: rgba(37, 99, 235, 0.22);
   color: #fff;
+  border-radius: 0 16px 16px 0;
 }
 
 .navIcon {

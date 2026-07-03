@@ -14,13 +14,20 @@
   min-width: 0;
   margin-left: clamp(200px, 18%, 280px);
   overflow-x: clip;
+  transition: margin-left 0.2s ease;
+}
+
+/* When the sidebar collapses to its icon rail, reclaim the space */
+:global(html[data-sidebar-collapsed='true']) .main {
+  margin-left: 64px;
 }
 
 @media (max-width: 860px) {
   .shell {
     flex-direction: column;
   }
-  .main {
+  .main,
+  :global(html[data-sidebar-collapsed='true']) .main {
     margin-left: 0;
   }
 }

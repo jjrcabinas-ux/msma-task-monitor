@@ -95,19 +95,21 @@
   z-index: 51;
 }
 
-/* When expanded, reserve room for the frozen column and hide the original
-   in-brand collapse button so there's only one. */
-.asideAds:not(.collapsed) {
+/* Gmail-style: the frozen column stays put in BOTH expanded and collapsed
+   states — the button never moves. The sidebar body always sits to its
+   right (48px reserved), and the in-brand button is never shown on ADS. */
+.asideAds {
   padding-left: 48px;
 }
-.asideAds:not(.collapsed) .brandRow > .collapseBtn {
+.asideAds .brandRow > .collapseBtn {
   display: none;
 }
 
-/* When collapsed, the whole rail is the button's home — drop the frozen
-   column and fall back to the original centered button. */
-.asideAds.collapsed .freezeCol {
-  display: none;
+/* Collapsed rail = 48px frozen column + 64px icon rail beside it */
+.asideAds.collapsed {
+  width: 112px;
+  min-width: 112px;
+  max-width: 112px;
 }
 
 .mobileBar {
@@ -198,10 +200,10 @@
   .freezeCol {
     display: none;
   }
-  .asideAds:not(.collapsed) {
+  .asideAds {
     padding-left: 0;
   }
-  .asideAds:not(.collapsed) .brandRow > .collapseBtn {
+  .asideAds .brandRow > .collapseBtn {
     display: flex;
   }
 

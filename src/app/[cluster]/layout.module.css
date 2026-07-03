@@ -22,6 +22,11 @@
   margin-left: 64px;
 }
 
+/* ADS collapsed rail is wider (48px frozen column + 64px icon rail) */
+:global(html[data-sidebar-collapsed='true']) .mainAds {
+  margin-left: 112px;
+}
+
 @media (max-width: 860px) {
   .shell {
     flex-direction: column;

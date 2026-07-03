@@ -30,7 +30,7 @@ export type ConversationSummary = {
   unread: number;
 };
 
-export type ChatContact = { id: string; name: string; photo: string | null };
+export type ChatContact = { id: string; name: string; nickname: string; photo: string | null };
 
 const MAX_TEXT = 2000;
 const PAGE = 100;
@@ -63,7 +63,8 @@ export async function getChatContactsAction(cluster: ClusterSlug): Promise<ChatC
     orderBy: { name: 'asc' },
     select: { id: true, name: true, nickname: true, photo: true },
   });
-  return employees.map((e) => ({ id: e.id, name: displayName(e), photo: e.photo }));
+  // Full name displayed; nickname kept for search matching
+  return employees.map((e) => ({ id: e.id, name: e.name, nickname: e.nickname, photo: e.photo }));
 }
 
 /* Inbox: all conversations the viewer belongs to, newest activity first */
@@ -87,10 +88,11 @@ export async function listConversationsAction(cluster: ClusterSlug): Promise<Con
     memberships.map(async (m) => {
       const c = m.conversation;
       const others = c.members.filter((cm) => cm.employeeId !== viewer.id);
+      // DMs display the other member's full name
       const title = c.isGroup
         ? c.name || 'Group chat'
         : others[0]
-          ? displayName(others[0].employee)
+          ? others[0].employee.name
           : 'Conversation';
       const photo = c.isGroup ? null : (others[0]?.employee.photo ?? null);
       const last = c.messages[0] ?? null;
@@ -216,7 +218,7 @@ export async function getConversationMessagesAction(
   const title = conversation.isGroup
     ? conversation.name || 'Group chat'
     : others[0]
-      ? displayName(others[0].employee)
+      ? others[0].employee.name
       : 'Conversation';
 
   return {

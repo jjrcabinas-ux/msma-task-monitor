@@ -60,6 +60,8 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
   const [groupIds, setGroupIds] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState('');
+  const [convoSearch, setConvoSearch] = useState('');
+  const [showConvoSearch, setShowConvoSearch] = useState(false);
 
   const listRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef({ open, view, activeId });
@@ -105,9 +107,16 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, view]);
 
+  const loadContacts = useCallback(async () => {
+    const result = await getChatContactsAction(cluster);
+    if (Array.isArray(result)) setContacts(result);
+  }, [cluster]);
+
   async function openConvo(id: string) {
     setActiveId(id);
     setMessages([]);
+    setConvoSearch('');
+    setShowConvoSearch(false);
     setView('convo');
     await refreshMessages(id);
     refreshConvos();
@@ -118,8 +127,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
     setGroupName('');
     setGroupIds([]);
     setView('compose');
-    const result = await getChatContactsAction(cluster);
-    if (Array.isArray(result)) setContacts(result);
+    loadContacts();
   }
 
   async function startDm(otherId: string) {
@@ -148,9 +156,14 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
   }
 
   const totalUnread = convos.reduce((sum, c) => sum + c.unread, 0);
-  const filteredConvos = search.trim()
-    ? convos.filter((c) => c.title.toLowerCase().includes(search.trim().toLowerCase()))
-    : convos;
+  const q = search.trim().toLowerCase();
+  const filteredConvos = q ? convos.filter((c) => c.title.toLowerCase().includes(q)) : convos;
+  // Members matching by full name OR nickname, to start a new chat from search
+  const matchingContacts = q
+    ? contacts.filter((p) => p.name.toLowerCase().includes(q) || p.nickname.toLowerCase().includes(q))
+    : [];
+  const cq = convoSearch.trim().toLowerCase();
+  const visibleMessages = cq ? messages.filter((m) => m.text.toLowerCase().includes(cq)) : messages;
   const latest = convos[0] ?? null;
   const cardPreview = latest?.lastText
     ? `${latest.lastSender}: ${latest.lastText}`
@@ -160,7 +173,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
   if (!open) {
     return (
       <div className={styles.dock}>
-        <button type="button" className={styles.convoCard} onClick={() => { setOpen(true); setView('list'); refreshConvos(); }} aria-label="Open MSMA Chat">
+        <button type="button" className={styles.convoCard} onClick={() => { setOpen(true); setView('list'); refreshConvos(); loadContacts(); }} aria-label="Open MSMA Chat">
           <span className={styles.convoAvatar}>
             <Image src="/logo.png" alt="MSMA" width={40} height={40} className={styles.convoAvatarImg} />
           </span>
@@ -213,6 +226,17 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
               ✎
             </button>
           )}
+          {view === 'convo' && (
+            <button
+              type="button"
+              className={`${styles.iconBtn} ${showConvoSearch ? styles.iconBtnActive : ''}`}
+              onClick={(e) => { e.stopPropagation(); setShowConvoSearch((v) => !v); setConvoSearch(''); }}
+              title="Search in conversation"
+              aria-label="Search in conversation"
+            >
+              🔍
+            </button>
+          )}
           <button
             type="button"
             className={styles.iconBtn}
@@ -223,7 +247,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
           </button>
         </div>
 
-        {/* Search bar (inbox only) */}
+        {/* Search bar (inbox: chats + members) */}
         {view === 'list' && (
           <div className={styles.searchWrap} onClick={(e) => e.stopPropagation()}>
             <span className={styles.searchIcon}>🔍</span>
@@ -236,11 +260,26 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
           </div>
         )}
 
+        {/* Search bar (inside a conversation) */}
+        {view === 'convo' && showConvoSearch && (
+          <div className={styles.searchWrap} onClick={(e) => e.stopPropagation()}>
+            <span className={styles.searchIcon}>🔍</span>
+            <input
+              autoFocus
+              className={styles.searchInput}
+              value={convoSearch}
+              onChange={(e) => setConvoSearch(e.target.value)}
+              placeholder="Search in conversation"
+            />
+            {cq && <span className={styles.searchCount}>{visibleMessages.length}</span>}
+          </div>
+        )}
+
         {/* ── Inbox ── */}
         {view === 'list' && (
           <div className={styles.inbox}>
-            {filteredConvos.length === 0 && convos.length > 0 && (
-              <div className={styles.empty}>No chats match “{search}”.</div>
+            {q && filteredConvos.length === 0 && matchingContacts.length === 0 && (
+              <div className={styles.empty}>No chats or members match “{search}”.</div>
             )}
             {convos.length === 0 && (
               <div className={styles.empty}>
@@ -265,6 +304,22 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
                 {c.unread > 0 && <span className={styles.unreadBadge}>{c.unread > 99 ? '99+' : c.unread}</span>}
               </button>
             ))}
+
+            {/* Members matching the search — start a new chat directly */}
+            {matchingContacts.length > 0 && (
+              <>
+                <div className={styles.searchSection}>Members</div>
+                {matchingContacts.map((p) => (
+                  <button key={p.id} type="button" className={styles.inboxRow} onClick={() => startDm(p.id)}>
+                    <Avatar photo={p.photo} letter={p.name[0]} size={32} />
+                    <span className={styles.inboxBody}>
+                      <span className={styles.inboxTitle}>{p.name}</span>
+                      {p.nickname.trim() && <span className={styles.inboxPreview}>{p.nickname}</span>}
+                    </span>
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         )}
 
@@ -338,9 +393,12 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
           <>
             <div className={styles.list} ref={listRef}>
               {messages.length === 0 && <div className={styles.empty}>No messages yet — say hi! 👋</div>}
-              {messages.map((m, i) => {
+              {cq && visibleMessages.length === 0 && messages.length > 0 && (
+                <div className={styles.empty}>No messages match “{convoSearch}”.</div>
+              )}
+              {visibleMessages.map((m, i) => {
                 const mine = m.senderId === viewerId;
-                const prev = messages[i - 1];
+                const prev = visibleMessages[i - 1];
                 const showMeta = !prev || prev.senderId !== m.senderId;
                 return (
                   <div key={m.id} className={`${styles.msgRow} ${mine ? styles.msgRowMine : ''}`}>

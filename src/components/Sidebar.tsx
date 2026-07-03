@@ -245,8 +245,8 @@ export default function Sidebar({
     <>
       <div className={styles.mobileBar}>
         <button className={styles.hamburger} onClick={() => setMobileOpen(true)} aria-label="Open menu">☰</button>
-        <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={styles.mobileBarLogo} />
-        <span className={styles.mobileBarTitle}>{clusterLabel}</span>
+        {!isAds && <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={styles.mobileBarLogo} />}
+        <span className={styles.mobileBarTitle}>{isAds ? 'ADS CLUSTER' : clusterLabel}</span>
       </div>
 
       {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
@@ -285,10 +285,10 @@ export default function Sidebar({
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={`${styles.logo} ${isAds ? styles.logoAds : ''}`} />
+            {!isAds && <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={`${styles.logo} ${isAds ? styles.logoAds : ''}`} />}
             <div className={styles.brandText}>
-              <div className={`${styles.teamName} ${isAds ? styles.teamNameAds : ''}`}>{clusterLabel}</div>
-              <div className={styles.subtitle}>Task Monitoring</div>
+              <div className={`${styles.teamName} ${isAds ? styles.teamNameAds : ''}`}>{isAds ? 'ADS CLUSTER' : clusterLabel}</div>
+              {!isAds && <div className={styles.subtitle}>Task Monitoring</div>}
             </div>
           </div>
         </div>

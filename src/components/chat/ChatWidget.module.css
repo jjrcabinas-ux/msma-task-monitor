@@ -46,6 +46,8 @@
 .header {
   background: #0f172a;
   color: #fff;
+  cursor: pointer;
+  user-select: none;
   padding: 12px 14px;
   display: flex;
   align-items: center;

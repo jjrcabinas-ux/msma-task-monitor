@@ -110,12 +110,24 @@ export default function ChatWidget({
     <div className={styles.dock}>
       {open ? (
         <div className={styles.panel}>
-          <div className={styles.header}>
+          <div
+            className={styles.header}
+            onClick={() => setOpen(false)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && setOpen(false)}
+            title="Minimize chat"
+          >
             <span className={styles.headerLogo}>
               <Image src="/logo.png" alt="MSMA" width={26} height={26} className={styles.headerLogoImg} />
             </span>
             <span className={styles.headerTitle}>{CHAT_TITLE}</span>
-            <button type="button" className={styles.headerClose} onClick={() => setOpen(false)} aria-label="Close chat">
+            <button
+              type="button"
+              className={styles.headerClose}
+              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+              aria-label="Close chat"
+            >
               ×
             </button>
           </div>

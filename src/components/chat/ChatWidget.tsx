@@ -1,14 +1,27 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import type { ClusterSlug } from '@/lib/clusters';
-import { getChatMessagesAction, sendChatMessageAction, type ChatMessageDTO } from '@/lib/chatActions';
+import {
+  getChatContactsAction,
+  listConversationsAction,
+  openDirectConversationAction,
+  createGroupConversationAction,
+  getConversationMessagesAction,
+  sendMessageAction,
+  type ChatMessageDTO,
+  type ConversationSummary,
+  type ChatContact,
+} from '@/lib/chatActions';
 import styles from './ChatWidget.module.css';
 
-const POLL_OPEN_MS = 4000;
-const POLL_CLOSED_MS = 10000;
-const CHAT_TITLE = 'MSMA ADS Cluster';
+const POLL_CONVO_MS = 4000;
+const POLL_LIST_MS = 8000;
+const POLL_CLOSED_MS = 12000;
+const CHAT_TITLE = 'MSMA Chat';
+
+type View = 'list' | 'compose' | 'convo';
 
 function timeLabel(iso: string) {
   const d = new Date(iso);
@@ -18,178 +31,339 @@ function timeLabel(iso: string) {
   return sameDay ? time : `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${time}`;
 }
 
-export default function ChatWidget({
-  cluster,
-  viewerId,
-  isAdmin,
-}: {
-  cluster: ClusterSlug;
-  viewerId: string | null;
-  isAdmin: boolean;
-}) {
+function Avatar({ photo, letter, size = 38 }: { photo: string | null; letter: string; size?: number }) {
+  return (
+    <span className={styles.avatar} style={{ width: size, height: size, fontSize: size * 0.42 }}>
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={photo} alt="" className={styles.avatarImg} />
+      ) : (
+        letter
+      )}
+    </span>
+  );
+}
+
+export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug; viewerId: string }) {
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<View>('list');
+  const [convos, setConvos] = useState<ConversationSummary[]>([]);
+  const [contacts, setContacts] = useState<ChatContact[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeTitle, setActiveTitle] = useState('');
   const [messages, setMessages] = useState<ChatMessageDTO[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
-  const [lastReadIso, setLastReadIso] = useState<string>('');
+  // Group creation state
+  const [groupMode, setGroupMode] = useState(false);
+  const [groupName, setGroupName] = useState('');
+  const [groupIds, setGroupIds] = useState<string[]>([]);
+  const [creating, setCreating] = useState(false);
+
   const listRef = useRef<HTMLDivElement>(null);
-  const openRef = useRef(open);
-  openRef.current = open;
+  const stateRef = useRef({ open, view, activeId });
+  stateRef.current = { open, view, activeId };
 
-  const readKey = `chat_last_read_${cluster}_${viewerId ?? 'admin'}`;
+  const refreshConvos = useCallback(async () => {
+    const result = await listConversationsAction(cluster);
+    if (Array.isArray(result)) setConvos(result);
+  }, [cluster]);
 
-  function isMine(m: ChatMessageDTO) {
-    if (viewerId) return m.senderId === viewerId;
-    return isAdmin && m.senderId === null;
-  }
+  const refreshMessages = useCallback(async (conversationId: string) => {
+    const result = await getConversationMessagesAction(cluster, conversationId);
+    if ('messages' in result) {
+      setMessages(result.messages);
+      setActiveTitle(result.title);
+    }
+  }, [cluster]);
 
-  function markRead(msgs: ChatMessageDTO[]) {
-    const newest = msgs[msgs.length - 1]?.createdAt;
-    if (!newest) return;
-    setLastReadIso((prev) => {
-      const next = newest > prev ? newest : prev;
-      try { localStorage.setItem(readKey, next); } catch {}
-      return next;
-    });
-  }
-
-  // Load stored read marker once
-  useEffect(() => {
-    try { setLastReadIso(localStorage.getItem(readKey) ?? ''); } catch {}
-  }, [readKey]);
-
-  // Single polling loop; faster while open. Runs even when closed so the
-  // unread badge and preview stay current.
+  // One polling loop for everything; cadence depends on what's on screen
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout>;
 
     async function tick() {
-      const result = await getChatMessagesAction(cluster);
-      if (cancelled) return;
-      if (Array.isArray(result)) {
-        setMessages(result);
-        if (openRef.current) markRead(result);
+      const s = stateRef.current;
+      if (s.open && s.view === 'convo' && s.activeId) {
+        await refreshMessages(s.activeId);
+      } else {
+        await refreshConvos();
       }
-      timer = setTimeout(tick, openRef.current ? POLL_OPEN_MS : POLL_CLOSED_MS);
+      if (cancelled) return;
+      const delay = !s.open ? POLL_CLOSED_MS : s.view === 'convo' ? POLL_CONVO_MS : POLL_LIST_MS;
+      timer = setTimeout(tick, delay);
     }
 
     tick();
     return () => { cancelled = true; clearTimeout(timer); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cluster, open]);
+  }, [cluster, open, view, activeId, refreshConvos, refreshMessages]);
 
-  // Opening marks everything read; stick to the bottom on changes
+  // Stick to the bottom of the thread
   useEffect(() => {
-    if (open) markRead(messages);
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages, open]);
+  }, [messages, view]);
+
+  async function openConvo(id: string) {
+    setActiveId(id);
+    setMessages([]);
+    setView('convo');
+    await refreshMessages(id);
+    refreshConvos();
+  }
+
+  async function openCompose() {
+    setGroupMode(false);
+    setGroupName('');
+    setGroupIds([]);
+    setView('compose');
+    const result = await getChatContactsAction(cluster);
+    if (Array.isArray(result)) setContacts(result);
+  }
+
+  async function startDm(otherId: string) {
+    const result = await openDirectConversationAction(cluster, otherId);
+    if ('id' in result) await openConvo(result.id);
+  }
+
+  async function createGroup() {
+    if (creating || !groupName.trim() || groupIds.length === 0) return;
+    setCreating(true);
+    const result = await createGroupConversationAction(cluster, groupName, groupIds);
+    setCreating(false);
+    if ('id' in result) await openConvo(result.id);
+  }
 
   async function send() {
     const text = draft.trim();
-    if (!text || sending) return;
+    if (!text || sending || !activeId) return;
     setSending(true);
     setDraft('');
-    const result = await sendChatMessageAction(cluster, text);
+    const result = await sendMessageAction(cluster, activeId, text);
     if (result && 'id' in result) {
       setMessages((prev) => (prev.some((m) => m.id === result.id) ? prev : [...prev, result]));
-      markRead([result]);
     }
     setSending(false);
   }
 
-  const unread = messages.filter((m) => !isMine(m) && m.createdAt > lastReadIso).length;
-  const last = messages[messages.length - 1];
-  const preview = last
-    ? `${isMine(last) ? 'You' : last.senderName}: ${last.text}`
-    : 'No messages yet';
+  const totalUnread = convos.reduce((sum, c) => sum + c.unread, 0);
+  const latest = convos[0] ?? null;
+  const cardPreview = latest?.lastText
+    ? `${latest.lastSender}: ${latest.lastText}`
+    : 'Start a conversation';
 
-  return (
-    <div className={styles.dock}>
-      {open ? (
-        <div className={styles.panel}>
-          <div
-            className={styles.header}
-            onClick={() => setOpen(false)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setOpen(false)}
-            title="Minimize chat"
-          >
-            <span className={styles.headerLogo}>
-              <Image src="/logo.png" alt="MSMA" width={26} height={26} className={styles.headerLogoImg} />
-            </span>
-            <span className={styles.headerTitle}>{CHAT_TITLE}</span>
-            <button
-              type="button"
-              className={styles.headerClose}
-              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
-              aria-label="Close chat"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className={styles.list} ref={listRef}>
-            {messages.length === 0 && <div className={styles.empty}>No messages yet — say hi! 👋</div>}
-            {messages.map((m, i) => {
-              const mine = isMine(m);
-              const prev = messages[i - 1];
-              const showMeta = !prev || prev.senderId !== m.senderId || prev.senderName !== m.senderName;
-              return (
-                <div key={m.id} className={`${styles.msgRow} ${mine ? styles.msgRowMine : ''}`}>
-                  {!mine && (
-                    <span className={styles.msgAvatar}>
-                      {m.senderPhoto ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={m.senderPhoto} alt="" className={styles.msgAvatarImg} />
-                      ) : (
-                        m.senderName[0]
-                      )}
-                    </span>
-                  )}
-                  <div className={styles.msgBody}>
-                    {!mine && showMeta && <div className={styles.msgName}>{m.senderName}</div>}
-                    <div className={`${styles.bubble} ${mine ? styles.bubbleMine : ''}`} title={timeLabel(m.createdAt)}>
-                      {m.text}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className={styles.inputRow}>
-            <input
-              className={styles.input}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
-              placeholder="Type a message…"
-              maxLength={2000}
-            />
-            <button type="button" className={styles.sendBtn} onClick={send} disabled={sending || !draft.trim()}>
-              ➤
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button type="button" className={styles.convoCard} onClick={() => setOpen(true)} aria-label="Open team chat">
+  /* ── Closed: Messenger-style conversation card ── */
+  if (!open) {
+    return (
+      <div className={styles.dock}>
+        <button type="button" className={styles.convoCard} onClick={() => { setOpen(true); setView('list'); refreshConvos(); }} aria-label="Open MSMA Chat">
           <span className={styles.convoAvatar}>
             <Image src="/logo.png" alt="MSMA" width={40} height={40} className={styles.convoAvatarImg} />
           </span>
           <span className={styles.convoBody}>
-            <span className={`${styles.convoTitle} ${unread > 0 ? styles.convoUnread : ''}`}>{CHAT_TITLE}</span>
-            <span className={`${styles.convoPreview} ${unread > 0 ? styles.convoUnread : ''}`}>
-              {preview}
-              {last ? ` · ${timeLabel(last.createdAt)}` : ''}
+            <span className={`${styles.convoTitle} ${totalUnread > 0 ? styles.convoUnreadText : ''}`}>{CHAT_TITLE}</span>
+            <span className={`${styles.convoPreview} ${totalUnread > 0 ? styles.convoUnreadText : ''}`}>
+              {cardPreview}
+              {latest?.lastAt ? ` · ${timeLabel(latest.lastAt)}` : ''}
             </span>
           </span>
-          {unread > 0 && <span className={styles.unreadBadge}>{unread > 99 ? '99+' : unread}</span>}
+          {totalUnread > 0 && <span className={styles.unreadBadge}>{totalUnread > 99 ? '99+' : totalUnread}</span>}
         </button>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.dock}>
+      <div className={styles.panel}>
+        {/* Header: banner click minimizes; back arrow inside views */}
+        <div
+          className={styles.header}
+          onClick={() => setOpen(false)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && setOpen(false)}
+          title="Minimize chat"
+        >
+          {view !== 'list' && (
+            <button
+              type="button"
+              className={styles.headerBack}
+              onClick={(e) => { e.stopPropagation(); setView('list'); setActiveId(null); refreshConvos(); }}
+              aria-label="Back to conversations"
+            >
+              ‹
+            </button>
+          )}
+          <span className={styles.headerLogo}>
+            <Image src="/logo.png" alt="MSMA" width={26} height={26} className={styles.headerLogoImg} />
+          </span>
+          <span className={styles.headerTitle}>
+            {view === 'convo' ? activeTitle || CHAT_TITLE : view === 'compose' ? 'New message' : CHAT_TITLE}
+          </span>
+          {view === 'list' && (
+            <button
+              type="button"
+              className={styles.headerCompose}
+              onClick={(e) => { e.stopPropagation(); openCompose(); }}
+              title="New message or group"
+              aria-label="New message"
+            >
+              ✎
+            </button>
+          )}
+          <button
+            type="button"
+            className={styles.headerClose}
+            onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+            aria-label="Close chat"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* ── Inbox ── */}
+        {view === 'list' && (
+          <div className={styles.inbox}>
+            {convos.length === 0 && (
+              <div className={styles.empty}>
+                No conversations yet.
+                <button type="button" className={styles.emptyCta} onClick={openCompose}>Start one ✎</button>
+              </div>
+            )}
+            {convos.map((c) => (
+              <button key={c.id} type="button" className={styles.inboxRow} onClick={() => openConvo(c.id)}>
+                {c.isGroup ? (
+                  <span className={styles.avatar} style={{ width: 38, height: 38, fontSize: 17 }}>👥</span>
+                ) : (
+                  <Avatar photo={c.photo} letter={c.title[0] ?? '?'} />
+                )}
+                <span className={styles.inboxBody}>
+                  <span className={`${styles.inboxTitle} ${c.unread > 0 ? styles.convoUnreadText : ''}`}>{c.title}</span>
+                  <span className={`${styles.inboxPreview} ${c.unread > 0 ? styles.convoUnreadText : ''}`}>
+                    {c.lastText ? `${c.lastSender}: ${c.lastText}` : 'No messages yet'}
+                    {c.lastAt && c.lastText ? ` · ${timeLabel(c.lastAt)}` : ''}
+                  </span>
+                </span>
+                {c.unread > 0 && <span className={styles.unreadBadge}>{c.unread > 99 ? '99+' : c.unread}</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ── Compose: pick a person or build a group ── */}
+        {view === 'compose' && (
+          <div className={styles.inbox}>
+            <div className={styles.composeSwitch}>
+              <button
+                type="button"
+                className={`${styles.composeTab} ${!groupMode ? styles.composeTabActive : ''}`}
+                onClick={() => setGroupMode(false)}
+              >
+                Direct message
+              </button>
+              <button
+                type="button"
+                className={`${styles.composeTab} ${groupMode ? styles.composeTabActive : ''}`}
+                onClick={() => setGroupMode(true)}
+              >
+                Create group
+              </button>
+            </div>
+
+            {groupMode && (
+              <input
+                className={styles.groupNameInput}
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                placeholder="Group name…"
+                maxLength={60}
+              />
+            )}
+
+            {contacts.map((p) =>
+              groupMode ? (
+                <label key={p.id} className={styles.inboxRow}>
+                  <input
+                    type="checkbox"
+                    className={styles.groupCheck}
+                    checked={groupIds.includes(p.id)}
+                    onChange={() =>
+                      setGroupIds((ids) => (ids.includes(p.id) ? ids.filter((x) => x !== p.id) : [...ids, p.id]))
+                    }
+                  />
+                  <Avatar photo={p.photo} letter={p.name[0]} size={32} />
+                  <span className={styles.inboxTitle}>{p.name}</span>
+                </label>
+              ) : (
+                <button key={p.id} type="button" className={styles.inboxRow} onClick={() => startDm(p.id)}>
+                  <Avatar photo={p.photo} letter={p.name[0]} size={32} />
+                  <span className={styles.inboxTitle}>{p.name}</span>
+                </button>
+              ),
+            )}
+
+            {groupMode && (
+              <button
+                type="button"
+                className={styles.createGroupBtn}
+                onClick={createGroup}
+                disabled={creating || !groupName.trim() || groupIds.length === 0}
+              >
+                Create group ({groupIds.length} selected)
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ── Conversation thread ── */}
+        {view === 'convo' && (
+          <>
+            <div className={styles.list} ref={listRef}>
+              {messages.length === 0 && <div className={styles.empty}>No messages yet — say hi! 👋</div>}
+              {messages.map((m, i) => {
+                const mine = m.senderId === viewerId;
+                const prev = messages[i - 1];
+                const showMeta = !prev || prev.senderId !== m.senderId;
+                return (
+                  <div key={m.id} className={`${styles.msgRow} ${mine ? styles.msgRowMine : ''}`}>
+                    {!mine && (
+                      <span className={styles.msgAvatar}>
+                        {m.senderPhoto ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={m.senderPhoto} alt="" className={styles.msgAvatarImg} />
+                        ) : (
+                          m.senderName[0]
+                        )}
+                      </span>
+                    )}
+                    <div className={styles.msgBody}>
+                      {!mine && showMeta && <div className={styles.msgName}>{m.senderName}</div>}
+                      <div className={`${styles.bubble} ${mine ? styles.bubbleMine : ''}`} title={timeLabel(m.createdAt)}>
+                        {m.text}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className={styles.inputRow}>
+              <input
+                className={styles.input}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
+                placeholder="Type a message…"
+                maxLength={2000}
+              />
+              <button type="button" className={styles.sendBtn} onClick={send} disabled={sending || !draft.trim()}>
+                ➤
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

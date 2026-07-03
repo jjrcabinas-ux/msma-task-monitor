@@ -58,12 +58,18 @@
 .headerTitle {
   flex: 1;
   min-width: 0;
-  font-weight: 800;
-  font-size: 1.25rem;
-  letter-spacing: -0.3px;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.headerTitleLarge {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.3px;
 }
 
 .iconBtn {
@@ -100,8 +106,9 @@
 }
 
 .searchIcon {
-  font-size: 12px;
-  opacity: 0.55;
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
 }
 
 .searchInput {

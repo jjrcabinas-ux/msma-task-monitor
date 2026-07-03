@@ -46,6 +46,15 @@ function Avatar({ photo, letter, size = 38 }: { photo: string | null; letter: st
   );
 }
 
+function SearchIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="7" />
+      <line x1="21" y1="21" x2="16.5" y2="16.5" />
+    </svg>
+  );
+}
+
 export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug; viewerId: string }) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<View>('list');
@@ -230,7 +239,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
               ‹
             </button>
           )}
-          <span className={styles.headerTitle}>
+          <span className={`${styles.headerTitle} ${view === 'list' ? styles.headerTitleLarge : ''}`}>
             {view === 'convo' ? activeTitle || 'Chats' : view === 'compose' ? 'New message' : 'Chats'}
           </span>
           {view === 'list' && (
@@ -252,7 +261,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
               title="Search in conversation"
               aria-label="Search in conversation"
             >
-              🔍
+              <SearchIcon />
             </button>
           )}
           <button
@@ -268,7 +277,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
         {/* Search bar (inbox: chats + members) */}
         {view === 'list' && (
           <div className={styles.searchWrap} onClick={(e) => e.stopPropagation()}>
-            <span className={styles.searchIcon}>🔍</span>
+            <span className={styles.searchIcon}><SearchIcon size={15} /></span>
             <input
               className={styles.searchInput}
               value={search}
@@ -281,7 +290,7 @@ export default function ChatWidget({ cluster, viewerId }: { cluster: ClusterSlug
         {/* Search bar (inside a conversation) */}
         {view === 'convo' && showConvoSearch && (
           <div className={styles.searchWrap} onClick={(e) => e.stopPropagation()}>
-            <span className={styles.searchIcon}>🔍</span>
+            <span className={styles.searchIcon}><SearchIcon size={15} /></span>
             <input
               autoFocus
               className={styles.searchInput}

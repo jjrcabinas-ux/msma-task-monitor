@@ -5,8 +5,8 @@ import type { ClusterSlug } from './clusters';
 import { getMemberSession } from './memberAuth';
 import { displayName } from './analytics';
 
-/* MSMA Chat — Messenger-style DMs and group chats. ADS cluster pilot.
-   All actions require a member session in the ADS cluster; identity is
+/* MSMA Chat — Messenger-style DMs and group chats, per cluster.
+   All actions require a member session in the cluster; identity is
    always derived server-side from the session. */
 
 export type ChatMessageDTO = {
@@ -36,7 +36,6 @@ const MAX_TEXT = 2000;
 const PAGE = 100;
 
 async function getViewer(cluster: ClusterSlug) {
-  if (cluster !== 'ads') return null;
   const session = await getMemberSession(cluster);
   if (!session) return null;
   const emp = await prisma.employee.findUnique({

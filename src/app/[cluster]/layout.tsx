@@ -62,8 +62,8 @@ export default async function ClusterLayout({
         viewerName={viewer ? displayName(viewer) : null}
       />
       <main className={styles.main}>{children}</main>
-      {/* MSMA Chat — piloting on ADS cluster only; needs a member identity */}
-      {cluster === 'ads' && session && <ChatWidget cluster={cluster} viewerId={session.employeeId} />}
+      {/* MSMA Chat — needs a member identity */}
+      {session && <ChatWidget cluster={cluster} viewerId={session.employeeId} />}
     </div>
   );
 }

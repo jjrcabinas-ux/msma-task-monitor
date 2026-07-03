@@ -251,8 +251,26 @@ export default function Sidebar({
 
       {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
 
-      <aside className={`${styles.aside} ${mobileOpen ? styles.asideOpen : ''} ${collapsed ? styles.collapsed : ''}`}>
+      <aside className={`${styles.aside} ${mobileOpen ? styles.asideOpen : ''} ${collapsed ? styles.collapsed : ''} ${isAds ? styles.asideAds : ''}`}>
         <button className={styles.closeDrawerBtn} onClick={() => setMobileOpen(false)} aria-label="Close menu">✕</button>
+
+        {/* ADS only: the collapse button lives in its own frozen left column,
+            separated from the main sidebar body by a divider. */}
+        {isAds && (
+          <div className={styles.freezeCol}>
+            <button
+              type="button"
+              className={styles.collapseBtn}
+              onClick={() => { setCollapsed((v) => !v); setOpenMenu(null); setTaxOpen(false); }}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" width="21" height="21" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        )}
 
         <div className={styles.brand}>
           <div className={`${styles.brandRow} ${isAds ? styles.brandRowAds : ''}`}>

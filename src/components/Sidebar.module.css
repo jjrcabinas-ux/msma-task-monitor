@@ -72,6 +72,44 @@
   color: #fff;
 }
 
+/* ── ADS cluster only: collapse button in its own frozen left column ── */
+.asideAds {
+  box-sizing: border-box;
+}
+
+/* The frozen column: a fixed narrow strip pinned to the far left, holding
+   only the collapse button and divided from the sidebar body by a border. */
+.freezeCol {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 1.6rem;
+  background: #0b1120;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 51;
+}
+
+/* When expanded, reserve room for the frozen column and hide the original
+   in-brand collapse button so there's only one. */
+.asideAds:not(.collapsed) {
+  padding-left: 48px;
+}
+.asideAds:not(.collapsed) .brandRow > .collapseBtn {
+  display: none;
+}
+
+/* When collapsed, the whole rail is the button's home — drop the frozen
+   column and fall back to the original centered button. */
+.asideAds.collapsed .freezeCol {
+  display: none;
+}
+
 .mobileBar {
   display: none;
 }
@@ -154,6 +192,17 @@
 
   .asideOpen {
     transform: translateX(0);
+  }
+
+  /* No frozen column on mobile — the drawer holds its own collapse button */
+  .freezeCol {
+    display: none;
+  }
+  .asideAds:not(.collapsed) {
+    padding-left: 0;
+  }
+  .asideAds:not(.collapsed) .brandRow > .collapseBtn {
+    display: flex;
   }
 
   .closeDrawerBtn {

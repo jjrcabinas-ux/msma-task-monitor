@@ -5,8 +5,8 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import type { ClusterSlug } from '@/lib/types';
-import { todayISO, isoToParts, fmtShort } from '@/lib/date';
-import { addEmployeeAction } from '@/app/actions';
+import { todayISO, isoToParts, formatHumanDate } from '@/lib/date-utils';
+import { createEmployeeAction } from '@/lib/server-actions';
 import styles from './Sidebar.module.css';
 
 type NavEmployee = {
@@ -70,7 +70,7 @@ export default function Sidebar({
     function syncLabel() {
       const iso = todayISO();
       const { y } = isoToParts(iso);
-      setClientTodayLabel(`Today · ${fmtShort(iso)}, ${y}`);
+      setClientTodayLabel(`Today · ${formatHumanDate(iso)}, ${y}`);
     }
     syncLabel();
     const interval = setInterval(syncLabel, 60000);
@@ -118,7 +118,7 @@ export default function Sidebar({
       fd.set('birthDate', form.birthDate);
       fd.set('contactNumber', form.contactNumber.trim());
 
-      const res = await addEmployeeAction(fd);
+      const res = await createEmployeeAction(fd);
       if (!res.ok) {
         setError(res.error || 'Failed to add employee.');
         return;

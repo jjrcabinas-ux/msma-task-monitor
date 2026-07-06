@@ -16,7 +16,7 @@ export default function MemberLoginForm({
   clusterLabel: string;
 }) {
   const router = useRouter();
-  const [mode, setMode] = useState<'login' | 'recover'>('login');
+  const [mode, setMode] = useState<'login' | 'recover' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +24,10 @@ export default function MemberLoginForm({
   const [showClusterPassword, setShowClusterPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [pending, startTransition] = useTransition();
 
   function goToCluster() {
@@ -55,15 +58,42 @@ export default function MemberLoginForm({
     });
   }
 
-  function switchMode(next: 'login' | 'recover') {
+  function submitForgotPassword() {
+    if (!newPassword || !confirmPassword) {
+      setError('Please fill in both password fields');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    startTransition(async () => {
+      const result = await memberRecoverWithClusterPasswordAction(cluster, email, clusterPassword, newPassword);
+      if ('error' in result) {
+        setError(result.error);
+        return;
+      }
+      setSuccess('Password reset successful! Logging you in...');
+      setTimeout(() => goToCluster(), 1500);
+    });
+  }
+
+  function switchMode(next: 'login' | 'recover' | 'forgot') {
     setMode(next);
     setError('');
+    setSuccess('');
     setPassword('');
     setClusterPassword('');
     setNewPassword('');
+    setConfirmPassword('');
     setShowPassword(false);
     setShowClusterPassword(false);
     setShowNewPassword(false);
+    setShowConfirmPassword(false);
   }
 
   return (
@@ -109,12 +139,96 @@ export default function MemberLoginForm({
             <button onClick={submitLogin} className={styles.btn} disabled={pending}>
               {pending ? 'Checking…' : 'Log in'}
             </button>
+            <button type="button" className={styles.memberLoginLink} onClick={() => switchMode('forgot')}>
+              Forgot your password?
+            </button>
             <button type="button" className={styles.memberLoginLink} onClick={() => switchMode('recover')}>
               Don't have a personal password yet? Use the cluster password
             </button>
             <Link href="/signup" className={styles.memberLoginLink}>
               New here? Create an account
             </Link>
+          </>
+        ) : mode === 'forgot' ? (
+          <>
+            <div className={styles.subtitle}>
+              Reset your password using your email and cluster password.
+            </div>
+            <input
+              autoFocus
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
+              className={styles.input}
+              disabled={pending}
+            />
+            <div className={styles.inputRow}>
+              <input
+                type={showClusterPassword ? 'text' : 'password'}
+                value={clusterPassword}
+                onChange={(e) => setClusterPassword(e.target.value)}
+                placeholder="Cluster password"
+                className={styles.input}
+                disabled={pending}
+              />
+              <button
+                type="button"
+                onClick={() => setShowClusterPassword((v) => !v)}
+                className={styles.toggleBtn}
+                disabled={pending}
+                aria-label={showClusterPassword ? 'Hide password' : 'Show password'}
+              >
+                {showClusterPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            <div className={styles.inputRow}>
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="New password"
+                className={styles.input}
+                disabled={pending}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword((v) => !v)}
+                className={styles.toggleBtn}
+                disabled={pending}
+                aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+              >
+                {showNewPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            <div className={styles.inputRow}>
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && submitForgotPassword()}
+                placeholder="Confirm new password"
+                className={styles.input}
+                disabled={pending}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((v) => !v)}
+                className={styles.toggleBtn}
+                disabled={pending}
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              >
+                {showConfirmPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {error && <div className={styles.error}>{error}</div>}
+            {success && <div className={styles.success}>{success}</div>}
+            <button onClick={submitForgotPassword} className={styles.btn} disabled={pending}>
+              {pending ? 'Resetting password…' : 'Reset password'}
+            </button>
+            <button type="button" className={styles.memberLoginLink} onClick={() => switchMode('login')}>
+              Back to login
+            </button>
           </>
         ) : (
           <>

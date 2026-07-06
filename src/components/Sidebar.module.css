@@ -16,100 +16,8 @@
   transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
 }
 
-/* ── Collapsed (Gmail-style icon rail) ── */
-.aside.collapsed {
-  width: 64px;
-  min-width: 64px;
-  max-width: 64px;
-}
-
-.collapsed .navLabel,
-.collapsed .navChevron,
-.collapsed .brandText,
-.collapsed .navName,
-.collapsed .navPct,
-.collapsed .accountLabel,
-.collapsed .accountLogoutBtn,
-.collapsed .footer {
-  display: none;
-}
-
-.collapsed .navItem,
-.collapsed .addTrigger {
-  justify-content: center;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.collapsed .brandRow {
-  justify-content: center;
-}
-
-.collapsed .logo {
-  width: 2.2rem;
-}
-
-.collapsed .navItemActive {
-  border-radius: 8px;
-}
-
-.collapseBtn {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: #cbd5e1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.collapseBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-}
-
-/* ── ADS cluster only: collapse button in its own frozen left column ── */
 .asideAds {
   box-sizing: border-box;
-}
-
-/* The frozen column: a fixed narrow strip pinned to the far left, holding
-   only the collapse button and divided from the sidebar body by a border. */
-.freezeCol {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 48px;
-  height: 100vh;
-  height: 100dvh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 1.6rem;
-  background: #0b1120;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 51;
-}
-
-/* Gmail-style: the frozen column stays put in BOTH expanded and collapsed
-   states — the button never moves. The sidebar body always sits to its
-   right (48px reserved), and the in-brand button is never shown on ADS. */
-.asideAds {
-  padding-left: 48px;
-}
-.asideAds .brandRow > .collapseBtn {
-  display: none;
-}
-
-/* Collapsed rail = 48px frozen column + 64px icon rail beside it */
-.asideAds.collapsed {
-  width: 112px;
-  min-width: 112px;
-  max-width: 112px;
 }
 
 .mobileBar {
@@ -168,8 +76,7 @@
     padding: 10px 14px;
   }
 
-  .aside,
-  .aside.collapsed {
+  .aside {
     position: fixed;
     top: 0;
     left: 0;
@@ -182,29 +89,8 @@
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
   }
 
-  /* No icon-rail on mobile — the drawer always shows full labels */
-  .collapsed .navLabel,
-  .collapsed .brandText,
-  .collapsed .navName,
-  .collapsed .navPct,
-  .collapsed .accountLabel,
-  .collapsed .footer {
-    display: revert;
-  }
-
   .asideOpen {
     transform: translateX(0);
-  }
-
-  /* No frozen column on mobile — the drawer holds its own collapse button */
-  .freezeCol {
-    display: none;
-  }
-  .asideAds {
-    padding-left: 0;
-  }
-  .asideAds .brandRow > .collapseBtn {
-    display: flex;
   }
 
   .closeDrawerBtn {

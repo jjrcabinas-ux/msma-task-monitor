@@ -67,16 +67,6 @@ export default function Sidebar({
   });
   const [taxOpen, setTaxOpen] = useState(false);
   const [showRestricted, setShowRestricted] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-
-  // Restore collapsed preference, then keep the layout's content margin in sync
-  useEffect(() => {
-    setCollapsed(localStorage.getItem('sidebar_collapsed') === 'true');
-  }, []);
-  useEffect(() => {
-    document.documentElement.dataset.sidebarCollapsed = collapsed ? 'true' : 'false';
-    localStorage.setItem('sidebar_collapsed', collapsed ? 'true' : 'false');
-  }, [collapsed]);
 
   useEffect(() => {
     function syncLabel() {
@@ -100,7 +90,6 @@ export default function Sidebar({
           : null;
 
   function toggleMenu(id: 'members' | 'engagement') {
-    if (collapsed) setCollapsed(false); // expand so the panel is usable
     setTaxOpen(false);
     setOpenMenu((cur) => (cur === id ? null : id));
   }
@@ -251,40 +240,11 @@ export default function Sidebar({
 
       {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
 
-      <aside className={`${styles.aside} ${mobileOpen ? styles.asideOpen : ''} ${collapsed ? styles.collapsed : ''} ${isAds ? styles.asideAds : ''}`}>
+      <aside className={`${styles.aside} ${mobileOpen ? styles.asideOpen : ''} ${isAds ? styles.asideAds : ''}`}>
         <button className={styles.closeDrawerBtn} onClick={() => setMobileOpen(false)} aria-label="Close menu">✕</button>
-
-        {/* ADS only: the collapse button lives in its own frozen left column,
-            separated from the main sidebar body by a divider. */}
-        {isAds && (
-          <div className={styles.freezeCol}>
-            <button
-              type="button"
-              className={styles.collapseBtn}
-              onClick={() => { setCollapsed((v) => !v); setOpenMenu(null); setTaxOpen(false); }}
-              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" width="21" height="21" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        )}
 
         <div className={styles.brand}>
           <div className={`${styles.brandRow} ${isAds ? styles.brandRowAds : ''}`}>
-            <button
-              type="button"
-              className={styles.collapseBtn}
-              onClick={() => { setCollapsed((v) => !v); setOpenMenu(null); setTaxOpen(false); }}
-              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" width="21" height="21" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
             <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={`${styles.logo} ${isAds ? styles.logoAds : ''}`} />
             <div className={styles.brandText}>
               <div className={`${styles.teamName} ${isAds ? styles.teamNameAds : ''}`}>{isAds ? 'ADS CLUSTER' : clusterLabel}</div>

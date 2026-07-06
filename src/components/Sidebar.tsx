@@ -1,14 +1,12 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
-import { addEmployeeAction, memberLogoutAction } from '@/lib/actions';
-import type { ClusterSlug } from '@/lib/clusters';
-import { employeeColor } from '@/lib/colors';
-import { fmtShort, isoToParts, todayISO } from '@/lib/dates';
-import PhotoAvatar from './PhotoAvatar';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import type { ClusterSlug } from '@/lib/types';
+import { todayISO, isoToParts, fmtShort } from '@/lib/date';
+import { addEmployeeAction } from '@/app/actions';
 import styles from './Sidebar.module.css';
 
 type NavEmployee = {
@@ -67,16 +65,6 @@ export default function Sidebar({
   });
   const [taxOpen, setTaxOpen] = useState(false);
   const [showRestricted, setShowRestricted] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
-
-  // Restore collapsed preference, then keep the layout's content margin in sync
-  useEffect(() => {
-    setCollapsed(localStorage.getItem('sidebar_collapsed') === 'true');
-  }, []);
-  useEffect(() => {
-    document.documentElement.dataset.sidebarCollapsed = collapsed ? 'true' : 'false';
-    localStorage.setItem('sidebar_collapsed', collapsed ? 'true' : 'false');
-  }, [collapsed]);
 
   useEffect(() => {
     function syncLabel() {
@@ -91,154 +79,55 @@ export default function Sidebar({
 
   // Which top-level item the current route belongs to
   const activeId: string | null =
-    pathname === `/${cluster}`
-      ? 'summary'
-      : employees.some((emp) => pathname === `/${cluster}/employee/${emp.id}`)
-        ? 'members'
-        : pathname.startsWith(`/${cluster}/audit`) || pathname.startsWith(`/${cluster}/special-engagement`)
-          ? 'engagement'
-          : null;
+    pathname?.startsWith(`/${cluster}/employee/`) ? 'members' : pathname?.startsWith(`/${cluster}/audit`) || pathname?.startsWith(`/${cluster}/special-engagement`) ? 'engagement' : 'summary';
 
-  function toggleMenu(id: 'members' | 'engagement') {
-    if (collapsed) setCollapsed(false); // expand so the panel is usable
-    setTaxOpen(false);
-    setOpenMenu((cur) => (cur === id ? null : id));
-  }
+  // Keep accordion open for the current section on direct navigation
+  useEffect(() => {
+    if (activeId === 'members' || activeId === 'engagement') setOpenMenu(activeId);
+  }, [activeId]);
 
-  // Called by any real navigation — collapse all dropdowns and close the drawer
-  function onNavigate() {
+  // Close mobile drawer on route change
+  useEffect(() => {
     setMobileOpen(false);
-    setOpenMenu(null);
-    setTaxOpen(false);
-  }
+  }, [pathname]);
 
-  function logout() {
-    startTransition(async () => {
-      await memberLogoutAction(cluster);
-      router.refresh();
-    });
-  }
+  const initials = useMemo(() => {
+    const src = (viewerName || '').trim();
+    if (!src) return 'U';
+    const parts = src.split(/\s+/).filter(Boolean);
+    return (parts[0]?.[0] || 'U').toUpperCase();
+  }, [viewerName]);
 
-  function updateField(field: keyof typeof form, value: string) {
-    setForm((f) => ({ ...f, [field]: value }));
-  }
+  const canSeeRestricted = viewerName === 'Mark Cabañes';
 
-  function cancelAdd() {
-    setAdding(false);
-    setForm({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
+  async function submitAddEmployee(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setError('');
-  }
-
-  function submitAdd() {
-    startTransition(async () => {
-      const result = await addEmployeeAction(cluster, form);
-      if ('error' in result) {
-        setError(result.error);
-        return;
-      }
-      setForm({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
-      setError('');
-      setAdding(false);
-      setMobileOpen(false);
-      router.push(`/${cluster}/employee/${result.id}`);
-    });
-  }
-
-  /* ── Dropdown bodies, keyed by menu id ── */
-  function renderMenuBody(id: 'members' | 'engagement') {
-    if (id === 'members') {
-      return (
-        <div className={openMenu === 'members' ? styles.dropdownPanelOpen : styles.dropdownPanel}>
-          <div className={styles.memberListScroll}>
-            {employees.map((emp, idx) => (
-              <Link
-                key={emp.id}
-                href={`/${cluster}/employee/${emp.id}`}
-                className={`${styles.navItem} ${pathname === `/${cluster}/employee/${emp.id}` ? styles.navItemActive : ''}`}
-                onClick={onNavigate}
-              >
-                <PhotoAvatar
-                  photo={emp.photo}
-                  letter={emp.name[0]}
-                  className={styles.navAvatar}
-                  style={{ background: employeeColor(idx) }}
-                />
-                <span className={styles.navName}>{emp.name}</span>
-                <span className={styles.navPct}>{emp.completionPct}%</span>
-              </Link>
-            ))}
-          </div>
-
-          {isAdmin &&
-            (adding ? (
-              <div className={styles.addBox}>
-                <input autoFocus value={form.name} onChange={(e) => updateField('name', e.target.value)} placeholder="Full name" className={styles.addInput} disabled={pending} />
-                <input value={form.nickname} onChange={(e) => updateField('nickname', e.target.value)} placeholder="Nickname (display name)" className={styles.addInput} disabled={pending} />
-                <input value={form.position} onChange={(e) => updateField('position', e.target.value)} placeholder="Position" className={styles.addInput} disabled={pending} />
-                <input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} placeholder="Email address" className={styles.addInput} disabled={pending} />
-                <label className={styles.addFieldLabel}>Birth date</label>
-                <input type="date" value={form.birthDate} onChange={(e) => updateField('birthDate', e.target.value)} className={styles.addInput} disabled={pending} />
-                <input type="tel" value={form.contactNumber} onChange={(e) => updateField('contactNumber', e.target.value)} placeholder="Contact number" className={styles.addInput} disabled={pending} />
-                {error && <div className={styles.addError}>{error}</div>}
-                <div className={styles.addActions}>
-                  <button onClick={submitAdd} className={styles.addBtn} disabled={pending}>Add</button>
-                  <button onClick={cancelAdd} className={styles.cancelBtn} disabled={pending}>Cancel</button>
-                </div>
-              </div>
-            ) : (
-              <div className={styles.addTrigger} onClick={() => setAdding(true)}>
-                <div className={styles.addIcon}>+</div>
-                <span className={styles.navLabel}>Add member</span>
-              </div>
-            ))}
-        </div>
-      );
+    if (!form.name.trim() || !form.nickname.trim() || !form.position.trim()) {
+      setError('Name, Nickname, and Position are required.');
+      return;
     }
 
-    // engagement
-    return (
-      <div className={openMenu === 'engagement' ? styles.dropdownPanelOpen : styles.dropdownPanel}>
-        <div className={styles.subNav}>
-          <Link
-            href={`/${cluster}/audit`}
-            className={`${styles.subNavItem} ${pathname.startsWith(`/${cluster}/audit`) ? styles.subNavItemActive : ''}`}
-            onClick={() => { setMobileOpen(false); setTaxOpen(false); }}
-          >
-            Audit Monitoring
-          </Link>
+    startTransition(async () => {
+      const fd = new FormData();
+      fd.set('cluster', cluster);
+      fd.set('name', form.name.trim());
+      fd.set('nickname', form.nickname.trim());
+      fd.set('position', form.position.trim());
+      fd.set('email', form.email.trim());
+      fd.set('birthDate', form.birthDate);
+      fd.set('contactNumber', form.contactNumber.trim());
 
-          <button type="button" className={styles.subNavItem} onClick={() => setTaxOpen((v) => !v)} aria-expanded={taxOpen}>
-            Tax Compliance Monitoring
-            <span className={styles.soonBadge}>Soon</span>
-          </button>
+      const res = await addEmployeeAction(fd);
+      if (!res.ok) {
+        setError(res.error || 'Failed to add employee.');
+        return;
+      }
 
-          <div className={taxOpen ? styles.dropdownPanelOpen : styles.dropdownPanel}>
-            <div className={styles.comingSoonBox}>
-              <p className={styles.comingSoonLead}>Keep tax filing deadlines and statutory compliance visible per client.</p>
-              <ul className={styles.comingSoonList}>
-                <li>Track BIR/SEC filing due dates and submission status</li>
-                <li>Alert on upcoming and missed compliance deadlines</li>
-                <li>Assign filings to team members and monitor completion</li>
-              </ul>
-            </div>
-          </div>
-
-          {isAdmin ? (
-            <Link
-              href={`/${cluster}/special-engagement`}
-              className={`${styles.subNavItem} ${pathname.startsWith(`/${cluster}/special-engagement`) ? styles.subNavItemActive : ''}`}
-              onClick={() => { setMobileOpen(false); setTaxOpen(false); }}
-            >
-              Special Engagement Monitoring
-            </Link>
-          ) : (
-            <button type="button" className={styles.subNavItem} onClick={() => setShowRestricted(true)}>
-              Special Engagement Monitoring
-            </button>
-          )}
-        </div>
-      </div>
-    );
+      setAdding(false);
+      setForm({ name: '', nickname: '', position: '', email: '', birthDate: '', contactNumber: '' });
+      router.refresh();
+    });
   }
 
   return (
@@ -251,40 +140,11 @@ export default function Sidebar({
 
       {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
 
-      <aside className={`${styles.aside} ${mobileOpen ? styles.asideOpen : ''} ${collapsed ? styles.collapsed : ''} ${isAds ? styles.asideAds : ''}`}>
+      <aside className={`${styles.aside} ${mobileOpen ? styles.asideOpen : ''} ${isAds ? styles.asideAds : ''}`}>
         <button className={styles.closeDrawerBtn} onClick={() => setMobileOpen(false)} aria-label="Close menu">✕</button>
-
-        {/* ADS only: the collapse button lives in its own frozen left column,
-            separated from the main sidebar body by a divider. */}
-        {isAds && (
-          <div className={styles.freezeCol}>
-            <button
-              type="button"
-              className={styles.collapseBtn}
-              onClick={() => { setCollapsed((v) => !v); setOpenMenu(null); setTaxOpen(false); }}
-              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" width="21" height="21" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        )}
 
         <div className={styles.brand}>
           <div className={`${styles.brandRow} ${isAds ? styles.brandRowAds : ''}`}>
-            <button
-              type="button"
-              className={styles.collapseBtn}
-              onClick={() => { setCollapsed((v) => !v); setOpenMenu(null); setTaxOpen(false); }}
-              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" width="21" height="21" aria-hidden="true">
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
             <Image src="/logo-white.png" alt="MSMA" width={903} height={495} className={`${styles.logo} ${isAds ? styles.logoAds : ''}`} />
             <div className={styles.brandText}>
               <div className={`${styles.teamName} ${isAds ? styles.teamNameAds : ''}`}>{isAds ? 'ADS CLUSTER' : clusterLabel}</div>
@@ -302,78 +162,161 @@ export default function Sidebar({
                   key={item.id}
                   href={`/${cluster}`}
                   className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
-                  onClick={onNavigate}
                   title={item.label}
                 >
-                  <div className={styles.navIcon}>{item.icon}</div>
+                  <span className={styles.navIcon} aria-hidden="true">{item.icon}</span>
                   <span className={styles.navLabel}>{item.label}</span>
                 </Link>
               );
             }
+
+            const expanded = openMenu === item.id;
             return (
-              <div key={item.id}>
+              <div key={item.id} className={styles.navGroup}>
                 <button
                   type="button"
-                  className={`${styles.navItem} ${styles.navItemToggle} ${active ? styles.navItemActive : ''}`}
-                  onClick={() => toggleMenu(item.id)}
-                  aria-expanded={openMenu === item.id}
+                  className={`${styles.navItem} ${active ? styles.navItemActive : ''}`}
+                  aria-expanded={expanded}
+                  onClick={() => {
+                    setOpenMenu((cur) => (cur === item.id ? null : item.id));
+                    if (item.id !== 'engagement') setTaxOpen(false);
+                    if (item.id !== 'members') setAdding(false);
+                  }}
                   title={item.label}
                 >
-                  <div className={styles.navIcon}>{item.icon}</div>
+                  <span className={styles.navIcon} aria-hidden="true">{item.icon}</span>
                   <span className={styles.navLabel}>{item.label}</span>
-                  <span className={`${styles.navChevron} ${openMenu === item.id ? styles.navChevronOpen : ''}`}>▶</span>
+                  <span className={styles.navChevron} aria-hidden="true">{expanded ? '▾' : '▸'}</span>
                 </button>
-                {renderMenuBody(item.id)}
+
+                {item.id === 'members' && expanded && (
+                  <div className={styles.submenu}>
+                    <div className={styles.memberList}>
+                      {employees.map((emp) => {
+                        const activeEmp = pathname === `/${cluster}/employee/${emp.id}`;
+                        return (
+                          <Link key={emp.id} href={`/${cluster}/employee/${emp.id}`} className={`${styles.memberItem} ${activeEmp ? styles.memberItemActive : ''}`}>
+                            <span className={styles.memberName}>{emp.name}</span>
+                            <span className={styles.memberPct}>{Math.round(emp.completionPct)}%</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    {isAdmin && (
+                      <>
+                        <button className={styles.addTrigger} onClick={() => setAdding((v) => !v)}>
+                          {adding ? '− Close form' : '+ Add Team Member'}
+                        </button>
+                        {adding && (
+                          <form className={styles.addForm} onSubmit={submitAddEmployee}>
+                            <input
+                              className={styles.input}
+                              placeholder="Full name"
+                              value={form.name}
+                              onChange={(e) => setForm({ ...form, name: e.target.value })}
+                              required
+                            />
+                            <input
+                              className={styles.input}
+                              placeholder="Nickname"
+                              value={form.nickname}
+                              onChange={(e) => setForm({ ...form, nickname: e.target.value })}
+                              required
+                            />
+                            <input
+                              className={styles.input}
+                              placeholder="Position"
+                              value={form.position}
+                              onChange={(e) => setForm({ ...form, position: e.target.value })}
+                              required
+                            />
+                            <input
+                              className={styles.input}
+                              placeholder="Email"
+                              type="email"
+                              value={form.email}
+                              onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            />
+                            <label className={styles.label}>
+                              Birth Date
+                              <input
+                                className={styles.input}
+                                type="date"
+                                value={form.birthDate}
+                                onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
+                              />
+                            </label>
+                            <input
+                              className={styles.input}
+                              placeholder="Contact Number"
+                              value={form.contactNumber}
+                              onChange={(e) => setForm({ ...form, contactNumber: e.target.value })}
+                            />
+                            {error && <div className={styles.error}>{error}</div>}
+                            <button className={styles.submit} disabled={pending}>{pending ? 'Adding…' : 'Add'}</button>
+                          </form>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {item.id === 'engagement' && expanded && (
+                  <div className={styles.submenu}>
+                    <button
+                      className={styles.memberItem}
+                      onClick={() => setTaxOpen((v) => !v)}
+                      type="button"
+                    >
+                      <span className={styles.memberName}>Tax Engagement</span>
+                      <span>{taxOpen ? '▾' : '▸'}</span>
+                    </button>
+                    {taxOpen && (
+                      <div className={styles.submenuNested}>
+                        <Link href={`/${cluster}/audit/monthly`} className={styles.memberItem}>Monthly Tax Audit</Link>
+                        <Link href={`/${cluster}/audit/weekly`} className={styles.memberItem}>Weekly Tax Audit</Link>
+                        <Link href={`/${cluster}/special-engagement`} className={styles.memberItem}>Special Engagement</Link>
+                        {canSeeRestricted && (
+                          <>
+                            <button
+                              type="button"
+                              className={styles.memberItem}
+                              onClick={() => setShowRestricted((v) => !v)}
+                            >
+                              <span className={styles.memberName}>Tax</span>
+                              <span>{showRestricted ? '▾' : '▸'}</span>
+                            </button>
+                            {showRestricted && (
+                              <div className={styles.submenuNested}>
+                                <Link href={`/${cluster}/tax-revenue`} className={styles.memberItem}>Tax Revenue</Link>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
         </nav>
 
-        <div className={styles.bottomLinks}>
-          {viewerName ? (
-            <div className={styles.accountRow}>
-              <span className={styles.accountLabel}>Logged in as {viewerName}</span>
-              <button type="button" className={styles.accountLogoutBtn} onClick={logout} disabled={pending}>Log out</button>
+        <div className={styles.footer}>
+          <div className={styles.today}>{clientTodayLabel}</div>
+          <div className={styles.account}>
+            <div className={styles.avatar} aria-hidden="true">{initials}</div>
+            <div className={styles.accountMeta}>
+              <div className={styles.accountName}>{viewerName || 'User'}</div>
+              <div className={styles.accountLabel}>MSMA Team</div>
             </div>
-          ) : (
-            <Link href={`/login/${cluster}`} className={styles.navItem} onClick={() => setMobileOpen(false)} title="Log in">
-              <div className={styles.navIcon}>👤</div>
-              <span className={styles.navLabel}>{isAdmin ? 'Log in as a member' : 'Log in'}</span>
-            </Link>
-          )}
-          <Link href="/" className={styles.navItem} onClick={() => setMobileOpen(false)} title="All Clusters">
-            <div className={styles.navIcon}>⌂</div>
-            <span className={styles.navLabel}>All Clusters</span>
-          </Link>
-        </div>
-
-        <div className={styles.footer}>{clientTodayLabel}</div>
-      </aside>
-
-      {showRestricted && (
-        <div
-          onClick={() => setShowRestricted(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', animation: 'modalOverlayIn 0.3s ease forwards' }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{ background: '#fff', borderRadius: 14, boxShadow: '0 24px 64px rgba(15,23,42,0.35)', padding: '32px 36px', maxWidth: 400, textAlign: 'center', animation: 'modalCardIn 0.3s ease-out forwards' }}
-          >
-            <div style={{ fontSize: 30, marginBottom: 8 }}>🔒</div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', marginBottom: 6 }}>Access Restricted</div>
-            <p style={{ fontSize: '0.88rem', color: '#64748b', lineHeight: 1.6, marginBottom: 18 }}>
-              Special Engagement Monitoring is only available with cluster access. Please contact your direct supervisor if you need access.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowRestricted(false)}
-              style={{ background: '#0f172a', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}
-            >
-              Got it
-            </button>
+            <form action="/api/auth/signout" method="post">
+              <button className={styles.accountLogoutBtn} title="Log out">↗</button>
+            </form>
           </div>
         </div>
-      )}
+      </aside>
     </>
   );
 }

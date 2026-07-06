@@ -1,8 +1,7 @@
 .aside {
-  width: 18%;
-  min-width: 200px;
-  max-width: 280px;
-  flex: none;
+  width: clamp(200px, 18%, 280px);
+  min-width: clamp(200px, 18%, 280px);
+  max-width: clamp(200px, 18%, 280px);
   background: #0f172a;
   color: #e2e8f0;
   display: flex;
@@ -13,103 +12,6 @@
   height: 100vh;
   height: 100dvh;
   z-index: 50;
-  transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease;
-}
-
-/* ── Collapsed (Gmail-style icon rail) ── */
-.aside.collapsed {
-  width: 64px;
-  min-width: 64px;
-  max-width: 64px;
-}
-
-.collapsed .navLabel,
-.collapsed .navChevron,
-.collapsed .brandText,
-.collapsed .navName,
-.collapsed .navPct,
-.collapsed .accountLabel,
-.collapsed .accountLogoutBtn,
-.collapsed .footer {
-  display: none;
-}
-
-.collapsed .navItem,
-.collapsed .addTrigger {
-  justify-content: center;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.collapsed .brandRow {
-  justify-content: center;
-}
-
-.collapsed .logo {
-  width: 2.2rem;
-}
-
-.collapsed .navItemActive {
-  border-radius: 8px;
-}
-
-.collapseBtn {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  color: #cbd5e1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.collapseBtn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-}
-
-/* ── ADS cluster only: collapse button in its own frozen left column ── */
-.asideAds {
-  box-sizing: border-box;
-}
-
-/* The frozen column: a fixed narrow strip pinned to the far left, holding
-   only the collapse button and divided from the sidebar body by a border. */
-.freezeCol {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 48px;
-  height: 100vh;
-  height: 100dvh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: 1.6rem;
-  background: #0b1120;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  z-index: 51;
-}
-
-/* Gmail-style: the frozen column stays put in BOTH expanded and collapsed
-   states — the button never moves. The sidebar body always sits to its
-   right (48px reserved), and the in-brand button is never shown on ADS. */
-.asideAds {
-  padding-left: 48px;
-}
-.asideAds .brandRow > .collapseBtn {
-  display: none;
-}
-
-/* Collapsed rail = 48px frozen column + 64px icon rail beside it */
-.asideAds.collapsed {
-  width: 112px;
-  min-width: 112px;
-  max-width: 112px;
 }
 
 .mobileBar {
@@ -127,526 +29,374 @@
   font-weight: 700;
   flex: 1;
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .hamburger {
   width: 34px;
   height: 34px;
-  flex: none;
   border-radius: 8px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.closeDrawerBtn {
-  display: none;
 }
 
 .overlay {
   display: none;
 }
 
+.closeDrawerBtn {
+  display: none;
+}
+
+.brand {
+  padding: 1.25rem 1rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.logo {
+  width: 2.35rem;
+  height: auto;
+}
+
+.brandText {
+  min-width: 0;
+}
+
+.teamName {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitle {
+  margin-top: 1px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.nav {
+  padding: 0.65rem 0.55rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.navGroup {
+  margin-bottom: 0.3rem;
+}
+
+.navItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.58rem;
+  text-align: left;
+  border: none;
+  color: #cbd5e1;
+  background: transparent;
+  padding: 0.56rem 0.52rem;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  font: inherit;
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.navItemActive {
+  background: rgba(59, 130, 246, 0.24);
+  color: #fff;
+}
+
+.navIcon {
+  width: 1.2rem;
+  text-align: center;
+  opacity: 0.95;
+}
+
+.navLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.navChevron {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.submenu {
+  padding: 0.3rem 0.12rem 0.28rem 1.35rem;
+}
+
+.memberList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.23rem;
+  margin-bottom: 0.35rem;
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  border: 0;
+  text-decoration: none;
+  background: transparent;
+  color: #93a6be;
+  padding: 0.36rem 0.48rem;
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.memberItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.memberItemActive {
+  background: rgba(59, 130, 246, 0.18);
+  color: #fff;
+}
+
+.memberName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberPct {
+  font-size: 0.75rem;
+  color: #60a5fa;
+}
+
+.addTrigger {
+  margin-top: 0.2rem;
+  width: 100%;
+  border: 1px dashed rgba(148, 163, 184, 0.5);
+  background: transparent;
+  color: #cbd5e1;
+  border-radius: 8px;
+  padding: 0.45rem 0.5rem;
+  cursor: pointer;
+}
+
+.addTrigger:hover {
+  border-color: #60a5fa;
+  color: #fff;
+}
+
+.addForm {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  color: #aab6c8;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.55);
+  color: #f8fafc;
+  border-radius: 8px;
+  padding: 0.45rem 0.52rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.submit {
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  background: #3b82f6;
+  color: #fff;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error {
+  font-size: 0.75rem;
+  color: #fda4af;
+}
+
+.submenuNested {
+  padding-left: 0.7rem;
+  margin-top: 0.2rem;
+}
+
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.72rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.today {
+  font-size: 0.74rem;
+  color: #93a6be;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.52rem;
+}
+
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: #1e293b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.accountMeta {
+  min-width: 0;
+  flex: 1;
+}
+
+.accountName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountLabel {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.accountLogoutBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.accountLogoutBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* ADS-only visual polish while keeping structure unchanged */
+.asideAds .brand {
+  padding-top: 1.05rem;
+  padding-bottom: 0.78rem;
+}
+
+.brandRowAds {
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logoAds {
+  width: 2.05rem;
+}
+
+.teamNameAds {
+  font-size: 0.88rem;
+  letter-spacing: 0.005em;
+}
+
 @media (max-width: 860px) {
   .mobileBar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    position: sticky;
-    top: 0;
-    z-index: 90;
-    background: #0f172a;
-    color: #fff;
-    padding: 10px 14px;
-  }
-
-  .aside,
-  .aside.collapsed {
     position: fixed;
     top: 0;
     left: 0;
-    width: 82vw;
-    min-width: 0;
-    max-width: 280px;
-    transform: translateX(-100%);
-    transition: transform 0.22s ease;
-    z-index: 120;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+    right: 0;
+    height: 52px;
+    padding: 0 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 70;
+    background: #0f172a;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  /* No icon-rail on mobile — the drawer always shows full labels */
-  .collapsed .navLabel,
-  .collapsed .brandText,
-  .collapsed .navName,
-  .collapsed .navPct,
-  .collapsed .accountLabel,
-  .collapsed .footer {
-    display: revert;
+  .overlay {
+    display: block;
+    position: fixed;
+    inset: 52px 0 0 0;
+    background: rgba(2, 6, 23, 0.45);
+    z-index: 65;
+  }
+
+  .aside {
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
+    z-index: 68;
+    top: 52px;
+    height: calc(100vh - 52px);
+    height: calc(100dvh - 52px);
   }
 
   .asideOpen {
     transform: translateX(0);
   }
 
-  /* No frozen column on mobile — the drawer holds its own collapse button */
-  .freezeCol {
-    display: none;
-  }
-  .asideAds {
-    padding-left: 0;
-  }
-  .asideAds .brandRow > .collapseBtn {
-    display: flex;
-  }
-
   .closeDrawerBtn {
-    display: flex;
+    display: inline-flex;
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    border: none;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    font-size: 14px;
+    font-size: 18px;
     cursor: pointer;
-    z-index: 5;
   }
-
-  .overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.5);
-    z-index: 115;
-  }
-}
-
-.brand {
-  padding: 1.6rem 1.2rem 1.4rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.brandRow {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.logo {
-  width: 3.5rem;
-  height: auto;
-  flex: none;
-}
-
-/* ── ADS-cluster-only brand tweaks (pilot) ── */
-/* ADS: let the logo hug the frozen-column divider on the top row, Gmail-style */
-.asideAds .brand {
-  padding-left: 12px;
-  padding-top: 1.2rem;
-  padding-bottom: 1rem;
-}
-
-.brandRowAds {
-  gap: 8px; /* Breathing room between logo and text */
-  align-items: center;
-}
-.brandRowAds .brandText {
-  margin-left: 0;
-}
-.logoAds {
-  width: 3.8rem;
-  flex-shrink: 0;
-}
-.teamNameAds {
-  font-size: 0.75rem; /* Small, matches logo letter size */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.4px;
-  font-weight: 700;
-  line-height: 1;
-  text-transform: uppercase;
-  margin: 0;
-  padding: 0;
-}
-
-.brandText {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.teamName {
-  font-size: 1.1rem;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
-}
-
-.subtitle {
-  font-size: 0.72rem;
-  color: #38bdf8;
-  margin-top: 4px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-.nav {
-  padding: 0.7rem 0.5rem;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.navItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #cbd5e1;
-  margin-bottom: 2px;
-}
-
-.navItem:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-
-/* Active item: tinted, rounded-right pill (Gmail style) */
-.navItemActive,
-.navItemActive:hover {
-  background: rgba(37, 99, 235, 0.22);
-  color: #fff;
-  border-radius: 0 16px 16px 0;
-}
-
-.navIcon {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-}
-
-.navLabel {
-  flex: 1;
-  min-width: 0;
-  font-size: 0.82rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: clip;
-}
-
-.navItemToggle {
-  width: 100%;
-  background: none;
-  border: none;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-}
-
-.navChevron {
-  font-size: 9px;
-  color: #64748b;
-  transition: transform 0.15s ease;
-}
-
-.navChevronOpen {
-  transform: rotate(90deg);
-}
-
-.dropdownPanel {
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-8px);
-  transition: opacity 0.25s ease-out, visibility 0.25s ease-out, transform 0.25s ease-out;
-  overflow: hidden;
-  max-height: 0;
-}
-
-.dropdownPanelOpen {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  transition: opacity 0.25s ease-out, visibility 0.25s ease-out, transform 0.25s ease-out;
-  overflow: visible;
-  max-height: none;
-}
-
-.subNav {
-  display: flex;
-  flex-direction: column;
-  padding: 2px 0 4px 28px;
-}
-
-.subNavItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  border: none;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-  font-family: inherit;
-  padding: 7px 12px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #94a3b8;
-  border-radius: 7px;
-  text-decoration: none;
-  transition: background 0.1s, color 0.1s;
-  margin-bottom: 1px;
-  position: relative;
-}
-
-.subNavItem::before {
-  content: '';
-  position: absolute;
-  left: -12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6px;
-  height: 1.5px;
-  background: #334155;
-}
-
-.subNavItem:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
-}
-
-.subNavItemActive {
-  color: #93c5fd;
-  font-weight: 700;
-  background: rgba(37, 99, 235, 0.15);
-}
-
-.soonBadge {
-  flex: none;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.14);
-  border-radius: 5px;
-  padding: 2px 6px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.comingSoonBox {
-  padding: 10px 14px 14px 44px;
-  margin-bottom: 4px;
-}
-
-.comingSoonLead {
-  font-size: 12px;
-  color: #cbd5e1;
-  line-height: 1.4;
-  margin: 0 0 8px;
-}
-
-.comingSoonList {
-  margin: 0;
-  padding-left: 16px;
-  font-size: 11.5px;
-  color: #94a3b8;
-  line-height: 1.6;
-}
-
-.bottomLinks {
-  padding: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.accountRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 9px 12px;
-  margin-bottom: 2px;
-}
-
-.accountLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: #cbd5e1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.accountLogoutBtn {
-  flex: none;
-  background: rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.accountLogoutBtn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-}
-
-.memberListScroll {
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.navAvatar {
-  width: 24px;
-  height: 24px;
-  flex: none;
-  border-radius: 8px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.navName {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.navPct {
-  font-size: 11px;
-  color: #94a3b8;
-  font-variant-numeric: tabular-nums;
-}
-
-.addBox {
-  padding: 8px 12px;
-  margin-top: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.addError {
-  font-size: 11px;
-  color: #fca5a5;
-}
-
-.addFieldLabel {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-bottom: -2px;
-}
-
-.addInput {
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  border-radius: 7px;
-  padding: 8px 10px;
-  font-size: 13px;
-}
-
-.addInput[type='date']::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-}
-
-.addActions {
-  display: flex;
-  gap: 6px;
-  margin-top: 7px;
-}
-
-.addBtn {
-  flex: 1;
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  padding: 7px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.cancelBtn {
-  background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
-  border: none;
-  border-radius: 7px;
-  padding: 7px 11px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.addTrigger {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 12px;
-  margin-top: 4px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #94a3b8;
-  border: 1px dashed rgba(255, 255, 255, 0.16);
-}
-
-.addIcon {
-  width: 22px;
-  height: 22px;
-  flex: none;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.footer {
-  padding: 14px 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  font-size: 11px;
-  color: #94a3b8;
 }

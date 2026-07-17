@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://msma.work'),
+  metadataBase: new URL('https://tasks.msma.work'),
   title: APP_NAME,
   description: 'Employee task monitoring dashboard',
 };

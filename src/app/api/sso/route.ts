@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { X509Certificate, verify as verifySignature } from 'crypto';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/db';
-import { setMemberSession } from '@/lib/memberAuth';
-import { isClusterSlug } from '@/lib/clusters';
+import { clusterPasswordToken, setMemberSession } from '@/lib/memberAuth';
+import { clusterUnlockCookieName, isClusterSlug } from '@/lib/clusters';
 
 // Single sign-on from MSMA Workspace (msma.work). The workspace posts the
 // signed-in user's Firebase ID token; we verify it against Google's public
@@ -12,6 +13,10 @@ import { isClusterSlug } from '@/lib/clusters';
 
 const WORKSPACE_PROJECT_ID = 'msma-workspace';
 const CERTS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
+
+// Workspace admins get a cluster-admin unlock (same cookie the password
+// gate sets) instead of a member session.
+const WORKSPACE_ADMIN_EMAILS = ['jjrcabinas@gmail.com'];
 
 function decodePart(part: string): Record<string, unknown> | null {
   try {
@@ -61,6 +66,21 @@ export async function POST(request: NextRequest) {
   if (!token) return home();
   const email = await verifyWorkspaceIdToken(token);
   if (!email) return home();
+
+  // Workspace admin: unlock the requested cluster directly — no password,
+  // no member session (a member session would drop admin privileges).
+  if (WORKSPACE_ADMIN_EMAILS.includes(email) && isClusterSlug(clusterHint)) {
+    const unlockToken = clusterPasswordToken(clusterHint);
+    if (!unlockToken) return home();
+    const cookieStore = await cookies();
+    cookieStore.set(clusterUnlockCookieName(clusterHint), unlockToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 8,
+    });
+    return NextResponse.redirect(new URL(`/${clusterHint}`, request.url), 303);
+  }
 
   // 1) Email is the authoritative link.
   let employee = await prisma.employee.findFirst({

@@ -7,8 +7,8 @@ import { isClusterSlug } from '@/lib/clusters';
 // Single sign-on from MSMA Workspace (msma.work). The workspace posts the
 // signed-in user's Firebase ID token; we verify it against Google's public
 // certs, match the email to an Employee, and mint the same member session
-// cookie the normal login flow sets. Anything invalid falls back to /gate,
-// which is exactly the pre-SSO experience.
+// cookie the normal login flow sets. Anything invalid falls back to the
+// cluster picker at / (the /gate page 404s without a cluster param).
 
 const WORKSPACE_PROJECT_ID = 'msma-workspace';
 const CERTS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
@@ -46,7 +46,7 @@ async function verifyWorkspaceIdToken(token: string): Promise<string | null> {
 }
 
 export async function POST(request: NextRequest) {
-  const gate = () => NextResponse.redirect(new URL('/gate', request.url), 303);
+  const gate = () => NextResponse.redirect(new URL('/', request.url), 303);
   let token = '';
   try {
     token = String((await request.formData()).get('token') || '');

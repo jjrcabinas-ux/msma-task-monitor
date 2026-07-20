@@ -46,21 +46,60 @@ async function verifyWorkspaceIdToken(token: string): Promise<string | null> {
 }
 
 export async function POST(request: NextRequest) {
-  const gate = () => NextResponse.redirect(new URL('/', request.url), 303);
+  const home = () => NextResponse.redirect(new URL('/', request.url), 303);
   let token = '';
+  let clusterHint = '';
+  let name = '';
   try {
-    token = String((await request.formData()).get('token') || '');
+    const form = await request.formData();
+    token = String(form.get('token') || '');
+    clusterHint = String(form.get('cluster') || '').toLowerCase();
+    name = String(form.get('name') || '').trim();
   } catch {
-    return gate();
+    return home();
   }
-  if (!token) return gate();
+  if (!token) return home();
   const email = await verifyWorkspaceIdToken(token);
-  if (!email) return gate();
-  const employee = await prisma.employee.findFirst({
+  if (!email) return home();
+
+  // 1) Email is the authoritative link.
+  let employee = await prisma.employee.findFirst({
     where: { email: { equals: email, mode: 'insensitive' }, NOT: { email: '' } },
   });
+
+  // No email link yet: the workspace Members registry already assigns this
+  // email to a cluster, so 2) adopt an existing same-name record in that
+  // cluster that has no email, else 3) provision a fresh employee record.
+  // The hint only applies to unlinked accounts — a linked email always wins.
+  if (!employee && isClusterSlug(clusterHint)) {
+    if (name) {
+      const unlinked = await prisma.employee.findFirst({
+        where: {
+          cluster: clusterHint,
+          email: '',
+          OR: [
+            { name: { equals: name, mode: 'insensitive' } },
+            { nickname: { equals: name, mode: 'insensitive' } },
+          ],
+        },
+      });
+      if (unlinked) {
+        employee = await prisma.employee.update({ where: { id: unlinked.id }, data: { email } });
+      }
+    }
+    if (!employee) {
+      try {
+        employee = await prisma.employee.create({
+          data: { cluster: clusterHint, name: name || email.split('@')[0], email },
+        });
+      } catch {
+        employee = null; // name collision in the cluster — fall through
+      }
+    }
+  }
+
   const cluster = employee ? employee.cluster : '';
-  if (!employee || !isClusterSlug(cluster)) return gate();
+  if (!employee || !isClusterSlug(cluster)) return home();
   await setMemberSession(cluster, employee.id);
   return NextResponse.redirect(new URL(`/${cluster}`, request.url), 303);
 }
